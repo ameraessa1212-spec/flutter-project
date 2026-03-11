@@ -63,7 +63,7 @@ class ProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            "معاد بن يوسف",
+                            "شدى الشريف",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -263,25 +263,27 @@ class _ProfileMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: AppDimensions.screenHeight * 0.12,
-      padding: const EdgeInsets.all(14),
+      // 1. أزلنا الارتفاع الثابت هنا للسماح للمحتوى بالتمدد
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: primarycolor.withValues(alpha: 0.08)),
+        border: Border.all(color: primarycolor.withOpacity(0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        mainAxisSize:
+            MainAxisSize.min, // 2. يضمن أن العمود يأخذ أقل مساحة ممكنة
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: primarycolor, size: 20),
-          const Spacer(),
+          Icon(icon, color: primarycolor, size: 22),
+          const SizedBox(height: 12), // 3. بدلاً من Spacer استخدم مسافة ثابتة
           Text(
             value,
             style: TextStyle(
@@ -290,11 +292,13 @@ class _ProfileMiniCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             title,
+            maxLines: 1, // 4. يمنع النص من النزول لسطر جديد
+            overflow: TextOverflow.ellipsis, // 5. يضيف نقاط إذا كان النص طويلاً
             style: TextStyle(
-              color: Colors.black.withValues(alpha: 0.65),
+              color: Colors.black.withOpacity(0.65),
               fontSize: 12,
             ),
           ),
