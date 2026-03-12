@@ -83,7 +83,7 @@ class _CompanyPageState extends State<CompanyPage> {
   ];
 
   List<Map<String, dynamic>> displayedOpportunities = [];
-  String selectedCompany = "الكل";
+  String selectedSpecialization = "الكل"; // التعديل هنا ليكون التخصص
   String searchQuery = "";
 
   @override
@@ -103,19 +103,25 @@ class _CompanyPageState extends State<CompanyPage> {
                 title.contains(searchQuery.toLowerCase()) ||
                 company.contains(searchQuery.toLowerCase());
 
-            final matchesCompany =
-                selectedCompany == "الكل" || item['company'] == selectedCompany;
+            // التعديل هنا للفلترة حسب التخصص
+            final matchesSpec =
+                selectedSpecialization == "الكل" ||
+                item['specialization'] == selectedSpecialization;
 
-            return matchesSearch && matchesCompany;
+            return matchesSearch && matchesSpec;
           }).toList();
     });
   }
 
-  List<String> get companyFilters {
-    final companies =
-        allOpportunities.map((e) => e['company'].toString()).toSet().toList();
-    companies.sort();
-    return ['الكل', ...companies];
+  // دالة لجلب قائمة التخصصات الفريدة
+  List<String> get specializationFilters {
+    final specs =
+        allOpportunities
+            .map((e) => e['specialization'].toString())
+            .toSet()
+            .toList();
+    specs.sort();
+    return ['الكل', ...specs];
   }
 
   @override
@@ -141,9 +147,9 @@ class _CompanyPageState extends State<CompanyPage> {
             ),
             const SizedBox(height: 2),
             Text(
-              "استعرض الفرص المتاحة حسب الشركة",
+              "استعرض الفرص المتاحة حسب التخصص",
               style: TextStyle(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: Colors.black.withOpacity(0.45),
                 fontSize: 11,
               ),
             ),
@@ -202,10 +208,10 @@ class _CompanyPageState extends State<CompanyPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
+            border: Border.all(color: primarycolor.withOpacity(0.18)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: Colors.black.withOpacity(0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -219,16 +225,16 @@ class _CompanyPageState extends State<CompanyPage> {
               size: 24,
             ),
             onSelected: (String newValue) {
-              selectedCompany = newValue;
+              selectedSpecialization = newValue; // تحديث التخصص
               _applyFilters();
             },
             itemBuilder:
                 (BuildContext context) =>
-                    companyFilters
+                    specializationFilters // عرض التخصصات
                         .map(
-                          (company) => PopupMenuItem<String>(
-                            value: company,
-                            child: Text(company),
+                          (spec) => PopupMenuItem<String>(
+                            value: spec,
+                            child: Text(spec, textAlign: TextAlign.right),
                           ),
                         )
                         .toList(),
@@ -241,10 +247,10 @@ class _CompanyPageState extends State<CompanyPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
+              border: Border.all(color: primarycolor.withOpacity(0.18)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withOpacity(0.03),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -310,7 +316,7 @@ class _CompanyPageState extends State<CompanyPage> {
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
@@ -334,7 +340,7 @@ class _CompanyPageState extends State<CompanyPage> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withValues(alpha: 0.82),
+                              Colors.black.withOpacity(0.82),
                               Colors.transparent,
                             ],
                           ),
@@ -352,8 +358,8 @@ class _CompanyPageState extends State<CompanyPage> {
                         decoration: BoxDecoration(
                           color:
                               isAvailable
-                                  ? Colors.green.withValues(alpha: 0.18)
-                                  : Colors.red.withValues(alpha: 0.18),
+                                  ? Colors.green.withOpacity(0.18)
+                                  : Colors.red.withOpacity(0.18),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -434,9 +440,9 @@ class _CompanyPageState extends State<CompanyPage> {
             text,
             textAlign: TextAlign.right,
             style: TextStyle(
-              color: Colors.black.withValues(alpha: 0.70),
+              color: Colors.black.withOpacity(0.70),
               fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -457,7 +463,7 @@ class _EmptyState extends StatelessWidget {
           Icon(
             Icons.search_off_rounded,
             size: 52,
-            color: Colors.grey.withValues(alpha: 0.7),
+            color: Colors.grey.withOpacity(0.7),
           ),
           const SizedBox(height: 12),
           const Text(
@@ -470,7 +476,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            "جرّب تغيير البحث أو اختيار شركة مختلفة",
+            "جرّب تغيير البحث أو اختيار تخصص مختلف",
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],

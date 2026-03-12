@@ -15,9 +15,15 @@ class MyInternshipsPage extends StatelessWidget {
         surfaceTintColor: const Color(0xFFF8F8FC),
         elevation: 0,
         centerTitle: true,
+        // هذا السطر هو المسؤول عن إلغاء زر الرجوع
+        automaticallyImplyLeading: false,
         title: Text(
           "تدريباتي",
-          style: TextStyle(color: primarycolor, fontSize: 22),
+          style: TextStyle(
+            color: primarycolor,
+            fontSize: 22,
+            fontWeight: FontWeight.bold, // أضفت بولد ليتناسب مع التصميم
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -81,22 +87,6 @@ class MyInternshipsPage extends StatelessWidget {
               status: "مقبول",
               statusColor: Colors.green,
               dateText: "تم التقديم منذ 3 أيام",
-            ),
-            const SizedBox(height: 10),
-            const _ApplicationStatusCard(
-              companyName: "الواحة للنفط",
-              opportunityTitle: "تدريب في أنظمة التحكم الصناعي",
-              status: "قيد المراجعة",
-              statusColor: Colors.orange,
-              dateText: "تم التقديم منذ 5 أيام",
-            ),
-            const SizedBox(height: 10),
-            const _ApplicationStatusCard(
-              companyName: "مصرف الجمهورية",
-              opportunityTitle: "تدريب في الأنظمة المصرفية",
-              status: "مرفوض",
-              statusColor: Colors.red,
-              dateText: "تم التقديم منذ أسبوع",
             ),
           ],
         ),

@@ -66,6 +66,8 @@ class _HomePageState extends State<HomePage> {
       surfaceTintColor: const Color(0xFFF8F8FC),
       elevation: 0,
       centerTitle: true,
+      // السطر المطلوب لإلغاء زر الرجوع التلقائي
+      automaticallyImplyLeading: false,
       title: const Text(
         "الصفحة الرئيسية",
         style: TextStyle(
