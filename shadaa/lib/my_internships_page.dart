@@ -130,7 +130,7 @@ class _InternshipSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            "اطلع على طلباتك، حالة تدريبك الحالي، والتقارير المرفوعة من مكان واحد.",
+            "اطلع على طلبك، حالة تدريبك الحالي، والتقارير المرفوعة من مكان واحد.",
             style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.6),
           ),
           const SizedBox(height: 16),
@@ -138,8 +138,8 @@ class _InternshipSummaryCard extends StatelessWidget {
             children: const [
               Expanded(
                 child: _SummaryMiniBox(
-                  title: "الطلبات",
-                  value: "3",
+                  title: "الطلب",
+                  value: "1",
                   icon: Icons.description_outlined,
                 ),
               ),
