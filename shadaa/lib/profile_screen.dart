@@ -3,11 +3,58 @@ import 'package:shadaa/about_app_page.dart';
 import 'package:shadaa/const/app_dimensions.dart';
 import 'package:shadaa/const/color.dart';
 import 'package:shadaa/terms_and_conditions_page.dart';
+import 'package:shadaa/discussion_schedule.dart'; 
+import 'package:shadaa/settings_page.dart';
+import 'package:shadaa/sign_in.dart'; // استيراد صفحة تسجيل الدخول
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback onOpenCompanies;
 
   const ProfileScreen({super.key, required this.onOpenCompanies});
+
+  // دالة لإظهار رسالة تأكيد تسجيل الخروج
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text(
+            "تنبيه",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "هل أنت متأكد من رغبتك في تسجيل الخروج؟",
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
+                // الانتقال لصفحة تسجيل الدخول وحذف مسار الصفحات السابق
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignInPage()),
+                  (route) => false,
+                );
+              },
+              child: const Text("خروج", style: TextStyle(color: Colors.white)),
+            ),
+            const SizedBox(width: 8),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("إلغاء", style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 4),
 
-              /// Header
+              /// Header Section
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -58,10 +105,10 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             "شدى الشريف",
                             style: TextStyle(
@@ -96,12 +143,12 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 18),
 
               /// Quick info cards
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Expanded(
                     child: _ProfileMiniCard(
-                      title: "الطلبات",
-                      value: "3",
+                      title: "الطلب",
+                      value: "1",
                       icon: Icons.description_outlined,
                     ),
                   ),
@@ -145,10 +192,17 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _ProfileMenuTile(
-                      title: "استعراض فرص التدريب",
-                      subtitle: "شاهد الفرص المتاحة حسب الشركات",
-                      icon: Icons.business_center_rounded,
-                      onTap: onOpenCompanies,
+                      title: "مواعيد المناقشات",
+                      subtitle: "الاطلاع على جدول مواعيد مناقشة التقارير",
+                      icon: Icons.calendar_today_rounded,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DiscussionSchedulePage(),
+                          ),
+                        );
+                      },
                     ),
                     _tileDivider(),
                     _ProfileMenuTile(
@@ -173,8 +227,21 @@ class ProfileScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (context) => const TermsAndConditionsPage(),
+                            builder: (context) => const TermsAndConditionsPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    _tileDivider(),
+                    _ProfileMenuTile(
+                      title: "الإعدادات",
+                      subtitle: "التحكم في التنبيهات وإعدادات الحساب",
+                      icon: Icons.settings_outlined,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsPage(),
                           ),
                         );
                       },
@@ -208,7 +275,7 @@ class ProfileScreen extends StatelessWidget {
                       subtitle: "الخروج من الحساب الحالي",
                       icon: Icons.logout_outlined,
                       color: Colors.red,
-                      onTap: () {},
+                      onTap: () => _showLogoutConfirmation(context),
                     ),
                   ],
                 ),
@@ -233,18 +300,12 @@ class ProfileScreen extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-
   const _SectionTitle({required this.title});
-
   @override
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
+      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black),
     );
   }
 }
@@ -253,55 +314,26 @@ class _ProfileMiniCard extends StatelessWidget {
   final String title;
   final String value;
   final IconData icon;
-
-  const _ProfileMiniCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-  });
-
+  const _ProfileMiniCard({required this.title, required this.value, required this.icon});
   @override
   Widget build(BuildContext context) {
     return Container(
-      // 1. أزلنا الارتفاع الثابت هنا للسماح للمحتوى بالتمدد
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: primarycolor.withOpacity(0.08)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
-        mainAxisSize:
-            MainAxisSize.min, // 2. يضمن أن العمود يأخذ أقل مساحة ممكنة
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: primarycolor, size: 22),
-          const SizedBox(height: 12), // 3. بدلاً من Spacer استخدم مسافة ثابتة
-          Text(
-            value,
-            style: TextStyle(
-              color: primarycolor,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          const SizedBox(height: 12),
+          Text(value, style: TextStyle(color: primarycolor, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text(
-            title,
-            maxLines: 1, // 4. يمنع النص من النزول لسطر جديد
-            overflow: TextOverflow.ellipsis, // 5. يضيف نقاط إذا كان النص طويلاً
-            style: TextStyle(
-              color: Colors.black.withOpacity(0.65),
-              fontSize: 12,
-            ),
-          ),
+          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black.withOpacity(0.65), fontSize: 12)),
         ],
       ),
     );
@@ -315,18 +347,11 @@ class _ProfileMenuTile extends StatelessWidget {
   final VoidCallback onTap;
   final Color? color;
 
-  const _ProfileMenuTile({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-    this.color,
-  });
+  const _ProfileMenuTile({required this.title, required this.subtitle, required this.icon, required this.onTap, this.color});
 
   @override
   Widget build(BuildContext context) {
     final tileColor = color ?? primarycolor;
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
@@ -348,23 +373,9 @@ class _ProfileMenuTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: color ?? Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text(title, style: TextStyle(color: color ?? Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.black.withValues(alpha: 0.50),
-                      fontSize: 12,
-                      height: 1.5,
-                    ),
-                  ),
+                  Text(subtitle, style: TextStyle(color: Colors.black.withValues(alpha: 0.50), fontSize: 12, height: 1.5)),
                 ],
               ),
             ),

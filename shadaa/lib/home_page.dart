@@ -130,8 +130,8 @@ class _HomeContentBody extends StatelessWidget {
               SizedBox(width: 10),
               Expanded(
                 child: _QuickStatCard(
-                  title: "طلباتي",
-                  value: "3",
+                  title: "طلب",
+                  value: "1",
                   icon: Icons.description_outlined,
                 ),
               ),
