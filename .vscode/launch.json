@@ -4,22 +4,26 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "shadaa",
-            "cwd": "shadaa",
+            "name": "Waslla",
+            "cwd": "Waslla",
             "request": "launch",
-            "type": "dart"
+           "type": "dart",
+            "program": "lib/main.dart"
+            
+            
         },
         {
-            "name": "shadaa (profile mode)",
-            "cwd": "shadaa",
+            "name": "Waslla (profile mode)",
+            "cwd": "Waslla",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "shadaa (release mode)",
-            "cwd": "shadaa",
+            "name": "Waslla (release mode)",
+            "cwd": "Waslla",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

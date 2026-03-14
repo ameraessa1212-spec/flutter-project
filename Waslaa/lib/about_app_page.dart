@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shadaa/const/app_dimensions.dart';
-import 'package:shadaa/const/color.dart';
+import 'package:Waslla/const/app_dimensions.dart';
+import 'package:Waslla/const/color.dart';
 
 class AboutAppPage extends StatelessWidget {
   const AboutAppPage({super.key});

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:shadaa/about_app_page.dart';
-import 'package:shadaa/const/app_dimensions.dart';
-import 'package:shadaa/const/color.dart';
-import 'package:shadaa/terms_and_conditions_page.dart';
-import 'package:shadaa/discussion_schedule.dart'; 
-import 'package:shadaa/settings_page.dart';
-import 'package:shadaa/sign_in.dart'; // استيراد صفحة تسجيل الدخول
+import 'package:Waslla/about_app_page.dart';
+import 'package:Waslla/const/app_dimensions.dart';
+import 'package:Waslla/const/color.dart';
+import 'package:Waslla/terms_and_conditions_page.dart';
+import 'package:Waslla/discussion_schedule.dart';
+import 'package:Waslla/settings_page.dart';
+import 'package:Waslla/sign_in.dart'; // استيراد صفحة تسجيل الدخول
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback onOpenCompanies;
@@ -18,7 +18,9 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text(
             "تنبيه",
             textAlign: TextAlign.center,
@@ -33,7 +35,9 @@ class ProfileScreen extends StatelessWidget {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () {
                 // الانتقال لصفحة تسجيل الدخول وحذف مسار الصفحات السابق
@@ -199,7 +203,8 @@ class ProfileScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const DiscussionSchedulePage(),
+                            builder:
+                                (context) => const DiscussionSchedulePage(),
                           ),
                         );
                       },
@@ -227,7 +232,8 @@ class ProfileScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const TermsAndConditionsPage(),
+                            builder:
+                                (context) => const TermsAndConditionsPage(),
                           ),
                         );
                       },
@@ -305,7 +311,11 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black),
+      style: const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+      ),
     );
   }
 }
@@ -314,7 +324,11 @@ class _ProfileMiniCard extends StatelessWidget {
   final String title;
   final String value;
   final IconData icon;
-  const _ProfileMiniCard({required this.title, required this.value, required this.icon});
+  const _ProfileMiniCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -323,7 +337,13 @@ class _ProfileMiniCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: primarycolor.withOpacity(0.08)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -331,9 +351,24 @@ class _ProfileMiniCard extends StatelessWidget {
         children: [
           Icon(icon, color: primarycolor, size: 22),
           const SizedBox(height: 12),
-          Text(value, style: TextStyle(color: primarycolor, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: TextStyle(
+              color: primarycolor,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.black.withOpacity(0.65), fontSize: 12)),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.black.withOpacity(0.65),
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     );
@@ -347,7 +382,13 @@ class _ProfileMenuTile extends StatelessWidget {
   final VoidCallback onTap;
   final Color? color;
 
-  const _ProfileMenuTile({required this.title, required this.subtitle, required this.icon, required this.onTap, this.color});
+  const _ProfileMenuTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -373,9 +414,23 @@ class _ProfileMenuTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(color: color ?? Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: color ?? Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: TextStyle(color: Colors.black.withValues(alpha: 0.50), fontSize: 12, height: 1.5)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.black.withValues(alpha: 0.50),
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
                 ],
               ),
             ),

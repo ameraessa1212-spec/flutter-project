@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:shadaa/const/color.dart';
+import 'package:Waslla/const/color.dart';
 
 class AccountPage extends StatefulWidget {
   final GlobalKey<ScaffoldState>? scaffoldKey;

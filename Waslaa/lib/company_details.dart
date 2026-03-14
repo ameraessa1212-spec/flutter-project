@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shadaa/apply_internship_page.dart';
-import 'package:shadaa/const/app_dimensions.dart';
-import 'package:shadaa/const/color.dart';
+import 'package:Waslla/apply_internship_page.dart';
+import 'package:Waslla/const/app_dimensions.dart';
+import 'package:Waslla/const/color.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CompanyDetailsPage extends StatelessWidget {

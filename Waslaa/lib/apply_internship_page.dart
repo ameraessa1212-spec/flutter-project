@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shadaa/const/color.dart';
+import 'package:Waslla/const/color.dart';
 
 class ApplyInternshipPage extends StatefulWidget {
   final String opportunityTitle;

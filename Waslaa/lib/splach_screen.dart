@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:shadaa/const/color.dart';
-import 'package:shadaa/home_page.dart';
+import 'package:Waslla/const/color.dart';
+import 'package:Waslla/home_page.dart';
 import 'Intro1.dart';
 
 class SplachScreen extends StatefulWidget {

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shadaa/bottom_nav.dart';
-import 'package:shadaa/const/app_dimensions.dart';
-import 'package:shadaa/const/color.dart';
-import 'package:shadaa/my_internships_page.dart';
-import 'package:shadaa/profile_screen.dart';
-import 'package:shadaa/widgets/image_slider.dart';
+import 'package:Waslla/bottom_nav.dart';
+import 'package:Waslla/const/app_dimensions.dart';
+import 'package:Waslla/const/color.dart';
+import 'package:Waslla/my_internships_page.dart';
+import 'package:Waslla/profile_screen.dart';
+import 'package:Waslla/widgets/image_slider.dart';
 import 'notifications_screen.dart';
 import 'Company.dart';
 
