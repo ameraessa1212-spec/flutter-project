@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Waslla/const/app_dimensions.dart';
-import 'package:Waslla/splach_screen.dart';
+import 'package:Waslaa/const/app_dimensions.dart';
+import 'package:Waslaa/splach_screen.dart';
 
 void main() {
   runApp(const MyApp());

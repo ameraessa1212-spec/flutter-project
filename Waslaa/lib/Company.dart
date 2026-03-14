@@ -1,7 +1,7 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
-import 'package:Waslla/company_details.dart';
-import 'package:Waslla/const/color.dart';
+import 'package:Waslaa/company_details.dart';
+import 'package:Waslaa/const/color.dart';
 
 class CompanyPage extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;

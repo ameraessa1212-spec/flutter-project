@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:Waslla/const/color.dart';
+import 'package:Waslaa/const/color.dart';
 
 class TermsAndConditionsPage extends StatelessWidget {
   const TermsAndConditionsPage({super.key});

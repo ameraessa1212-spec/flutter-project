@@ -6,8 +6,8 @@
     "configurations": [
 
         {
-            "name": "Waslla",
-            "cwd": "Waslla",
+            "name": "Waslaa",
+            "cwd": "Waslaa",
             "request": "launch",
            "type": "dart",
             "program": "lib/main.dart"
@@ -15,15 +15,15 @@
             
         },
         {
-            "name": "Waslla (profile mode)",
-            "cwd": "Waslla",
+            "name": "Waslaa (profile mode)",
+            "cwd": "Waslaa",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "Waslla (release mode)",
-            "cwd": "Waslla",
+            "name": "Waslaa (release mode)",
+            "cwd": "Waslaa",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:Waslla/about_app_page.dart';
-import 'package:Waslla/const/app_dimensions.dart';
-import 'package:Waslla/const/color.dart';
-import 'package:Waslla/terms_and_conditions_page.dart';
-import 'package:Waslla/discussion_schedule.dart';
-import 'package:Waslla/settings_page.dart';
-import 'package:Waslla/sign_in.dart'; // استيراد صفحة تسجيل الدخول
+import 'package:Waslaa/about_app_page.dart';
+import 'package:Waslaa/const/app_dimensions.dart';
+import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/terms_and_conditions_page.dart';
+import 'package:Waslaa/discussion_schedule.dart';
+import 'package:Waslaa/settings_page.dart';
+import 'package:Waslaa/sign_in.dart'; // استيراد صفحة تسجيل الدخول
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback onOpenCompanies;

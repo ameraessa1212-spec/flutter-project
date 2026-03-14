@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:Waslla/const/app_dimensions.dart';
-import 'package:Waslla/const/color.dart';
+import 'package:Waslaa/const/app_dimensions.dart';
+import 'package:Waslaa/const/color.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class ImageSliderScreen extends StatefulWidget {

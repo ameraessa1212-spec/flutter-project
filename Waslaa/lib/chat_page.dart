@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:Waslla/const/app_dimensions.dart';
-import 'package:Waslla/const/color.dart';
+import 'package:Waslaa/const/app_dimensions.dart';
+import 'package:Waslaa/const/color.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {

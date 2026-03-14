@@ -1,4 +1,4 @@
-package com.example.Waslla
+package com.example.Waslaa
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:Waslla/chat_page.dart';
-import 'package:Waslla/const/color.dart';
-import 'package:Waslla/reports_page.dart';
+import 'package:Waslaa/chat_page.dart';
+import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/reports_page.dart';
 
 class MyInternshipsPage extends StatelessWidget {
   const MyInternshipsPage({super.key});
