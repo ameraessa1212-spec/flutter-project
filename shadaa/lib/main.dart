@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     AppDimensions.initialize(context);
     return MaterialApp(
+      title: 'Waslaa',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Cairo'),
       home: SplachScreen(),

@@ -51,7 +51,7 @@ class AboutAppPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Shadaa",
+                      "Waslaa",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
