@@ -28,8 +28,7 @@ class AdminWaslaaPanelProvider extends PanelProvider
             ->path('admin-waslaa')
             ->login()
             ->brandName('وصلة - لوحة التحكم')
-            ->locale('ar')
-            ->direction('rtl')
+            ->bootUsing(fn () => app()->setLocale('ar'))
             ->colors([
                 'primary' => Color::hex('#6A5AE0'),
             ])
