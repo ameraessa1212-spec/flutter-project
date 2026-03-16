@@ -29,6 +29,7 @@ class AdminWaslaaPanelProvider extends PanelProvider
             ->login()
             ->brandName('وصلة - لوحة التحكم')
             ->bootUsing(fn () => app()->setLocale('ar'))
+            ->font('Cairo')
             ->colors([
                 'primary' => Color::hex('#6A5AE0'),
             ])
