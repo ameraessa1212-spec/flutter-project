@@ -21,9 +21,11 @@ class DiscussionScheduleResource extends Resource
 {
     protected static ?string $model = DiscussionSchedule::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Academic';
+    protected static ?string $navigationLabel = 'جداول المناقشة';
+
+    protected static string|UnitEnum|null $navigationGroup = 'الأكاديمي';
 
     protected static ?int $navigationSort = 1;
 

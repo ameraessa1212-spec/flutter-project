@@ -17,31 +17,27 @@ class CompaniesTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('slug')
-                    ->searchable(),
-                TextColumn::make('logo_path')
-                    ->searchable(),
-                TextColumn::make('website_url')
-                    ->searchable(),
-                TextColumn::make('map_url')
+                    ->label('اسم الشركة')
                     ->searchable(),
                 TextColumn::make('city')
-                    ->searchable(),
-                TextColumn::make('address')
+                    ->label('المدينة')
                     ->searchable(),
                 TextColumn::make('phone')
+                    ->label('رقم الهاتف')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('البريد الإلكتروني')
                     ->searchable(),
                 IconColumn::make('is_active')
+                    ->label('نشطة')
                     ->boolean(),
                 TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('تاريخ التحديث')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

@@ -21,9 +21,11 @@ class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Reports';
+    protected static ?string $navigationLabel = 'التقارير';
+
+    protected static string|UnitEnum|null $navigationGroup = 'التقارير';
 
     protected static ?int $navigationSort = 1;
 

@@ -12,35 +12,43 @@ class InternshipInfolist
         return $schema
             ->components([
                 TextEntry::make('application.id')
-                    ->label('Application'),
+                    ->label('الطلب'),
                 TextEntry::make('student.name')
-                    ->label('Student'),
+                    ->label('الطالب'),
                 TextEntry::make('company.name')
-                    ->label('Company'),
+                    ->label('الشركة'),
                 TextEntry::make('opportunity.title')
-                    ->label('Opportunity')
+                    ->label('فرصة التدريب')
                     ->placeholder('-'),
                 TextEntry::make('supervisor.name')
-                    ->label('Supervisor')
+                    ->label('المشرف')
                     ->placeholder('-'),
-                TextEntry::make('title'),
-                TextEntry::make('status'),
+                TextEntry::make('title')
+                    ->label('العنوان'),
+                TextEntry::make('status')
+                    ->label('الحالة'),
                 TextEntry::make('start_date')
+                    ->label('تاريخ البداية')
                     ->date()
                     ->placeholder('-'),
                 TextEntry::make('end_date')
+                    ->label('تاريخ النهاية')
                     ->date()
                     ->placeholder('-'),
                 TextEntry::make('report_due_date')
+                    ->label('موعد التقرير')
                     ->date()
                     ->placeholder('-'),
                 TextEntry::make('notes')
+                    ->label('ملاحظات')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('created_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label('تاريخ التحديث')
                     ->dateTime()
                     ->placeholder('-'),
             ]);

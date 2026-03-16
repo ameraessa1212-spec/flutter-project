@@ -14,24 +14,34 @@ class CompanyForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('اسم الشركة')
                     ->required(),
                 TextInput::make('slug')
+                    ->label('المعرف المختصر')
                     ->required(),
                 Textarea::make('description')
+                    ->label('الوصف')
                     ->columnSpanFull(),
-                TextInput::make('logo_path'),
+                TextInput::make('logo_path')
+                    ->label('مسار الشعار'),
                 TextInput::make('website_url')
+                    ->label('الموقع الإلكتروني')
                     ->url(),
                 TextInput::make('map_url')
+                    ->label('رابط الخريطة')
                     ->url(),
-                TextInput::make('city'),
-                TextInput::make('address'),
+                TextInput::make('city')
+                    ->label('المدينة'),
+                TextInput::make('address')
+                    ->label('العنوان'),
                 TextInput::make('phone')
+                    ->label('رقم الهاتف')
                     ->tel(),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label('البريد الإلكتروني')
                     ->email(),
                 Toggle::make('is_active')
+                    ->label('نشطة')
                     ->required(),
             ]);
     }

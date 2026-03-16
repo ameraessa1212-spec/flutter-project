@@ -17,31 +17,51 @@ class InternshipOpportunityForm
         return $schema
             ->components([
                 Select::make('company_id')
+                    ->label('الشركة')
                     ->relationship('company', 'name')
                     ->required(),
                 Select::make('specialization_id')
+                    ->label('التخصص')
                     ->relationship('specialization', 'name'),
                 TextInput::make('title')
+                    ->label('العنوان')
                     ->required(),
                 Textarea::make('description')
+                    ->label('الوصف')
                     ->required()
                     ->columnSpanFull(),
-                TextInput::make('city'),
-                TextInput::make('location_text'),
-                TextInput::make('duration_text'),
+                TextInput::make('city')
+                    ->label('المدينة'),
+                TextInput::make('location_text')
+                    ->label('الموقع'),
+                TextInput::make('duration_text')
+                    ->label('مدة التدريب'),
                 TextInput::make('duration_days')
+                    ->label('عدد الأيام')
                     ->numeric(),
                 TextInput::make('seats_count')
+                    ->label('عدد المقاعد')
                     ->numeric(),
                 Toggle::make('is_available')
+                    ->label('متاحة')
                     ->required(),
-                TextInput::make('status')
+                Select::make('status')
+                    ->label('الحالة')
                     ->required()
+                    ->options([
+                        'draft' => 'مسودة',
+                        'published' => 'منشورة',
+                        'closed' => 'مغلقة',
+                    ])
                     ->default('draft'),
-                DatePicker::make('start_date'),
-                DatePicker::make('end_date'),
-                DatePicker::make('application_deadline'),
+                DatePicker::make('start_date')
+                    ->label('تاريخ البداية'),
+                DatePicker::make('end_date')
+                    ->label('تاريخ النهاية'),
+                DatePicker::make('application_deadline')
+                    ->label('آخر موعد للتقديم'),
                 FileUpload::make('image_path')
+                    ->label('الصورة')
                     ->image(),
             ]);
     }

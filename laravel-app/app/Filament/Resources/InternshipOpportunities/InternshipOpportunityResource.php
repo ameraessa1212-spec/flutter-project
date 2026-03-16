@@ -21,9 +21,11 @@ class InternshipOpportunityResource extends Resource
 {
     protected static ?string $model = InternshipOpportunity::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Opportunities';
+    protected static ?string $navigationLabel = 'فرص التدريب';
+
+    protected static string|UnitEnum|null $navigationGroup = 'الفرص';
 
     protected static ?int $navigationSort = 1;
 

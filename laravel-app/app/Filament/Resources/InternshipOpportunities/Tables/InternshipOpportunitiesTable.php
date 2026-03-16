@@ -7,8 +7,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class InternshipOpportunitiesTable
@@ -18,48 +18,46 @@ class InternshipOpportunitiesTable
         return $table
             ->columns([
                 TextColumn::make('company.name')
+                    ->label('الشركة')
                     ->searchable(),
                 TextColumn::make('specialization.name')
+                    ->label('التخصص')
                     ->searchable(),
                 TextColumn::make('title')
+                    ->label('العنوان')
                     ->searchable(),
                 TextColumn::make('city')
+                    ->label('المدينة')
                     ->searchable(),
-                TextColumn::make('location_text')
-                    ->searchable(),
-                TextColumn::make('duration_text')
-                    ->searchable(),
-                TextColumn::make('duration_days')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('seats_count')
+                    ->label('المقاعد')
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('is_available')
+                    ->label('متاحة')
                     ->boolean(),
                 TextColumn::make('status')
+                    ->label('الحالة')
+                    ->badge()
                     ->searchable(),
-                TextColumn::make('start_date')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('end_date')
-                    ->date()
-                    ->sortable(),
                 TextColumn::make('application_deadline')
+                    ->label('آخر موعد')
                     ->date()
                     ->sortable(),
-                ImageColumn::make('image_path'),
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label('الحالة')
+                    ->options([
+                        'draft' => 'مسودة',
+                        'published' => 'منشورة',
+                        'closed' => 'مغلقة',
+                    ]),
             ])
             ->recordActions([
                 ViewAction::make(),

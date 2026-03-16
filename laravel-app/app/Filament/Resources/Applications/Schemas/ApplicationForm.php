@@ -15,34 +15,55 @@ class ApplicationForm
         return $schema
             ->components([
                 Select::make('student_id')
+                    ->label('الطالب')
                     ->relationship('student', 'name')
                     ->required(),
                 Select::make('opportunity_id')
+                    ->label('فرصة التدريب')
                     ->relationship('opportunity', 'title')
                     ->required(),
                 Select::make('company_id')
+                    ->label('الشركة')
                     ->relationship('company', 'name')
                     ->required(),
                 TextInput::make('full_name_snapshot')
+                    ->label('الاسم الكامل')
                     ->required(),
                 TextInput::make('phone_snapshot')
+                    ->label('رقم الهاتف')
                     ->tel(),
                 TextInput::make('email_snapshot')
+                    ->label('البريد الإلكتروني')
                     ->email(),
-                TextInput::make('university_snapshot'),
-                TextInput::make('major_snapshot'),
-                TextInput::make('level_snapshot'),
-                TextInput::make('cv_file_path'),
+                TextInput::make('university_snapshot')
+                    ->label('الجامعة'),
+                TextInput::make('major_snapshot')
+                    ->label('التخصص'),
+                TextInput::make('level_snapshot')
+                    ->label('المستوى الدراسي'),
+                TextInput::make('cv_file_path')
+                    ->label('مسار السيرة الذاتية'),
                 Textarea::make('notes')
+                    ->label('ملاحظات')
                     ->columnSpanFull(),
-                TextInput::make('status')
+                Select::make('status')
+                    ->label('الحالة')
                     ->required()
+                    ->options([
+                        'pending' => 'قيد الانتظار',
+                        'approved' => 'مقبول',
+                        'rejected' => 'مرفوض',
+                    ])
                     ->default('pending'),
-                DateTimePicker::make('submitted_at'),
-                DateTimePicker::make('reviewed_at'),
-                TextInput::make('reviewed_by')
-                    ->numeric(),
+                DateTimePicker::make('submitted_at')
+                    ->label('تاريخ التقديم'),
+                DateTimePicker::make('reviewed_at')
+                    ->label('تاريخ المراجعة'),
+                Select::make('reviewed_by')
+                    ->label('راجعه')
+                    ->relationship('reviewer', 'name'),
                 Textarea::make('review_notes')
+                    ->label('ملاحظات المراجعة')
                     ->columnSpanFull(),
             ]);
     }

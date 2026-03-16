@@ -12,41 +12,56 @@ class UserInfolist
         return $schema
             ->components([
                 TextEntry::make('supabase_user_id')
+                    ->label('معرف Supabase')
                     ->placeholder('-'),
                 TextEntry::make('name')
+                    ->label('الاسم الكامل')
                     ->placeholder('-'),
                 TextEntry::make('email')
-                    ->label('Email address')
+                    ->label('البريد الإلكتروني')
                     ->placeholder('-'),
                 TextEntry::make('email_verified_at')
+                    ->label('تاريخ تحقق البريد')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('user_metadata')
+                    ->label('البيانات الإضافية')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('last_sign_in_at')
+                    ->label('آخر تسجيل دخول (Supabase)')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('created_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label('تاريخ التحديث')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('first_name')
+                    ->label('الاسم الأول')
                     ->placeholder('-'),
                 TextEntry::make('last_name')
+                    ->label('اسم العائلة')
                     ->placeholder('-'),
                 TextEntry::make('username')
+                    ->label('اسم المستخدم')
                     ->placeholder('-'),
                 TextEntry::make('phone')
+                    ->label('رقم الهاتف')
                     ->placeholder('-'),
-                TextEntry::make('role'),
-                TextEntry::make('status'),
+                TextEntry::make('role')
+                    ->label('الدور'),
+                TextEntry::make('status')
+                    ->label('الحالة'),
                 TextEntry::make('phone_verified_at')
+                    ->label('تاريخ تحقق الهاتف')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('last_login_at')
+                    ->label('آخر تسجيل دخول')
                     ->dateTime()
                     ->placeholder('-'),
             ]);

@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class ReportsTable
@@ -16,41 +17,47 @@ class ReportsTable
         return $table
             ->columns([
                 TextColumn::make('internship.title')
+                    ->label('التدريب')
                     ->searchable(),
                 TextColumn::make('student.name')
+                    ->label('الطالب')
                     ->searchable(),
                 TextColumn::make('report_type')
+                    ->label('نوع التقرير')
                     ->searchable(),
                 TextColumn::make('title')
-                    ->searchable(),
-                TextColumn::make('file_path')
+                    ->label('العنوان')
                     ->searchable(),
                 TextColumn::make('file_name')
+                    ->label('اسم الملف')
                     ->searchable(),
-                TextColumn::make('file_extension')
-                    ->searchable(),
-                TextColumn::make('file_size')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('status')
+                    ->label('الحالة')
+                    ->badge()
                     ->searchable(),
                 TextColumn::make('submitted_at')
+                    ->label('تاريخ التقديم')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('reviewed_at')
+                    ->label('تاريخ المراجعة')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label('الحالة')
+                    ->options([
+                        'submitted' => 'مقدم',
+                        'under_review' => 'قيد المراجعة',
+                        'approved' => 'مقبول',
+                        'rejected' => 'مرفوض',
+                    ]),
             ])
             ->recordActions([
                 ViewAction::make(),
