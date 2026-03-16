@@ -18,3 +18,5 @@ Route::middleware('auth:supabase')->group(function () {
     Route::get('/me', CurrentUserController::class);
     Route::post('/storage/upload', SupabaseStorageController::class);
 });
+
+Route::prefix('mobile')->name('mobile.')->group(base_path('routes/mobile.php'));

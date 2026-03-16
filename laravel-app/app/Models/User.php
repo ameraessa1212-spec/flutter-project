@@ -4,14 +4,20 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -20,11 +26,20 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'supabase_user_id',
+        'first_name',
+        'last_name',
         'name',
+        'username',
         'email',
+        'phone',
+        'password',
+        'role',
+        'status',
         'email_verified_at',
+        'phone_verified_at',
         'user_metadata',
         'last_sign_in_at',
+        'last_login_at',
     ];
 
     /**
@@ -33,6 +48,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
+        'password',
+        'remember_token',
         'user_metadata',
     ];
 
@@ -45,8 +62,65 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'last_sign_in_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'user_metadata' => 'array',
+            'password' => 'hashed',
         ];
+    }
+
+    public function studentProfile(): HasOne
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
+    public function supervisorProfile(): HasOne
+    {
+        return $this->hasOne(Supervisor::class);
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'student_id');
+    }
+
+    public function reviewedApplications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'reviewed_by');
+    }
+
+    public function internships(): HasMany
+    {
+        return $this->hasMany(Internship::class, 'student_id');
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'student_id');
+    }
+
+    public function settings(): HasOne
+    {
+        return $this->hasOne(UserSetting::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(UserNotification::class);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        if ($panel->getId() !== 'admin-waslaa') {
+            return false;
+        }
+
+        return $this->hasAnyRole(['super_admin', 'operations', 'supervisor', 'content_manager', 'support']);
     }
 }
