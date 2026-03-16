@@ -17,20 +17,25 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('الاسم')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('username')
+                    ->label('اسم المستخدم')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('البريد الإلكتروني')
                     ->searchable(),
                 TextColumn::make('phone')
+                    ->label('رقم الهاتف')
                     ->searchable(),
                 TextColumn::make('role')
+                    ->label('الدور')
                     ->badge()
                     ->searchable()
                     ->color('gray'),
                 TextColumn::make('status')
+                    ->label('الحالة')
                     ->badge()
                     ->searchable()
                     ->color(fn (string $state): string => match ($state) {
@@ -39,34 +44,40 @@ class UsersTable
                         default => 'danger',
                     }),
                 TextColumn::make('email_verified_at')
+                    ->label('تحقق البريد')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('phone_verified_at')
+                    ->label('تحقق الهاتف')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('last_login_at')
+                    ->label('آخر دخول')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('role')
+                    ->label('الدور')
                     ->options([
-                        'student' => 'Student',
-                        'super_admin' => 'Super Admin',
-                        'operations' => 'Operations',
-                        'supervisor' => 'Supervisor',
-                        'content_manager' => 'Content Manager',
-                        'support' => 'Support',
+                        'student' => 'طالب',
+                        'super_admin' => 'مدير النظام',
+                        'operations' => 'العمليات',
+                        'supervisor' => 'مشرف',
+                        'content_manager' => 'مدير المحتوى',
+                        'support' => 'الدعم الفني',
                     ]),
                 SelectFilter::make('status')
+                    ->label('الحالة')
                     ->options([
-                        'pending' => 'Pending',
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'pending' => 'قيد الانتظار',
+                        'active' => 'نشط',
+                        'inactive' => 'غير نشط',
                     ]),
             ])
             ->recordActions([

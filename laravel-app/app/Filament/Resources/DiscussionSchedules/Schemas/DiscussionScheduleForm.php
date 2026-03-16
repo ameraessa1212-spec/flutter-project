@@ -17,17 +17,25 @@ class DiscussionScheduleForm
         return $schema
             ->components([
                 Select::make('specialization_id')
+                    ->label('التخصص')
                     ->relationship('specialization', 'name'),
                 TextInput::make('title')
+                    ->label('العنوان')
                     ->required(),
                 Textarea::make('description')
+                    ->label('الوصف')
                     ->columnSpanFull(),
-                TextInput::make('academic_term'),
-                TextInput::make('schedule_file_path'),
+                TextInput::make('academic_term')
+                    ->label('الفصل الدراسي'),
+                TextInput::make('schedule_file_path')
+                    ->label('مسار ملف الجدول'),
                 FileUpload::make('schedule_image_path')
+                    ->label('صورة الجدول')
                     ->image(),
-                DateTimePicker::make('published_at'),
+                DateTimePicker::make('published_at')
+                    ->label('تاريخ النشر'),
                 Toggle::make('is_active')
+                    ->label('نشط')
                     ->required(),
             ]);
     }

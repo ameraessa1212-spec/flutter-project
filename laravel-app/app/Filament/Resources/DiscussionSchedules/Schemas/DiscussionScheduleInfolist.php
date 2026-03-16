@@ -14,29 +14,39 @@ class DiscussionScheduleInfolist
         return $schema
             ->components([
                 TextEntry::make('specialization.name')
-                    ->label('Specialization')
+                    ->label('التخصص')
                     ->placeholder('-'),
-                TextEntry::make('title'),
+                TextEntry::make('title')
+                    ->label('العنوان'),
                 TextEntry::make('description')
+                    ->label('الوصف')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('academic_term')
+                    ->label('الفصل الدراسي')
                     ->placeholder('-'),
                 TextEntry::make('schedule_file_path')
+                    ->label('ملف الجدول')
                     ->placeholder('-'),
                 ImageEntry::make('schedule_image_path')
+                    ->label('صورة الجدول')
                     ->placeholder('-'),
                 TextEntry::make('published_at')
+                    ->label('تاريخ النشر')
                     ->dateTime()
                     ->placeholder('-'),
                 IconEntry::make('is_active')
+                    ->label('نشط')
                     ->boolean(),
                 TextEntry::make('created_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('updated_at')
+                    ->label('تاريخ التحديث')
                     ->dateTime()
                     ->placeholder('-'),
             ]);
     }
 }
+

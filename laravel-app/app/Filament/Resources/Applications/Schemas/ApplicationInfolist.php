@@ -12,46 +12,53 @@ class ApplicationInfolist
         return $schema
             ->components([
                 TextEntry::make('student.name')
-                    ->label('Student'),
+                    ->label('الطالب'),
                 TextEntry::make('opportunity.title')
-                    ->label('Opportunity'),
+                    ->label('فرصة التدريب'),
                 TextEntry::make('company.name')
-                    ->label('Company'),
-                TextEntry::make('full_name_snapshot'),
+                    ->label('الشركة'),
+                TextEntry::make('full_name_snapshot')
+                    ->label('الاسم الكامل'),
                 TextEntry::make('phone_snapshot')
+                    ->label('رقم الهاتف')
                     ->placeholder('-'),
                 TextEntry::make('email_snapshot')
+                    ->label('البريد الإلكتروني')
                     ->placeholder('-'),
                 TextEntry::make('university_snapshot')
+                    ->label('الجامعة')
                     ->placeholder('-'),
                 TextEntry::make('major_snapshot')
+                    ->label('التخصص')
                     ->placeholder('-'),
                 TextEntry::make('level_snapshot')
+                    ->label('المستوى الدراسي')
                     ->placeholder('-'),
                 TextEntry::make('cv_file_path')
+                    ->label('السيرة الذاتية')
                     ->placeholder('-'),
                 TextEntry::make('notes')
+                    ->label('ملاحظات')
                     ->placeholder('-')
                     ->columnSpanFull(),
-                TextEntry::make('status'),
+                TextEntry::make('status')
+                    ->label('الحالة'),
                 TextEntry::make('submitted_at')
+                    ->label('تاريخ التقديم')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('reviewed_at')
+                    ->label('تاريخ المراجعة')
                     ->dateTime()
                     ->placeholder('-'),
-                TextEntry::make('reviewed_by')
-                    ->numeric()
+                TextEntry::make('reviewer.name')
+                    ->label('راجعه')
                     ->placeholder('-'),
                 TextEntry::make('review_notes')
+                    ->label('ملاحظات المراجعة')
                     ->placeholder('-')
                     ->columnSpanFull(),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
             ]);
     }
 }
+

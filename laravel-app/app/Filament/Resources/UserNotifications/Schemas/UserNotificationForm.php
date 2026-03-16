@@ -16,22 +16,37 @@ class UserNotificationForm
         return $schema
             ->components([
                 Select::make('user_id')
+                    ->label('المستخدم')
                     ->relationship('user', 'name')
                     ->required(),
                 TextInput::make('title')
+                    ->label('العنوان')
                     ->required(),
                 Textarea::make('body')
+                    ->label('المحتوى')
                     ->required()
                     ->columnSpanFull(),
-                TextInput::make('type')
+                Select::make('type')
+                    ->label('النوع')
                     ->required()
+                    ->options([
+                        'system' => 'نظام',
+                        'application' => 'طلب',
+                        'internship' => 'تدريب',
+                        'report' => 'تقرير',
+                        'schedule' => 'جدول',
+                    ])
                     ->default('system'),
-                TextInput::make('reference_type'),
+                TextInput::make('reference_type')
+                    ->label('نوع المرجع'),
                 TextInput::make('reference_id')
+                    ->label('معرف المرجع')
                     ->numeric(),
                 Toggle::make('is_read')
+                    ->label('مقروء')
                     ->required(),
-                DateTimePicker::make('read_at'),
+                DateTimePicker::make('read_at')
+                    ->label('تاريخ القراءة'),
             ]);
     }
 }

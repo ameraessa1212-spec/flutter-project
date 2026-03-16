@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class ApplicationsTable
@@ -16,47 +17,45 @@ class ApplicationsTable
         return $table
             ->columns([
                 TextColumn::make('student.name')
+                    ->label('الطالب')
                     ->searchable(),
                 TextColumn::make('opportunity.title')
+                    ->label('فرصة التدريب')
                     ->searchable(),
                 TextColumn::make('company.name')
-                    ->searchable(),
-                TextColumn::make('full_name_snapshot')
-                    ->searchable(),
-                TextColumn::make('phone_snapshot')
-                    ->searchable(),
-                TextColumn::make('email_snapshot')
-                    ->searchable(),
-                TextColumn::make('university_snapshot')
-                    ->searchable(),
-                TextColumn::make('major_snapshot')
-                    ->searchable(),
-                TextColumn::make('level_snapshot')
-                    ->searchable(),
-                TextColumn::make('cv_file_path')
+                    ->label('الشركة')
                     ->searchable(),
                 TextColumn::make('status')
-                    ->searchable(),
+                    ->label('الحالة')
+                    ->badge()
+                    ->searchable()
+                    ->color(fn (string $state): string => match ($state) {
+                        'approved' => 'success',
+                        'pending' => 'warning',
+                        default => 'danger',
+                    }),
                 TextColumn::make('submitted_at')
+                    ->label('تاريخ التقديم')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('reviewed_at')
+                    ->label('تاريخ المراجعة')
                     ->dateTime()
-                    ->sortable(),
-                TextColumn::make('reviewed_by')
-                    ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
+                    ->label('تاريخ الإنشاء')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label('الحالة')
+                    ->options([
+                        'pending' => 'قيد الانتظار',
+                        'approved' => 'مقبول',
+                        'rejected' => 'مرفوض',
+                    ]),
             ])
             ->recordActions([
                 ViewAction::make(),

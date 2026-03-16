@@ -21,9 +21,11 @@ class UserNotificationResource extends Resource
 {
     protected static ?string $model = UserNotification::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Communication';
+    protected static ?string $navigationLabel = 'الإشعارات';
+
+    protected static string|UnitEnum|null $navigationGroup = 'التواصل';
 
     protected static ?int $navigationSort = 1;
 
