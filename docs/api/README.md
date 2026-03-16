@@ -22,7 +22,8 @@ Mobile developers can explore every endpoint, understand request/response shapes
 Swagger UI lets you read the docs and fire real HTTP requests without leaving the browser.
 
 **Steps:**
-1. Start the Laravel backend: `cd laravel-app && composer run dev`
+1. Start the Laravel backend: `cd laravel-app && php artisan serve`  
+   *(Or run all services at once: `composer run dev`)*
 2. Open `docs/api/swagger-ui.html` in your browser  
    *(Chrome / Firefox / Edge — double-click the file or serve it via any HTTP server)*
 3. Click **"Authorize"** → paste your Bearer token (obtained from Login)
