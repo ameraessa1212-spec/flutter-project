@@ -14,9 +14,6 @@ use App\Policies\InternshipPolicy;
 use App\Policies\ReportPolicy;
 use App\Policies\UserNotificationPolicy;
 use App\Policies\UserSettingPolicy;
-use App\Services\Supabase\SupabaseUserResolver;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,10 +32,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Auth::viaRequest('supabase', function (Request $request) {
-            return app(SupabaseUserResolver::class)->resolve($request);
-        });
-
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(Internship::class, InternshipPolicy::class);
         Gate::policy(Report::class, ReportPolicy::class);

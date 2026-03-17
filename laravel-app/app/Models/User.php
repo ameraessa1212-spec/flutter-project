@@ -25,7 +25,6 @@ class User extends Authenticatable implements FilamentUser
      * @var list<string>
      */
     protected $fillable = [
-        'supabase_user_id',
         'first_name',
         'last_name',
         'name',
@@ -37,8 +36,6 @@ class User extends Authenticatable implements FilamentUser
         'status',
         'email_verified_at',
         'phone_verified_at',
-        'user_metadata',
-        'last_sign_in_at',
         'last_login_at',
     ];
 
@@ -50,7 +47,6 @@ class User extends Authenticatable implements FilamentUser
     protected $hidden = [
         'password',
         'remember_token',
-        'user_metadata',
     ];
 
     /**
@@ -63,9 +59,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
-            'last_sign_in_at' => 'datetime',
             'last_login_at' => 'datetime',
-            'user_metadata' => 'array',
             'password' => 'hashed',
         ];
     }

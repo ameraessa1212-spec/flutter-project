@@ -187,11 +187,9 @@ php artisan serve
 - http://127.0.0.1:8000
 
 ### تحقق سريع (Health Check)
-يوجد endpoint بسيط للتأكد من إعدادات Supabase/DB:
+يمكنك التأكد أن السيرفر يعمل بفتح الصفحة الرئيسية:
 
-- http://127.0.0.1:8000/api/supabase/health
-
-يُرجع JSON يوضح هل `SUPABASE_URL` مضبوط وما هو `DB_CONNECTION` و`DB_SCHEMA`.
+- http://127.0.0.1:8000
 
 ### تشغيل الكل مرة واحدة (اختياري)
 هذا المشروع يحتوي سكربت `composer run dev` لتشغيل عدة خدمات معًا (السيرفر + Vite + Queue + Logs):
@@ -229,22 +227,15 @@ php artisan list | findstr filament
 
 ---
 
-## 9) إعدادات Supabase (اختياري حسب استخدام المشروع)
+## 9) إعدادات التخزين (Storage)
 
-في `.env.example` توجد مفاتيح Supabase التالية:
+الرفع في الـ API يستخدم disk اسمه `public` (Laravel filesystem).
 
-```dotenv
-SUPABASE_URL=
-SUPABASE_PUBLISHABLE_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-SUPABASE_STORAGE_BUCKET=uploads
-SUPABASE_ENABLE_STORAGE=true
-SUPABASE_ENABLE_DATABASE=false
-SUPABASE_ENABLE_AUTH=false
+- تأكد من تنفيذ:
+
+```powershell
+php artisan storage:link
 ```
-
-- إذا كان المشروع يستخدم **Storage** على Supabase، عبّئ `SUPABASE_URL` و`SUPABASE_SERVICE_ROLE_KEY` وغيرها.
-- لا تضع مفاتيح حساسة داخل ريبو عام.
 
 ---
 

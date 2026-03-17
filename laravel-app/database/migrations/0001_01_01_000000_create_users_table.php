@@ -13,12 +13,19 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->uuid('supabase_user_id')->unique();
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
             $table->string('name')->nullable();
+            $table->string('username')->nullable()->unique();
             $table->string('email')->nullable()->unique();
+            $table->string('phone')->nullable()->unique();
             $table->timestampTz('email_verified_at')->nullable();
-            $table->json('user_metadata')->nullable();
-            $table->timestampTz('last_sign_in_at')->nullable();
+            $table->timestampTz('phone_verified_at')->nullable();
+            $table->string('password')->nullable();
+            $table->rememberToken();
+            $table->string('role', 32)->default('student')->index();
+            $table->string('status', 32)->default('pending')->index();
+            $table->timestampTz('last_login_at')->nullable();
             $table->timestamps();
         });
 

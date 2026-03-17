@@ -11,9 +11,6 @@ class UserInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('supabase_user_id')
-                    ->label('معرف Supabase')
-                    ->placeholder('-'),
                 TextEntry::make('name')
                     ->label('الاسم الكامل')
                     ->placeholder('-'),
@@ -22,14 +19,6 @@ class UserInfolist
                     ->placeholder('-'),
                 TextEntry::make('email_verified_at')
                     ->label('تاريخ تحقق البريد')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('user_metadata')
-                    ->label('البيانات الإضافية')
-                    ->placeholder('-')
-                    ->columnSpanFull(),
-                TextEntry::make('last_sign_in_at')
-                    ->label('آخر تسجيل دخول (Supabase)')
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('created_at')
