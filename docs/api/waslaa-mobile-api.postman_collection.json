@@ -1,0 +1,942 @@
+{
+  "info": {
+    "name": "Waslaa Mobile API",
+    "description": "Complete API collection for Waslaa Mobile App (v1).\n\nBase URL: {{base_url}}/api/mobile/v1\n\n## Setup\n1. Import this collection into Postman\n2. Create an environment with variable `base_url` = `http://localhost:8000`\n3. Register → verify OTP (use code `6666`) → login to get a token\n4. The `Login` request auto-saves the token to `{{token}}` via a test script\n5. All authenticated requests use `{{token}}` automatically\n\n## OTP Note\nDuring development the OTP is always **6666**.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "waslaa-mobile-api-v1"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Ahmed\",\n  \"last_name\": \"Al-Rashidi\",\n  \"username\": \"ahmed_rashidi\",\n  \"email\": \"ahmed@example.com\",\n  \"phone\": \"0501234567\",\n  \"password\": \"Secret123!\",\n  \"password_confirmation\": \"Secret123!\",\n  \"student_number\": \"2021001234\",\n  \"specialization_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "register"]
+            },
+            "description": "Register a new student account. Status will be `pending` until OTP is verified."
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"ahmed@example.com\",\n  \"otp\": \"6666\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/verify-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "verify-otp"]
+            },
+            "description": "Verify OTP to activate the account. Development OTP: 6666"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "  pm.environment.set('token', json.data.token);",
+                  "  console.log('Token saved:', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"ahmed@example.com\",\n  \"password\": \"Secret123!\",\n  \"device_name\": \"Postman\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "login"]
+            },
+            "description": "Login with email/username/phone. The token is auto-saved to {{token}} variable via test script."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "me"]
+            },
+            "description": "Get the currently authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "logout"]
+            },
+            "description": "Revoke the current device token."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout All Devices",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/logout-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "logout-all"]
+            },
+            "description": "Revoke all tokens for the authenticated user."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Password",
+      "item": [
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"ahmed@example.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/password/forgot",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "password", "forgot"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Reset OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"ahmed@example.com\",\n  \"otp\": \"6666\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/password/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "password", "verify"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"ahmed@example.com\",\n  \"otp\": \"6666\",\n  \"password\": \"NewSecret123!\",\n  \"password_confirmation\": \"NewSecret123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/auth/password/reset",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "auth", "password", "reset"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Content (Public)",
+      "item": [
+        {
+          "name": "About App",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/content/about-app",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "content", "about-app"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Terms & Conditions",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/content/terms",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "content", "terms"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Privacy Policy",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/content/privacy",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "content", "privacy"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "About Us",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/content/about-us",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "content", "about-us"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Ahmed\",\n  \"last_name\": \"Updated\",\n  \"phone\": \"0509876543\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"Secret123!\",\n  \"password\": \"NewSecret123!\",\n  \"password_confirmation\": \"NewSecret123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/profile/password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "profile", "password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Avatar",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": "",
+                  "description": "Image file (jpg, jpeg, png, webp — max 5 MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/profile/avatar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "profile", "avatar"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload CV",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "cv",
+                  "type": "file",
+                  "src": "",
+                  "description": "CV file (pdf, doc, docx — max 10 MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/profile/cv",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "profile", "cv"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Specializations",
+      "item": [
+        {
+          "name": "List Specializations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/specializations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "specializations"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "List Companies",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/companies?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "companies"],
+              "query": [
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Company",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/companies/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "companies", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Opportunities",
+      "item": [
+        {
+          "name": "List Opportunities",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/opportunities?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "opportunities"],
+              "query": [
+                { "key": "specialization_id", "value": "", "disabled": true },
+                { "key": "city", "value": "", "disabled": true },
+                { "key": "is_available", "value": "true", "disabled": true },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Opportunity",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/opportunities/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "opportunities", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Apply to Opportunity",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "full_name_snapshot", "value": "Ahmed Al-Rashidi", "type": "text" },
+                { "key": "phone_snapshot", "value": "0501234567", "type": "text" },
+                { "key": "email_snapshot", "value": "ahmed@example.com", "type": "text" },
+                { "key": "university_snapshot", "value": "King Saud University", "type": "text" },
+                { "key": "major_snapshot", "value": "Computer Science", "type": "text" },
+                { "key": "level_snapshot", "value": "Level 8", "type": "text" },
+                { "key": "notes", "value": "I am interested in this opportunity.", "type": "text" },
+                { "key": "cv", "type": "file", "src": "", "disabled": true, "description": "Optional CV (pdf, doc, docx — max 10 MB)" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/opportunities/1/applications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "opportunities", "1", "applications"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "List My Applications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/applications?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "applications"],
+              "query": [{ "key": "per_page", "value": "15" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Application",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/applications/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "applications", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw Application",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/applications/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "applications", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Internships",
+      "item": [
+        {
+          "name": "List My Internships",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/internships?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "internships"],
+              "query": [{ "key": "per_page", "value": "15" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current Internship",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/internships/current",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "internships", "current"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Internship",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/internships/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "internships", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Internship Timeline",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/internships/1/timeline",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "internships", "1", "timeline"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Internship Reports",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/internships/1/reports",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "internships", "1", "reports"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Report",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "report_type", "value": "field_report", "type": "text", "description": "field_report | research_paper | other" },
+                { "key": "title", "value": "Weekly Field Report - Week 3", "type": "text" },
+                { "key": "file", "type": "file", "src": "", "description": "PDF, DOC, DOCX — max 10 MB" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/internships/1/reports",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "internships", "1", "reports"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Get Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/reports/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "reports", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Report Download URL",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/reports/1/download",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "reports", "1", "download"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Report",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/reports/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "reports", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "List Chat Threads",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/chat/threads?per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "chat", "threads"],
+              "query": [{ "key": "per_page", "value": "20" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Chat Thread",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/chat/threads/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "chat", "threads", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Thread Messages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/chat/threads/1/messages?per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "chat", "threads", "1", "messages"],
+              "query": [{ "key": "per_page", "value": "20" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Hello, I have a question about the training schedule.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/chat/threads/1/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "chat", "threads", "1", "messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Attachment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "attachment", "type": "file", "src": "", "description": "Any file — max 15 MB" },
+                { "key": "message_type", "value": "image", "type": "text", "description": "image | file" },
+                { "key": "body", "value": "Please check this.", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/chat/threads/1/attachments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "chat", "threads", "1", "attachments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Thread as Read",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/chat/threads/1/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "chat", "threads", "1", "read"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/notifications?per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "notifications"],
+              "query": [{ "key": "per_page", "value": "20" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/notifications/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "notifications", "unread-count"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/notifications/1/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "notifications", "1", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/notifications/read-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "notifications", "read-all"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Discussion Schedules",
+      "item": [
+        {
+          "name": "List Discussion Schedules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/discussion-schedules?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "discussion-schedules"],
+              "query": [
+                { "key": "specialization_id", "value": "", "disabled": true },
+                { "key": "academic_term", "value": "", "disabled": true },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Discussion Schedule",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/discussion-schedules/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "discussion-schedules", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "settings"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": \"ar\",\n  \"push_notifications_enabled\": true,\n  \"email_notifications_enabled\": true,\n  \"chat_notifications_enabled\": true,\n  \"theme\": \"dark\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mobile/v1/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mobile", "v1", "settings"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

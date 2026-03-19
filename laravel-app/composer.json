@@ -7,11 +7,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+<<<<<<< HEAD
         "filament/filament": "^5.4",
         "firebase/php-jwt": "^7.0",
+=======
+        "filament/filament": "^5.3",
+>>>>>>> c152dbca8ec80659bb9d0c52a549c9aa175dd265
         "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.10.1",
-        "saeedvir/supabase": "^1.0"
+        "spatie/laravel-permission": "^7.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

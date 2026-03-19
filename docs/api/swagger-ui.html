@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Waslaa Mobile API Docs</title>
+    <meta name="description" content="Interactive API documentation for Waslaa Mobile App" />
+
+    <!-- Swagger UI CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css"
+    />
+
+    <style>
+      /* ── Reset & Base ── */
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #fafbfc;
+      }
+
+      /* ── Header Banner ── */
+      #banner {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+        color: #fff;
+        padding: 24px 32px 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      }
+
+      #banner .logo {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+      }
+
+      #banner .logo span { color: #60a5fa; }
+
+      #banner .subtitle {
+        font-size: 0.95rem;
+        opacity: 0.85;
+        margin-top: 2px;
+      }
+
+      #banner .badge {
+        margin-left: auto;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 20px;
+        padding: 4px 14px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      /* ── Info bar ── */
+      #info-bar {
+        background: #fffbeb;
+        border-bottom: 1px solid #fde68a;
+        padding: 10px 32px;
+        font-size: 0.85rem;
+        color: #92400e;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #info-bar strong { color: #78350f; }
+
+      /* ── Base URL selector ── */
+      #server-selector {
+        background: #f0f4ff;
+        border-bottom: 1px solid #c7d2fe;
+        padding: 10px 32px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+        color: #3730a3;
+      }
+
+      #server-selector label { font-weight: 600; }
+
+      #base-url-input {
+        flex: 1;
+        max-width: 500px;
+        padding: 6px 10px;
+        border: 1px solid #a5b4fc;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: #1e1b4b;
+        background: #fff;
+      }
+
+      #update-url-btn {
+        padding: 6px 14px;
+        background: #4f46e5;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
+      #update-url-btn:hover { background: #4338ca; }
+
+      /* ── Swagger UI tweaks ── */
+      .swagger-ui .topbar { display: none !important; }
+
+      .swagger-ui .info {
+        margin: 20px 0 0 !important;
+      }
+
+      .swagger-ui .scheme-container {
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      /* Tag headings */
+      .swagger-ui .opblock-tag {
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+      }
+
+      /* Authorize button */
+      .swagger-ui .btn.authorize {
+        background: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+      }
+
+      /* POST */
+      .swagger-ui .opblock.opblock-post { border-color: #22c55e !important; }
+      .swagger-ui .opblock.opblock-post .opblock-summary { background: #f0fdf4 !important; }
+
+      /* GET */
+      .swagger-ui .opblock.opblock-get { border-color: #3b82f6 !important; }
+      .swagger-ui .opblock.opblock-get .opblock-summary { background: #eff6ff !important; }
+
+      /* PATCH */
+      .swagger-ui .opblock.opblock-patch { border-color: #f59e0b !important; }
+      .swagger-ui .opblock.opblock-patch .opblock-summary { background: #fffbeb !important; }
+
+      /* DELETE */
+      .swagger-ui .opblock.opblock-delete { border-color: #ef4444 !important; }
+      .swagger-ui .opblock.opblock-delete .opblock-summary { background: #fef2f2 !important; }
+
+      #swagger-ui {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Banner -->
+    <div id="banner">
+      <div>
+        <div class="logo">Waslaa <span>API</span></div>
+        <div class="subtitle">Mobile API Documentation &amp; Testing Console</div>
+      </div>
+      <div class="badge">v1.0</div>
+    </div>
+
+    <!-- OTP note -->
+    <div id="info-bar">
+      💡 <strong>Development note:</strong>&nbsp;The OTP code is always&nbsp;<strong>6666</strong>&nbsp;in this environment.
+      &nbsp;|&nbsp; 🔐 Click <strong>"Authorize"</strong> button below to set your Bearer token after logging in.
+    </div>
+
+    <!-- Base URL selector -->
+    <div id="server-selector">
+      <label for="base-url-input">🌐 API Base URL:</label>
+      <input
+        id="base-url-input"
+        type="text"
+        value="http://localhost:8000/api/mobile/v1"
+        placeholder="https://your-domain.com/api/mobile/v1"
+      />
+      <button id="update-url-btn" onclick="updateBaseUrl()">Apply</button>
+      <span style="opacity:0.7; font-size:0.78rem">(updates the server URL used in Try-it-out requests)</span>
+    </div>
+
+    <!-- Swagger UI mount point -->
+    <div id="swagger-ui"></div>
+
+    <!-- Swagger UI JS -->
+    <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-standalone-preset.js"></script>
+
+    <script>
+      // Path to the OpenAPI spec (relative to this HTML file)
+      const SPEC_URL = "./openapi.yaml";
+
+      let ui;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        ui = SwaggerUIBundle({
+          url: SPEC_URL,
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          displayRequestDuration: true,
+          defaultModelsExpandDepth: 1,
+          defaultModelExpandDepth: 2,
+          docExpansion: "list",          // show all tags collapsed by default
+          filter: true,                  // search/filter bar
+          tryItOutEnabled: true,         // "Try it out" enabled by default
+          persistAuthorization: true,    // keep token after page refresh
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset,
+          ],
+          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+          layout: "StandaloneLayout",
+          requestInterceptor: (request) => {
+            // Dynamically replace the base URL with whatever the user typed
+            const base = document.getElementById("base-url-input").value.replace(/\/$/, "");
+            if (base) {
+              try {
+                const url = new URL(request.url);
+                // Only rewrite if it's still pointing at the original server
+                request.url = base + url.pathname + url.search + url.hash;
+              } catch (_) { /* leave as-is */ }
+            }
+            return request;
+          },
+        });
+      });
+
+      function updateBaseUrl() {
+        // Force a UI refresh so the new base URL is picked up
+        if (ui) {
+          const base = document.getElementById("base-url-input").value.replace(/\/$/, "");
+          // Patch the spec's servers array on the fly
+          ui.specActions.updateJsonSpec(
+            JSON.parse(JSON.stringify(ui.specSelectors.specJson().toJS
+              ? ui.specSelectors.specJson().toJS()
+              : ui.specSelectors.specJson()))
+          );
+          alert("Base URL updated to:\n" + base + "\n\nAll 'Try it out' requests will now use this URL.");
+        }
+      }
+    </script>
+  </body>
+</html>
