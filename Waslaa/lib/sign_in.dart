@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'home_page.dart';
 import 'sign_up.dart';
 import 'forgot_password.dart';
@@ -17,18 +20,46 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   bool _isArabic(String text) {
     if (text.isEmpty) return true;
     return RegExp(r'^[\u0600-\u06FF]').hasMatch(text);
   }
 
   // دالة تنفيذ تسجيل الدخول بعد التحقق
-  void _submitData() {
-    if (_formKey.currentState!.validate()) {
-      // إذا كانت البيانات صحيحة، انتقل للصفحة الرئيسية
+  Future<void> _submitData() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final session = context.read<AppSessionController>();
+    final success = await session.signIn(
+      login: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (success) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+      return;
+    }
+
+    final message = session.errorMessage;
+    if (message != null && message.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message, textAlign: TextAlign.center)),
       );
     }
   }
@@ -136,29 +167,45 @@ class _SignInPageState extends State<SignInPage> {
               const SizedBox(height: 30),
 
               // زر تسجيل الدخول
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: _submitData, // استدعاء دالة التحقق
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A5AE0),
-                    elevation: 5,
-                    shadowColor: const Color(0xFF6A5AE0).withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              Consumer<AppSessionController>(
+                builder: (context, session, child) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: session.isSigningIn ? null : _submitData,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A5AE0),
+                        elevation: 5,
+                        shadowColor: const Color(0xFF6A5AE0).withOpacity(0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child:
+                          session.isSigningIn
+                              ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                              : const Text(
+                                'تسجيل الدخول',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                     ),
-                  ),
-                  child: const Text(
-                    'تسجيل الدخول',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                  );
+                },
               ),
 
               const SizedBox(height: 25),

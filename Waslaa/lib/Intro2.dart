@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:Waslaa/core/session/app_session_controller.dart';
 // 1. تأكد من إزالة التعليق عن السطر التالي (يجب أن يكون الملف موجوداً بنفس الاسم)
 import 'welcome_screen.dart';
 
@@ -76,7 +79,11 @@ class Intro2 extends StatelessWidget {
               // 2. تعديل زر التالي ليفعل الانتقال
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await context.read<AppSessionController>().markOnboardingSeen();
+                    if (!context.mounted) {
+                      return;
+                    }
                     // أمر الانتقال إلى الصفحة التالية
                     Navigator.push(
                       context,

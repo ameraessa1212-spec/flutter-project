@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:Waslaa/const/color.dart';
+import 'package:provider/provider.dart';
+
+import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'package:Waslaa/home_page.dart';
+import 'package:Waslaa/welcome_screen.dart';
 import 'Intro1.dart';
 
 class SplachScreen extends StatefulWidget {
@@ -14,6 +17,7 @@ class SplachScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplachScreen> {
   double _opacity = 0;
   double _scale = 0.5;
+  Timer? _navigationTimer;
 
   @override
   void initState() {
@@ -29,16 +33,39 @@ class _SplashScreenState extends State<SplachScreen> {
       }
     });
 
-    // 2. التعديل الجوهري هنا: الانتقال إلى Intro1 بعد 4 ثوانٍ
-    Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder:
-                (_) => const Intro1(), // تم التوجيه إلى الصفحة التعريفية الأولى
-          ),
-        );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _bootstrapApp();
+    });
+  }
+
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _bootstrapApp() async {
+    final session = context.read<AppSessionController>();
+    final destination = await session.bootstrap();
+
+    if (!mounted) {
+      return;
+    }
+
+    _navigationTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) {
+        return;
       }
+
+      final page = switch (destination) {
+        AppLaunchDestination.home => const HomePage(),
+        AppLaunchDestination.welcome => const WelcomeScreen(),
+        AppLaunchDestination.onboarding => const Intro1(),
+      };
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => page),
+      );
     });
   }
 

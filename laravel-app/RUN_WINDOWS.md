@@ -2,7 +2,7 @@
 
 هذا الدليل يشرح تشغيل مشروع Laravel الموجود داخل مجلد `laravel-app` على نظام Windows خطوة بخطوة.
 
-> ملاحظة: هذا المشروع مضبوط افتراضيًا على قاعدة بيانات PostgreSQL (Supabase) حسب `.env.example`.
+> ملاحظة: هذا المشروع مضبوط افتراضيًا على SQLite حسب `.env.example`.
 
 ---
 
@@ -24,8 +24,8 @@
 - https://nodejs.org/
 
 5) (حسب خيار قاعدة البيانات)
-- **بدون تثبيت DB محليًا**: استخدم **Supabase** (مفضل لسهولة البداية).
-- أو **PostgreSQL محلي** إذا تفضل تشغيل DB على جهازك.
+- **SQLite** (مفضل للتشغيل المحلي السريع).
+- أو **PostgreSQL** إذا تفضل تشغيل DB على جهازك.
 
 ### تحقق سريع من الإصدارات
 افتح PowerShell (أو Windows Terminal) ثم نفّذ:
@@ -68,25 +68,23 @@ php artisan key:generate
 
 ### 3.3 إعداد قاعدة البيانات (اختر مسارًا واحدًا)
 
-#### الخيار A (مفضل): Supabase (Postgres سحابي)
+#### الخيار A (مفضل): SQLite
 
-1) أنشئ مشروع في Supabase.
-2) من إعدادات قاعدة البيانات في Supabase ستحصل على:
-   - **Project Ref**
-   - **Database Password**
-   - **Region**
-3) افتح `.env` وعدّل/املأ القيم التالية (أمثلة):
+1) تأكد من وجود ملف قاعدة البيانات:
+
+```powershell
+type nul > database\database.sqlite
+```
+
+2) افتح `.env` وعدّل القيم التالية:
 
 ```dotenv
-DB_CONNECTION=pgsql
-DB_URL=postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-DB-PASSWORD]@[YOUR-REGION].pooler.supabase.com:6543/postgres
-DB_SCHEMA=laravel
-DB_SSLMODE=require
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
 ```
 
 ملاحظات مهمة:
-- ستحتاج امتدادات PHP الخاصة بـ Postgres: `pdo_pgsql` و `pgsql`.
-- إذا واجهت مشكلة SSL، ابدأ بالقيمة الافتراضية `DB_SSLMODE=require` كما في المثال.
+- ستحتاج امتدادات PHP الخاصة بـ SQLite: `pdo_sqlite` و `sqlite3`.
 
 #### الخيار B: PostgreSQL محلي على جهازك
 
@@ -245,7 +243,7 @@ php artisan storage:link
 - تأكد من إضافة مسارات PHP وComposer إلى PATH.
 - أغلق وافتح Terminal بعد تعديل PATH.
 
-### B) أخطاء Extensions (مثل pgsql / pdo_pgsql / openssl)
+### B) أخطاء Extensions (مثل sqlite3 / pdo_sqlite / pgsql / pdo_pgsql / openssl)
 1) افتح ملف `php.ini` (مكانه يعتمد على طريقة تثبيت PHP).
 2) فعّل الأسطر التالية (مثال):
 
@@ -253,6 +251,8 @@ php artisan storage:link
 extension=openssl
 extension=curl
 extension=mbstring
+extension=pdo_sqlite
+extension=sqlite3
 extension=pdo_pgsql
 extension=pgsql
 extension=fileinfo
@@ -271,7 +271,7 @@ php -m | findstr pgsql
 extension=zip
 ```
 
-### D) مشكلة اتصال Supabase عبر DB_URL
+### D) مشكلة اتصال PostgreSQL عبر DB_URL
 - تأكد أن `DB_URL` مكتوب بصيغة صحيحة.
 - تأكد من كلمة المرور/المعرف/المنطقة.
 - تأكد أن `pdo_pgsql` مفعّل.
