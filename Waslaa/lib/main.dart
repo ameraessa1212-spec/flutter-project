@@ -5,7 +5,17 @@ import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/core/api/api_client.dart';
 import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'package:Waslaa/core/session/session_storage.dart';
+import 'package:Waslaa/features/applications/repositories/application_repository.dart';
 import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
+import 'package:Waslaa/features/chat/repositories/chat_repository.dart';
+import 'package:Waslaa/features/content/repositories/content_repository.dart';
+import 'package:Waslaa/features/discussion_schedules/repositories/discussion_schedule_repository.dart';
+import 'package:Waslaa/features/internships/repositories/internship_repository.dart';
+import 'package:Waslaa/features/notifications/repositories/notification_repository.dart';
+import 'package:Waslaa/features/opportunities/repositories/opportunity_repository.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
+import 'package:Waslaa/features/reports/repositories/report_repository.dart';
+import 'package:Waslaa/features/settings/repositories/settings_repository.dart';
 import 'package:Waslaa/splach_screen.dart';
 
 void main() {
@@ -29,6 +39,46 @@ class MyApp extends StatelessWidget {
         Provider(
           create:
               (context) => AuthRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              OpportunityRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              ApplicationRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              InternshipRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              ReportRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              ChatRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              NotificationRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              ProfileRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              SettingsRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              DiscussionScheduleRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              ContentRepository(apiClient: context.read<ApiClient>()),
         ),
         ChangeNotifierProvider(
           create:

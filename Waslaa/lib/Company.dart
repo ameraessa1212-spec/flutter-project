@@ -1,7 +1,11 @@
 // ignore: file_names
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/company_details.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/opportunities/models/opportunity.dart';
+import 'package:Waslaa/features/opportunities/repositories/opportunity_repository.dart';
 
 class CompanyPage extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -13,113 +17,67 @@ class CompanyPage extends StatefulWidget {
 }
 
 class _CompanyPageState extends State<CompanyPage> {
-  final List<Map<String, dynamic>> allOpportunities = [
-    {
-      'title': 'تدريب ميداني في خدمات الاتصالات',
-      'company': 'هاتف ليبيا',
-      'image': 'assets/images/phone_libya.JPG',
-      'desc':
-          'فرصة تدريب ميداني للطلاب داخل أقسام الهاتف الثابت وخدمات الإنترنت.',
-      'isAvailable': true,
-      'specialization': 'اتصالات',
-      'location': 'طرابلس',
-      'duration': 'شهرين',
-    },
-    {
-      'title': 'تدريب في تشغيل الشبكات',
-      'company': 'المدار الجديد',
-      'image': 'assets/images/madar.JPG',
-      'desc':
-          'تدريب داخل أقسام تشغيل الشبكات وخدمة العملاء للطلبة المهتمين بمجال الاتصالات.',
-      'isAvailable': false,
-      'specialization': 'اتصالات',
-      'location': 'بنغازي',
-      'duration': 'شهر',
-    },
-    {
-      'title': 'تدريب في أنظمة التحكم الصناعي',
-      'company': 'الواحة للنفط',
-      'image': 'assets/images/waha.JPG',
-      'desc':
-          'فرصة مميزة للتدريب في مجالات التحكم الآلي والأنظمة الصناعية داخل الشركة.',
-      'isAvailable': true,
-      'specialization': 'تحكم آلي',
-      'location': 'سرت',
-      'duration': '3 أشهر',
-    },
-    {
-      'title': 'تدريب في الدعم الفني والشبكات',
-      'company': 'ليبيانا',
-      'image': 'assets/images/libyana.JPG',
-      'desc':
-          'تدريب ميداني موجه لطلبة الاتصالات وتقنية المعلومات داخل أقسام الدعم الفني.',
-      'isAvailable': true,
-      'specialization': 'اتصالات',
-      'location': 'طرابلس',
-      'duration': 'شهرين',
-    },
-    {
-      'title': 'تدريب في أنظمة التشغيل والتحكم',
-      'company': 'مليته للنفط',
-      'image': 'assets/images/oil.JPG',
-      'desc':
-          'برنامج تدريب ميداني للطلاب المهتمين بمجال التحكم الآلي داخل قطاع النفط والغاز.',
-      'isAvailable': false,
-      'specialization': 'تحكم آلي',
-      'location': 'مليته',
-      'duration': 'شهرين',
-    },
-    {
-      'title': 'تدريب في الأنظمة المصرفية',
-      'company': 'مصرف الجمهورية',
-      'image': 'assets/images/bank.jpg',
-      'desc':
-          'فرصة تدريب للطلاب في مجالات الحاسب الآلي والأنظمة البنكية والدعم التقني.',
-      'isAvailable': false,
-      'specialization': 'حاسب آلي',
-      'location': 'طرابلس',
-      'duration': 'شهر',
-    },
-  ];
-
-  List<Map<String, dynamic>> displayedOpportunities = [];
-  String selectedSpecialization = "الكل"; // التعديل هنا ليكون التخصص
-  String searchQuery = "";
+  List<Opportunity> _opportunities = [];
+  List<Opportunity> _filtered = [];
+  bool _isLoading = true;
+  String? _error;
+  String _searchQuery = '';
+  String _selectedSpec = 'الكل';
 
   @override
   void initState() {
     super.initState();
-    displayedOpportunities = allOpportunities;
+    _loadOpportunities();
+  }
+
+  Future<void> _loadOpportunities() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final repo = context.read<OpportunityRepository>();
+      final list = await repo.getOpportunities(perPage: 50);
+      if (!mounted) return;
+      setState(() {
+        _opportunities = list;
+        _filtered = list;
+        _isLoading = false;
+      });
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message ?? 'حدث خطأ أثناء تحميل الفرص';
+        _isLoading = false;
+      });
+    }
   }
 
   void _applyFilters() {
     setState(() {
-      displayedOpportunities =
-          allOpportunities.where((item) {
-            final title = item['title'].toString().toLowerCase();
-            final company = item['company'].toString().toLowerCase();
+      _filtered = _opportunities.where((item) {
+        final title = item.title.toLowerCase();
+        final company = (item.company?.name ?? '').toLowerCase();
+        final spec = item.specialization?.name ?? '';
 
-            final matchesSearch =
-                title.contains(searchQuery.toLowerCase()) ||
-                company.contains(searchQuery.toLowerCase());
+        final matchesSearch = _searchQuery.isEmpty ||
+            title.contains(_searchQuery.toLowerCase()) ||
+            company.contains(_searchQuery.toLowerCase());
 
-            // التعديل هنا للفلترة حسب التخصص
-            final matchesSpec =
-                selectedSpecialization == "الكل" ||
-                item['specialization'] == selectedSpecialization;
+        final matchesSpec =
+            _selectedSpec == 'الكل' || spec == _selectedSpec;
 
-            return matchesSearch && matchesSpec;
-          }).toList();
+        return matchesSearch && matchesSpec;
+      }).toList();
     });
   }
 
-  // دالة لجلب قائمة التخصصات الفريدة
-  List<String> get specializationFilters {
-    final specs =
-        allOpportunities
-            .map((e) => e['specialization'].toString())
-            .toSet()
-            .toList();
+  List<String> get _specializationFilters {
+    final specs = _opportunities
+        .map((e) => e.specialization?.name ?? '')
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
     specs.sort();
     return ['الكل', ...specs];
   }
@@ -138,7 +96,7 @@ class _CompanyPageState extends State<CompanyPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "فرص التدريب",
+              'فرص التدريب',
               style: TextStyle(
                 color: primarycolor,
                 fontWeight: FontWeight.bold,
@@ -147,7 +105,7 @@ class _CompanyPageState extends State<CompanyPage> {
             ),
             const SizedBox(height: 2),
             Text(
-              "استعرض الفرص المتاحة حسب التخصص",
+              'استعرض الفرص المتاحة حسب التخصص',
               style: TextStyle(
                 color: Colors.black.withOpacity(0.45),
                 fontSize: 11,
@@ -163,38 +121,55 @@ class _CompanyPageState extends State<CompanyPage> {
             const SizedBox(height: 18),
             _buildSearchAndFilterRow(),
             const SizedBox(height: 18),
-            Expanded(
-              child:
-                  displayedOpportunities.isEmpty
-                      ? const _EmptyState()
-                      : GridView.builder(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.74,
-                              crossAxisSpacing: 14,
-                              mainAxisSpacing: 16,
-                            ),
-                        itemCount: displayedOpportunities.length,
-                        itemBuilder: (context, index) {
-                          final item = displayedOpportunities[index];
-                          return _buildOpportunityCard(
-                            context,
-                            title: item['title'],
-                            company: item['company'],
-                            imagePath: item['image'],
-                            desc: item['desc'],
-                            isAvailable: item['isAvailable'],
-                            specialization: item['specialization'],
-                            location: item['location'],
-                            duration: item['duration'],
-                          );
-                        },
-                      ),
+            Expanded(child: _buildBody()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 12),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadOpportunities,
+              child: const Text('إعادة المحاولة'),
             ),
           ],
         ),
+      );
+    }
+    if (_filtered.isEmpty) {
+      return const _EmptyState();
+    }
+    return RefreshIndicator(
+      onRefresh: _loadOpportunities,
+      child: GridView.builder(
+        padding: const EdgeInsets.only(bottom: 20),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.74,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: _filtered.length,
+        itemBuilder: (context, index) {
+          return _buildOpportunityCard(context, _filtered[index]);
+        },
       ),
     );
   }
@@ -219,25 +194,19 @@ class _CompanyPageState extends State<CompanyPage> {
           ),
           child: PopupMenuButton<String>(
             borderRadius: BorderRadius.circular(16),
-            icon: Icon(
-              Icons.filter_list_rounded,
-              color: primarycolor,
-              size: 24,
-            ),
-            onSelected: (String newValue) {
-              selectedSpecialization = newValue; // تحديث التخصص
+            icon: Icon(Icons.filter_list_rounded, color: primarycolor, size: 24),
+            onSelected: (value) {
+              _selectedSpec = value;
               _applyFilters();
             },
-            itemBuilder:
-                (BuildContext context) =>
-                    specializationFilters // عرض التخصصات
-                        .map(
-                          (spec) => PopupMenuItem<String>(
-                            value: spec,
-                            child: Text(spec, textAlign: TextAlign.right),
-                          ),
-                        )
-                        .toList(),
+            itemBuilder: (context) => _specializationFilters
+                .map(
+                  (spec) => PopupMenuItem<String>(
+                    value: spec,
+                    child: Text(spec, textAlign: TextAlign.right),
+                  ),
+                )
+                .toList(),
           ),
         ),
         const SizedBox(width: 12),
@@ -259,11 +228,11 @@ class _CompanyPageState extends State<CompanyPage> {
             child: TextField(
               textAlign: TextAlign.right,
               onChanged: (value) {
-                searchQuery = value;
+                _searchQuery = value;
                 _applyFilters();
               },
               decoration: InputDecoration(
-                hintText: "ابحث عن فرصة أو شركة...",
+                hintText: 'ابحث عن فرصة أو شركة...',
                 hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
                 border: InputBorder.none,
                 suffixIcon: Icon(Icons.search_rounded, color: primarycolor),
@@ -279,34 +248,23 @@ class _CompanyPageState extends State<CompanyPage> {
     );
   }
 
-  Widget _buildOpportunityCard(
-    BuildContext context, {
-    required String title,
-    required String company,
-    required String imagePath,
-    required String desc,
-    required bool isAvailable,
-    required String specialization,
-    required String location,
-    required String duration,
-  }) {
+  Widget _buildOpportunityCard(BuildContext context, Opportunity item) {
+    final company = item.company;
+    final companyName = company?.name ?? '';
+    final imagePath = item.imagePath;
+    final location = item.locationText ?? item.city ?? '';
+    final duration = item.durationText ?? '';
+    final spec = item.specialization?.name ?? '';
+
     return InkWell(
       borderRadius: BorderRadius.circular(22),
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (context) => CompanyDetailsPage(
-                  opportunityTitle: title,
-                  companyName: company,
-                  description: desc,
-                  logoPath: imagePath,
-                  isAvailable: isAvailable,
-                  specialization: specialization,
-                  location: location,
-                  duration: duration,
-                ),
+            builder: (context) => CompanyDetailsPage(
+              opportunity: item,
+            ),
           ),
         );
       },
@@ -331,7 +289,21 @@ class _CompanyPageState extends State<CompanyPage> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: Image.asset(imagePath, fit: BoxFit.cover),
+                      child: imagePath != null
+                          ? Image.network(
+                              imagePath,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: primarycolor.withOpacity(0.1),
+                                child: Icon(Icons.business,
+                                    size: 40, color: primarycolor),
+                              ),
+                            )
+                          : Container(
+                              color: primarycolor.withOpacity(0.1),
+                              child: Icon(Icons.business,
+                                  size: 40, color: primarycolor),
+                            ),
                     ),
                     Positioned.fill(
                       child: Container(
@@ -352,23 +324,19 @@ class _CompanyPageState extends State<CompanyPage> {
                       left: 10,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color:
-                              isAvailable
-                                  ? Colors.green.withOpacity(0.18)
-                                  : Colors.red.withOpacity(0.18),
+                          color: item.isAvailable
+                              ? Colors.green.withOpacity(0.18)
+                              : Colors.red.withOpacity(0.18),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          isAvailable ? "متاح" : "مغلق",
+                          item.isAvailable ? 'متاح' : 'مغلق',
                           style: TextStyle(
-                            color:
-                                isAvailable
-                                    ? Colors.greenAccent
-                                    : Colors.redAccent,
+                            color: item.isAvailable
+                                ? Colors.greenAccent
+                                : Colors.redAccent,
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
@@ -383,7 +351,7 @@ class _CompanyPageState extends State<CompanyPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            company,
+                            companyName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.right,
@@ -395,7 +363,7 @@ class _CompanyPageState extends State<CompanyPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            title,
+                            item.title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.right,
@@ -415,11 +383,18 @@ class _CompanyPageState extends State<CompanyPage> {
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                 child: Column(
                   children: [
-                    _infoRow(icon: Icons.school_outlined, text: specialization),
-                    const SizedBox(height: 6),
-                    _infoRow(icon: Icons.location_on_outlined, text: location),
-                    const SizedBox(height: 6),
-                    _infoRow(icon: Icons.access_time_rounded, text: duration),
+                    if (spec.isNotEmpty)
+                      _infoRow(icon: Icons.school_outlined, text: spec),
+                    if (location.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      _infoRow(
+                          icon: Icons.location_on_outlined, text: location),
+                    ],
+                    if (duration.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      _infoRow(
+                          icon: Icons.access_time_rounded, text: duration),
+                    ],
                   ],
                 ),
               ),
@@ -460,23 +435,19 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off_rounded,
-            size: 52,
-            color: Colors.grey.withOpacity(0.7),
-          ),
+          Icon(Icons.search_off_rounded,
+              size: 52, color: Colors.grey.withOpacity(0.7)),
           const SizedBox(height: 12),
           const Text(
-            "لا توجد فرص مطابقة",
+            'لا توجد فرص مطابقة',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black54,
-            ),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54),
           ),
           const SizedBox(height: 6),
           const Text(
-            "جرّب تغيير البحث أو اختيار تخصص مختلف",
+            'جرّب تغيير البحث أو اختيار تخصص مختلف',
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],

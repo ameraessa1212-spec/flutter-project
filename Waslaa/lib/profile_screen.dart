@@ -4,15 +4,45 @@ import 'package:Waslaa/about_app_page.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/core/session/app_session_controller.dart';
+import 'package:Waslaa/features/profile/models/user_profile.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 import 'package:Waslaa/terms_and_conditions_page.dart';
 import 'package:Waslaa/discussion_schedule.dart';
 import 'package:Waslaa/settings_page.dart';
 import 'package:Waslaa/sign_in.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final VoidCallback onOpenCompanies;
 
   const ProfileScreen({super.key, required this.onOpenCompanies});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserProfile? _profile;
+  bool _loadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final repo = context.read<ProfileRepository>();
+      final p = await repo.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _profile = p;
+        _loadingProfile = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingProfile = false);
+    }
+  }
 
   // دالة لإظهار رسالة تأكيد تسجيل الخروج
   void _showLogoutConfirmation(BuildContext context) {
@@ -66,6 +96,14 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sessionUser = context.watch<AppSessionController>().currentUser;
+    final displayName = _profile?.name ?? sessionUser?.name ?? 'مستخدم';
+    final displayPhone = _profile?.phone ?? sessionUser?.phone ?? '';
+    final displayRole = (_profile?.role == 'student' || sessionUser?.role == 'student')
+        ? 'طالب تدريب ميداني'
+        : (_profile?.role ?? sessionUser?.role ?? '');
+    final avatarPath = _profile?.studentProfile?.profileImagePath;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8FC),
       body: SafeArea(
@@ -106,37 +144,49 @@ class ProfileScreen extends StatelessWidget {
                         color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: 34,
-                      ),
+                      child: avatarPath != null
+                          ? ClipOval(
+                              child: Image.network(
+                                avatarPath,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 34,
+                                ),
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 34,
+                            ),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "شدى الشريف",
-                            style: TextStyle(
+                            displayName,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 6),
+                          const SizedBox(height: 6),
                           Text(
-                            "0942501318",
-                            style: TextStyle(
+                            displayPhone,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            "طالب تدريب ميداني",
-                            style: TextStyle(
+                            displayRole,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                             ),

@@ -1,9 +1,15 @@
-import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/reports/models/report.dart';
+import 'package:Waslaa/features/reports/repositories/report_repository.dart';
 
 class ReportsPage extends StatefulWidget {
-  const ReportsPage({super.key});
+  final int? internshipId;
+
+  const ReportsPage({super.key, this.internshipId});
 
   @override
   State<ReportsPage> createState() => _ReportsPageState();
@@ -12,6 +18,33 @@ class ReportsPage extends StatefulWidget {
 class _ReportsPageState extends State<ReportsPage> {
   final Color primaryColor = primarycolor;
   List<PlatformFile> selectedFiles = [];
+  List<Report> _submittedReports = [];
+  bool _isLoading = false;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.internshipId != null) {
+      _loadReports();
+    }
+  }
+
+  Future<void> _loadReports() async {
+    if (widget.internshipId == null) return;
+    setState(() => _isLoading = true);
+    try {
+      final repo = context.read<ReportRepository>();
+      final list = await repo.getReports(widget.internshipId!);
+      if (!mounted) return;
+      setState(() {
+        _submittedReports = list;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _pickFiles() async {
     if (selectedFiles.length >= 2) {
@@ -46,13 +79,57 @@ class _ReportsPageState extends State<ReportsPage> {
     });
   }
 
-  void _submitFiles() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("تم إرسال الملفات بنجاح"),
-        backgroundColor: Colors.green,
-      ),
-    );
+  Future<void> _submitFiles() async {
+    if (selectedFiles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى اختيار ملف أولاً')),
+      );
+      return;
+    }
+
+    if (widget.internshipId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم إرسال الملفات بنجاح'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final repo = context.read<ReportRepository>();
+      for (final file in selectedFiles) {
+        if (file.path == null) continue;
+        await repo.submitReport(
+          internshipId: widget.internshipId!,
+          title: file.name,
+          reportType: 'weekly',
+          filePath: file.path!,
+          fileName: file.name,
+        );
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم إرسال التقارير بنجاح'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      setState(() => selectedFiles.clear());
+      _loadReports();
+    } on DioException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? 'حدث خطأ أثناء الإرسال'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -104,10 +181,24 @@ class _ReportsPageState extends State<ReportsPage> {
                       child: _actionButton(
                         "إرسال الملفات",
                         primaryColor,
-                        _submitFiles,
+                        _isSubmitting ? null : _submitFiles,
                       ),
                     ),
                   ],
+                ),
+              ],
+              if (_isLoading) ...[
+                const SizedBox(height: 18),
+                const Center(child: CircularProgressIndicator()),
+              ] else if (_submittedReports.isNotEmpty) ...[
+                const SizedBox(height: 22),
+                const _SectionTitle(title: "التقارير المرفوعة"),
+                const SizedBox(height: 10),
+                ..._submittedReports.map(
+                  (report) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _buildSubmittedReportCard(report),
+                  ),
                 ),
               ],
             ],
@@ -376,7 +467,104 @@ class _ReportsPageState extends State<ReportsPage> {
     );
   }
 
-  Widget _actionButton(String label, Color color, VoidCallback onTap) {
+  Widget _buildSubmittedReportCard(Report report) {
+    final statusColor = report.status == 'approved'
+        ? Colors.green
+        : report.status == 'rejected'
+            ? Colors.red
+            : Colors.orange;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: primaryColor.withOpacity(0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              Icons.description_rounded,
+              color: primaryColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  report.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  report.submittedAt != null
+                      ? 'تم الرفع: ${report.submittedAt!.split('T').first}'
+                      : 'معلق',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.black.withOpacity(0.50),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _reportStatusLabel(report.status),
+              style: TextStyle(
+                color: statusColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _reportStatusLabel(String status) {
+    switch (status) {
+      case 'approved':
+        return 'مقبول';
+      case 'rejected':
+        return 'مرفوض';
+      case 'pending':
+        return 'قيد المراجعة';
+      default:
+        return status;
+    }
+  }
+
+  Widget _actionButton(String label, Color color, VoidCallback? onTap) {
     return SizedBox(
       height: 48,
       child: ElevatedButton(

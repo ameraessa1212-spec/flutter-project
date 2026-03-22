@@ -1,66 +1,173 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:Waslaa/features/notifications/models/notification_model.dart';
+import 'package:Waslaa/features/notifications/repositories/notification_repository.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Map<String, String>> notifications = [
-      {
-        'date': '2025/12/12',
-        'content':
-            'لقد تم قبولك في شركة النور للتدريب الميداني. يرجى التواصل على الرقم 0912345678 لاستكمال الإجراءات.',
-      },
-      {
-        'date': '2025/12/10',
-        'content': 'تم تحديث جدول مواعيد المناقشات لدفعة خريف 2025.',
-      },
-    ];
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
 
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  List<AppNotification> _notifications = [];
+  bool _isLoading = true;
+  String? _error;
+
+  static const Color primary = Color(0xFF6A5AE0);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final repo = context.read<NotificationRepository>();
+      final list = await repo.getNotifications(perPage: 30);
+      if (!mounted) return;
+      setState(() {
+        _notifications = list;
+        _isLoading = false;
+      });
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message ?? 'حدث خطأ أثناء تحميل الإشعارات';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _markRead(AppNotification notification) async {
+    if (notification.isRead) return;
+    try {
+      final repo = context.read<NotificationRepository>();
+      await repo.markRead(notification.id);
+      if (!mounted) return;
+      setState(() {
+        final idx = _notifications.indexWhere((n) => n.id == notification.id);
+        if (idx >= 0) {
+          _notifications[idx] = notification.copyWith(isRead: true);
+        }
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _markAllRead() async {
+    try {
+      final repo = context.read<NotificationRepository>();
+      await repo.markAllRead();
+      if (!mounted) return;
+      setState(() {
+        _notifications = _notifications
+            .map((n) => n.copyWith(isRead: true))
+            .toList();
+      });
+    } on DioException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'حدث خطأ')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        toolbarHeight: 80, // زيادة ارتفاع التولبار لإنزال العنوان لأسفل
-        title: Padding(
-          padding: const EdgeInsets.only(top: 20), // إزاحة العنوان للأسفل
-          child: const Text(
+        toolbarHeight: 80,
+        title: const Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: Text(
             'الإشعارات',
             style: TextStyle(
               fontFamily: 'Cairo',
-              fontSize: 15, // حجم الخط المطلوب 15
+              fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF6A5AE0),
+              color: primary,
             ),
           ),
         ),
         leading: Padding(
-          padding: const EdgeInsets.only(top: 20), // موازنة زر الرجوع مع العنوان
+          padding: const EdgeInsets.only(top: 20),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF6A5AE0), size: 18),
+            icon: const Icon(Icons.arrow_back_ios_new, color: primary, size: 18),
             onPressed: () => Navigator.pop(context),
           ),
         ),
+        actions: [
+          if (_notifications.any((n) => !n.isRead))
+            Padding(
+              padding: const EdgeInsets.only(top: 20, right: 8),
+              child: TextButton(
+                onPressed: _markAllRead,
+                child: const Text(
+                  'قراءة الكل',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 12,
+                    color: primary,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
-      body: notifications.isEmpty
-          ? _buildEmptyState()
-          : _buildNotificationsList(notifications),
+      body: _buildBody(),
     );
   }
 
-Widget _buildEmptyState() {
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 12),
+            Text(_error!, textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadNotifications,
+              child: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_notifications.isEmpty) return _buildEmptyState();
+    return RefreshIndicator(
+      onRefresh: _loadNotifications,
+      child: _buildNotificationsList(),
+    );
+  }
+
+  Widget _buildEmptyState() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // عرض الصورة المطلوبة من مجلد assets/images
             Image.asset(
               'assets/images/notifications.png',
-              width: 140, // حجم مناسب للصورة في المنتصف
+              width: 140,
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 30),
@@ -68,7 +175,7 @@ Widget _buildEmptyState() {
               'لا توجد إشعارات حاليًا',
               style: TextStyle(
                 fontFamily: 'Cairo',
-                fontSize: 14, // حجم خط متناسق مع طلبك السابق
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF4A4A4A),
               ),
@@ -79,11 +186,10 @@ Widget _buildEmptyState() {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Cairo',
-                fontSize: 12, // خط أصغر قليلاً للوصف
+                fontSize: 12,
                 color: Colors.grey,
               ),
             ),
-            // مساحة تعويضية أسفل العناصر لضمان توسطها الحقيقي
             const SizedBox(height: 60),
           ],
         ),
@@ -91,90 +197,116 @@ Widget _buildEmptyState() {
     );
   }
 
-  Widget _buildNotificationsList(List<Map<String, String>> notifications) {
+  Widget _buildNotificationsList() {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: notifications.length,
-      separatorBuilder: (context, index) => Divider(
-        color: const Color(0xFF6A5AE0).withOpacity(0.1),
+      itemCount: _notifications.length,
+      separatorBuilder: (_, __) => Divider(
+        color: primary.withOpacity(0.1),
         thickness: 1,
         height: 30,
       ),
       itemBuilder: (context, index) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // التاريخ بخط صغير جداً
-            Text(
-              notifications[index]['date']!,
-              style: const TextStyle(
-                fontSize: 9,
-                color: Colors.grey,
-                fontFamily: 'Cairo',
+        final n = _notifications[index];
+        return GestureDetector(
+          onTap: () => _markRead(n),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _formatDate(n.createdAt),
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: Colors.grey,
+                  fontFamily: 'Cairo',
+                ),
               ),
-            ),
-            
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // محتوى الإشعار بحجم خط أصغر (11)
-                  Expanded(
-                    child: Text(
-                      notifications[index]['content']!,
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        fontSize: 11, // تصغير حجم محتوى الإشعار
-                        height: 1.5,
-                        color: Color(0xFF4A4A4A),
-                        fontFamily: 'Cairo',
-                        fontWeight: FontWeight.w500,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            n.title,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: n.isRead
+                                  ? FontWeight.normal
+                                  : FontWeight.bold,
+                              color: const Color(0xFF4A4A4A),
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            n.body,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              height: 1.5,
+                              color: Color(0xFF4A4A4A),
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  
-                  const SizedBox(width: 10),
-
-                  // الأيقونة الدائرية المصغرة
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6A5AE0).withOpacity(0.08),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.mail_outline,
-                          color: Color(0xFF6A5AE0),
-                          size: 16,
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        child: Container(
-                          width: 7,
-                          height: 7,
+                    const SizedBox(width: 10),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0019B7),
+                            color: primary.withOpacity(0.08),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.2),
+                          ),
+                          child: const Icon(
+                            Icons.mail_outline,
+                            color: primary,
+                            size: 16,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        if (!n.isRead)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0019B7),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.white, width: 1.2),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
-} 
+
+  String _formatDate(String? isoDate) {
+    if (isoDate == null) return '';
+    try {
+      final dt = DateTime.parse(isoDate).toLocal();
+      return '${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return isoDate.split('T').first;
+    }
+  }
+}

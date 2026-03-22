@@ -1,13 +1,18 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/chat/repositories/chat_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  final int? threadId;
+
+  const ChatPage({super.key, this.threadId});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -17,14 +22,62 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<Map<String, dynamic>> _messages = [
-    {
-      "type": "text",
-      "content": "مرحباً بك يا طالب، هل بدأت في كتابة التقرير؟",
-      "isMe": false,
-      "time": "10:30",
-    },
-  ];
+  final List<Map<String, dynamic>> _messages = [];
+  int? _activeThreadId;
+  bool _isSending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initChat();
+  }
+
+  Future<void> _initChat() async {
+    try {
+      final repo = context.read<ChatRepository>();
+      final threadId = widget.threadId;
+      if (threadId != null) {
+        _activeThreadId = threadId;
+      } else {
+        // Try to load threads and pick the first one
+        final threads = await repo.getThreads();
+        if (threads.isNotEmpty && mounted) {
+          _activeThreadId = threads.first.id;
+        }
+      }
+
+      if (_activeThreadId != null) {
+        final msgs = await repo.getMessages(_activeThreadId!);
+        if (!mounted) return;
+        setState(() {
+          _messages.clear();
+          for (final m in msgs.reversed) {
+            _messages.add({
+              'type': m.messageType == 'attachment' ? 'file' : 'text',
+              'content': m.body ?? '',
+              'isMe': false, // We don't know current user ID here
+              'time': _parseTime(m.sentAt ?? m.createdAt ?? ''),
+              'messageId': m.id,
+            });
+          }
+        });
+        _scrollToBottom();
+        // Mark thread as read
+        await repo.markRead(_activeThreadId!);
+      }
+    } catch (_) {
+      // Fail silently - show empty chat if API fails
+    }
+  }
+
+  String _parseTime(String isoDate) {
+    try {
+      final dt = DateTime.parse(isoDate).toLocal();
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
@@ -59,20 +112,34 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isNotEmpty) {
-      setState(() {
-        _messages.add({
-          "type": "text",
-          "content": _messageController.text.trim(),
-          "isMe": true,
-          "time": _formattedTime(),
-        });
-      });
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty || _isSending) return;
 
-      _messageController.clear();
-      _scrollToBottom();
+    final optimisticMsg = {
+      'type': 'text',
+      'content': text,
+      'isMe': true,
+      'time': _formattedTime(),
+    };
+
+    setState(() {
+      _messages.add(optimisticMsg);
+      _isSending = true;
+    });
+    _messageController.clear();
+    _scrollToBottom();
+
+    if (_activeThreadId != null) {
+      try {
+        final repo = context.read<ChatRepository>();
+        await repo.sendMessage(_activeThreadId!, body: text);
+      } on DioException {
+        // Message shown optimistically even if API fails
+      }
     }
+
+    if (mounted) setState(() => _isSending = false);
   }
 
   String _formattedTime() {
