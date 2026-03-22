@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/bottom_nav.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/applications/repositories/application_repository.dart';
+import 'package:Waslaa/features/notifications/repositories/notification_repository.dart';
+import 'package:Waslaa/features/opportunities/repositories/opportunity_repository.dart';
 import 'package:Waslaa/my_internships_page.dart';
 import 'package:Waslaa/profile_screen.dart';
 import 'package:Waslaa/widgets/image_slider.dart';
@@ -92,7 +96,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _HomeContentBody extends StatelessWidget {
+class _HomeContentBody extends StatefulWidget {
   final VoidCallback onOpenCompanies;
   final VoidCallback onOpenChat;
   final VoidCallback onOpenReports;
@@ -102,6 +106,41 @@ class _HomeContentBody extends StatelessWidget {
     required this.onOpenChat,
     required this.onOpenReports,
   });
+
+  @override
+  State<_HomeContentBody> createState() => _HomeContentBodyState();
+}
+
+class _HomeContentBodyState extends State<_HomeContentBody> {
+  int? _opportunitiesCount;
+  int? _applicationsCount;
+  int? _unreadNotifications;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final oppRepo = context.read<OpportunityRepository>();
+      final appRepo = context.read<ApplicationRepository>();
+      final notifRepo = context.read<NotificationRepository>();
+
+      final results = await Future.wait([
+        oppRepo.getOpportunities(perPage: 1),
+        appRepo.getApplications(perPage: 1),
+        notifRepo.getUnreadCount(),
+      ]);
+
+      if (!mounted) return;
+      setState(() {
+        _applicationsCount = (results[1] as List).length;
+        _unreadNotifications = results[2] as int;
+      });
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,31 +155,27 @@ class _HomeContentBody extends StatelessWidget {
           const SizedBox(height: 16),
           const ImageSliderScreen(),
           const SizedBox(height: 18),
-          const _SectionTitle(title: "نظرة سريعة"),
+          const _SectionTitle(title: 'نظرة سريعة'),
           const SizedBox(height: 12),
           Row(
-            children: const [
+            children: [
               Expanded(
                 child: _QuickStatCard(
-                  title: "فرص متاحة",
-                  value: "12",
-                  icon: Icons.work_outline_rounded,
+                  title: 'إشعارات',
+                  value: _unreadNotifications != null
+                      ? _unreadNotifications.toString()
+                      : '–',
+                  icon: Icons.notifications_none_rounded,
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: _QuickStatCard(
-                  title: "طلب",
-                  value: "1",
+                  title: 'طلباتي',
+                  value: _applicationsCount != null
+                      ? _applicationsCount.toString()
+                      : '–',
                   icon: Icons.description_outlined,
-                ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: _QuickStatCard(
-                  title: "تقاريري",
-                  value: "1",
-                  icon: Icons.upload_file_outlined,
                 ),
               ),
             ],
