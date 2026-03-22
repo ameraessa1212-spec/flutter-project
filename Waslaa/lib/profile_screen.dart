@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/about_app_page.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'package:Waslaa/terms_and_conditions_page.dart';
 import 'package:Waslaa/discussion_schedule.dart';
 import 'package:Waslaa/settings_page.dart';
-import 'package:Waslaa/sign_in.dart'; // استيراد صفحة تسجيل الدخول
+import 'package:Waslaa/sign_in.dart';
 
 class ProfileScreen extends StatelessWidget {
   final VoidCallback onOpenCompanies;
@@ -39,8 +41,10 @@ class ProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {
-                // الانتقال لصفحة تسجيل الدخول وحذف مسار الصفحات السابق
+              onPressed: () async {
+                Navigator.pop(context);
+                await context.read<AppSessionController>().signOut();
+                if (!context.mounted) return;
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const SignInPage()),
