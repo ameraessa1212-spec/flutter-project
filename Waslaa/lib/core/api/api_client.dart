@@ -61,6 +61,13 @@ class ApiClient {
     return _dio.patch(path, data: data, queryParameters: queryParameters);
   }
 
+  Future<Response<dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) {
+    return _dio.delete(path, queryParameters: queryParameters);
+  }
+
   DioException _mapError(DioException error) {
     final responseData = error.response?.data;
     final statusCode = error.response?.statusCode;
