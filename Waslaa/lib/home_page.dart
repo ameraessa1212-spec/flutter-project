@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/bottom_nav.dart';
-import 'package:Waslaa/const/app_dimensions.dart';
+import 'package:Waslaa/chat_page.dart';
+import 'package:Waslaa/company_details.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/dashboard/models/home_dashboard.dart';
+import 'package:Waslaa/features/dashboard/repositories/dashboard_repository.dart';
+import 'package:Waslaa/features/internships/models/internship.dart';
+import 'package:Waslaa/features/opportunities/models/opportunity.dart';
 import 'package:Waslaa/my_internships_page.dart';
 import 'package:Waslaa/profile_screen.dart';
+import 'package:Waslaa/reports_page.dart';
 import 'package:Waslaa/widgets/image_slider.dart';
 import 'notifications_screen.dart';
-import 'Company.dart';
+import 'company_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,11 +32,8 @@ class _HomePageState extends State<HomePage> {
       onOpenCompanies: () {
         setState(() => _selectedIndex = 1);
       },
-      onOpenChat: () {
+      onOpenInternships: () {
         setState(() => _selectedIndex = 2);
-      },
-      onOpenReports: () {
-        setState(() => _selectedIndex = 3);
       },
     ),
     CompanyPage(scaffoldKey: _scaffoldKey),
@@ -92,16 +96,114 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _HomeContentBody extends StatelessWidget {
+class _HomeContentBody extends StatefulWidget {
   final VoidCallback onOpenCompanies;
-  final VoidCallback onOpenChat;
-  final VoidCallback onOpenReports;
+  final VoidCallback onOpenInternships;
 
   const _HomeContentBody({
     required this.onOpenCompanies,
-    required this.onOpenChat,
-    required this.onOpenReports,
+    required this.onOpenInternships,
   });
+
+  @override
+  State<_HomeContentBody> createState() => _HomeContentBodyState();
+}
+
+class _HomeContentBodyState extends State<_HomeContentBody> {
+  HomeDashboard? _dashboard;
+  bool _isLoadingHomeData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHomeData();
+  }
+
+  Future<void> _loadHomeData() async {
+    try {
+      final dashboardRepo = context.read<DashboardRepository>();
+      final dashboard = await dashboardRepo.getHomeDashboard();
+
+      if (!mounted) return;
+      setState(() {
+        _dashboard = dashboard;
+        _isLoadingHomeData = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingHomeData = false;
+      });
+    }
+  }
+
+  Future<void> _openReports() async {
+    final internshipId = _dashboard?.currentInternship?.id;
+    if (internshipId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('لا يوجد تدريب نشط لرفع تقرير مرتبط به.'),
+        ),
+      );
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReportsPage(internshipId: internshipId),
+      ),
+    );
+  }
+
+  Future<void> _openChat() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatPage(
+          internshipId: _dashboard?.currentInternship?.id,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openOpportunity(Opportunity opportunity) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CompanyDetailsPage(opportunity: opportunity),
+      ),
+    );
+  }
+
+  String _reportSubtitle() {
+    final internship = _dashboard?.currentInternship;
+    if (internship == null) {
+      return 'يتطلب وجود تدريب نشط';
+    }
+    final dueDate = internship.reportDueDate;
+    if (dueDate == null || dueDate.isEmpty) {
+      return 'أرسل التقرير المرتبط بتدريبك';
+    }
+    return 'آخر موعد: ${_formatDate(dueDate)}';
+  }
+
+  String _chatSubtitle() {
+    final supervisorName = _dashboard?.currentInternship?.supervisor?.name;
+    if (supervisorName == null || supervisorName.isEmpty) {
+      return 'افتح المحادثات الحالية';
+    }
+    return 'المشرف: $supervisorName';
+  }
+
+  String _formatDate(String value) {
+    try {
+      final date = DateTime.parse(value);
+      return '${date.year}/${date.month}/${date.day}';
+    } catch (_) {
+      return value;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,47 +215,53 @@ class _HomeContentBody extends StatelessWidget {
           _buildSearchField(),
           const SizedBox(height: 14),
           const _WelcomeCard(),
-          const SizedBox(height: 16),
-          const ImageSliderScreen(),
-          const SizedBox(height: 18),
-          const _SectionTitle(title: "نظرة سريعة"),
+          if (_dashboard != null && _dashboard!.sliderItems.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            ImageSliderScreen(items: _dashboard!.sliderItems),
+            const SizedBox(height: 18),
+          ],
+          const _SectionTitle(title: 'نظرة سريعة'),
           const SizedBox(height: 12),
           Row(
-            children: const [
+            children: [
               Expanded(
                 child: _QuickStatCard(
-                  title: "فرص متاحة",
-                  value: "12",
-                  icon: Icons.work_outline_rounded,
+                  title: 'إشعارات',
+                  value: _dashboard != null
+                      ? _dashboard!.unreadNotificationsCount.toString()
+                      : '–',
+                  icon: Icons.notifications_none_rounded,
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: _QuickStatCard(
-                  title: "طلب",
-                  value: "1",
+                  title: 'طلباتي',
+                  value: _dashboard != null
+                      ? _dashboard!.applicationsCount.toString()
+                      : '–',
                   icon: Icons.description_outlined,
-                ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: _QuickStatCard(
-                  title: "تقاريري",
-                  value: "1",
-                  icon: Icons.upload_file_outlined,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 22),
+          const _SectionTitle(title: 'تدريبك الحالي'),
+          const SizedBox(height: 12),
+          _CurrentInternshipCard(
+            internship: _dashboard?.currentInternship,
+            onOpenInternships: widget.onOpenInternships,
+            onOpenCompanies: widget.onOpenCompanies,
+          ),
+          const SizedBox(height: 22),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const _SectionTitle(title: "أبرز الشركات"),
+              const _SectionTitle(title: 'فرص تدريب متاحة'),
               InkWell(
-                onTap: onOpenCompanies,
+                onTap: widget.onOpenCompanies,
                 child: Text(
-                  "عرض الكل",
+                  'عرض الكل',
                   style: TextStyle(
                     fontSize: 13,
                     color: primarycolor,
@@ -164,67 +272,77 @@ class _HomeContentBody extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: const [
-                _FeaturedCompanyCard(
-                  title: "شركة ليبيانا",
-                  imagePath: 'assets/images/libyana.JPG',
-                ),
-                SizedBox(width: 12),
-                _FeaturedCompanyCard(
-                  title: "شركة المدار الجديد",
-                  imagePath: 'assets/images/madar.JPG',
-                ),
-              ],
+          if (_isLoadingHomeData)
+            const Center(child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: CircularProgressIndicator(),
+            ))
+          else if (_dashboard == null || _dashboard!.featuredOpportunities.isEmpty)
+            _EmptyFeaturedOpportunitiesCard(onTap: widget.onOpenCompanies)
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _dashboard!.featuredOpportunities
+                    .map(
+                      (opportunity) => Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: _FeaturedOpportunityCard(
+                          opportunity: opportunity,
+                          onTap: () => _openOpportunity(opportunity),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
-          ),
+          if (_dashboard != null && _dashboard!.announcements.isNotEmpty) ...[
+            const SizedBox(height: 22),
+            const _SectionTitle(title: 'إعلانات مهمة'),
+            const SizedBox(height: 12),
+            ..._dashboard!.announcements.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _AnnouncementCard(item: item),
+              ),
+            ),
+          ],
           const SizedBox(height: 22),
-          const _SectionTitle(title: "خطوات سريعة"),
+          const _SectionTitle(title: 'خطوات سريعة'),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: _ActionCard(
-                  title: "التواصل مع المشرف",
-                  subtitle: "افتح المحادثات الحالية",
+                  title: 'التواصل مع المشرف',
+                  subtitle: _chatSubtitle(),
                   icon: Icons.chat_bubble_outline_rounded,
-                  onTap: onOpenChat,
+                  onTap: _openChat,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _ActionCard(
-                  title: "رفع التقرير",
-                  subtitle: "أرسل التقرير بسهولة",
+                  title: 'رفع التقرير',
+                  subtitle: _reportSubtitle(),
                   icon: Icons.upload_file_rounded,
-                  onTap: onOpenReports,
+                  enabled: _dashboard?.currentInternship != null,
+                  onTap: _openReports,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 22),
-          const _SectionTitle(title: "نصائح مهمة"),
-          const SizedBox(height: 12),
-          const _InfoTipCard(
-            title: "جهز سيرتك الذاتية",
-            subtitle: "احرص على تحديث الـ CV قبل التقديم على أي فرصة تدريب.",
-            icon: Icons.article_outlined,
-          ),
-          const SizedBox(height: 10),
-          const _InfoTipCard(
-            title: "تابع حالة طلبك",
-            subtitle: "تحقق باستمرار من الطلبات المرسلة وحالة القبول أو الرفض.",
-            icon: Icons.track_changes_outlined,
-          ),
-          const SizedBox(height: 10),
-          const _InfoTipCard(
-            title: "التزم بمواعيد التقرير",
-            subtitle:
-                "رفع التقرير في الوقت المحدد يساعدك على إنهاء التدريب بنجاح.",
-            icon: Icons.access_time_rounded,
-          ),
+          if (_dashboard != null && _dashboard!.tipCards.isNotEmpty) ...[
+            const SizedBox(height: 22),
+            const _SectionTitle(title: 'نصائح مهمة'),
+            const SizedBox(height: 12),
+            ..._dashboard!.tipCards.asMap().entries.map(
+              (entry) => Padding(
+                padding: EdgeInsets.only(bottom: entry.key == _dashboard!.tipCards.length - 1 ? 0 : 10),
+                child: _InfoTipCard(item: entry.value),
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
         ],
       ),
@@ -233,8 +351,10 @@ class _HomeContentBody extends StatelessWidget {
 
   Widget _buildSearchField() {
     return TextFormField(
+      readOnly: true,
+      onTap: widget.onOpenCompanies,
       decoration: InputDecoration(
-        hintText: "ابحث عن شركة أو فرصة تدريب...",
+        hintText: 'ابحث عن شركة أو فرصة تدريب...',
         hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
         filled: true,
         fillColor: Colors.white,
@@ -409,55 +529,141 @@ class _QuickStatCard extends StatelessWidget {
   }
 }
 
-class _FeaturedCompanyCard extends StatelessWidget {
-  final String title;
-  final String imagePath;
+class _FeaturedOpportunityCard extends StatelessWidget {
+  final Opportunity opportunity;
+  final VoidCallback onTap;
 
-  const _FeaturedCompanyCard({required this.title, required this.imagePath});
+  const _FeaturedOpportunityCard({
+    required this.opportunity,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          width: AppDimensions.screenWidth * 0.72,
-          height: AppDimensions.screenHeight * 0.17,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(imagePath),
-              fit: BoxFit.cover,
+    final imagePath = opportunity.imagePath;
+    final companyName = opportunity.company?.name ?? 'فرصة تدريب';
+    final title = opportunity.title;
+    final location = opportunity.locationText ?? opportunity.city ?? '';
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(22),
+      onTap: onTap,
+      child: SizedBox(
+        width: 250,
+        height: 158,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: imagePath != null
+                    ? Image.network(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: primarycolor.withValues(alpha: 0.10),
+                          child: Icon(
+                            Icons.business_center_rounded,
+                            size: 42,
+                            color: primarycolor,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: primarycolor.withValues(alpha: 0.10),
+                        child: Icon(
+                          Icons.business_center_rounded,
+                          size: 42,
+                          color: primarycolor,
+                        ),
+                      ),
+              ),
             ),
-            borderRadius: BorderRadius.circular(18),
-          ),
-        ),
-        Container(
-          width: AppDimensions.screenWidth * 0.72,
-          height: AppDimensions.screenHeight * 0.17,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.72),
-                Colors.transparent,
-              ],
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.80),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-        Positioned(
-          bottom: 12,
-          right: 14,
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
+            Positioned(
+              top: 12,
+              left: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: opportunity.isAvailable
+                      ? Colors.green.withValues(alpha: 0.18)
+                      : Colors.red.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  opportunity.isAvailable ? 'متاح' : 'مغلق',
+                  style: TextStyle(
+                    color: opportunity.isAvailable
+                        ? Colors.greenAccent
+                        : Colors.redAccent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              right: 14,
+              left: 14,
+              bottom: 14,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    companyName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      height: 1.35,
+                    ),
+                  ),
+                  if (location.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      location,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -467,36 +673,40 @@ class _ActionCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final VoidCallback onTap;
+  final bool enabled;
 
   const _ActionCard({
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.onTap,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = enabled ? primarycolor : Colors.grey;
+
     return InkWell(
       borderRadius: BorderRadius.circular(24),
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         height: 132,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: primarycolor.withValues(alpha: 0.08),
+          color: accentColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
+          border: Border.all(color: accentColor.withValues(alpha: 0.18)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: primarycolor, size: 28),
+            Icon(icon, color: accentColor, size: 28),
             const Spacer(),
             Text(
               title,
               style: TextStyle(
-                color: primarycolor,
+                color: accentColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -517,19 +727,233 @@ class _ActionCard extends StatelessWidget {
   }
 }
 
-class _InfoTipCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
+class _CurrentInternshipCard extends StatelessWidget {
+  final Internship? internship;
+  final VoidCallback onOpenInternships;
+  final VoidCallback onOpenCompanies;
 
-  const _InfoTipCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
+  const _CurrentInternshipCard({
+    required this.internship,
+    required this.onOpenInternships,
+    required this.onOpenCompanies,
   });
 
   @override
   Widget build(BuildContext context) {
+    final activeInternship = internship;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: activeInternship == null
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'لا يوجد تدريب نشط حالياً',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'ابدأ بالتقديم على فرص التدريب المتاحة ليظهر تدريبك الحالي هنا.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    height: 1.6,
+                    color: Colors.black.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: onOpenCompanies,
+                    child: Text(
+                      'استعرض الفرص',
+                      style: TextStyle(color: primarycolor),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activeInternship.title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  activeInternship.company?.name ?? 'شركة غير محددة',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.black.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _InternshipMetaChip(
+                      icon: Icons.badge_outlined,
+                      label: activeInternship.supervisor?.name ?? 'المشرف غير محدد',
+                    ),
+                    _InternshipMetaChip(
+                      icon: Icons.event_note_rounded,
+                      label: activeInternship.reportDueDate != null
+                          ? 'التقرير: ${activeInternship.reportDueDate}'
+                          : 'لا يوجد موعد تقرير بعد',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: onOpenInternships,
+                    child: Text(
+                      'عرض تفاصيل التدريب',
+                      style: TextStyle(color: primarycolor),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _InternshipMetaChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _InternshipMetaChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: primarycolor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: primarycolor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.black.withValues(alpha: 0.72),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyFeaturedOpportunitiesCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _EmptyFeaturedOpportunitiesCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'لا توجد فرص متاحة حالياً',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'يمكنك الانتقال إلى صفحة الشركات لمراجعة الفرص فور توفرها أو تحديث القائمة لاحقاً.',
+            style: TextStyle(
+              fontSize: 12.5,
+              height: 1.6,
+              color: Colors.black.withValues(alpha: 0.6),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: onTap,
+              child: Text(
+                'فتح صفحة الشركات',
+                style: TextStyle(color: primarycolor),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoTipCard extends StatelessWidget {
+  final DashboardContentItem item;
+
+  const _InfoTipCard({required this.item});
+
+  IconData _iconForKey(String? key) {
+    switch (key) {
+      case 'article':
+        return Icons.article_outlined;
+      case 'track_changes':
+        return Icons.track_changes_outlined;
+      case 'schedule':
+        return Icons.access_time_rounded;
+      case 'campaign':
+        return Icons.campaign_outlined;
+      case 'notifications':
+        return Icons.notifications_active_outlined;
+      default:
+        return Icons.lightbulb_outline_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = _iconForKey(item.iconKey);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -562,7 +986,7 @@ class _InfoTipCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  item.title,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -571,13 +995,112 @@ class _InfoTipCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  subtitle,
+                  item.subtitle ?? '',
                   style: TextStyle(
                     fontSize: 12.5,
                     height: 1.6,
                     color: Colors.black.withValues(alpha: 0.6),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnnouncementCard extends StatelessWidget {
+  final DashboardContentItem item;
+
+  const _AnnouncementCard({required this.item});
+
+  IconData _iconForKey(String? key) {
+    switch (key) {
+      case 'campaign':
+        return Icons.campaign_outlined;
+      case 'notifications':
+        return Icons.notifications_active_outlined;
+      default:
+        return Icons.info_outline_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: primarycolor.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(_iconForKey(item.iconKey), color: primarycolor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    if (item.badge != null && item.badge!.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: primarycolor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          item.badge!,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: primarycolor,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    item.subtitle!,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.6,
+                      color: Colors.black.withValues(alpha: 0.60),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

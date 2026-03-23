@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Mobile\AuthController;
 use App\Http\Controllers\Api\Mobile\ChatThreadController;
 use App\Http\Controllers\Api\Mobile\CompanyController;
 use App\Http\Controllers\Api\Mobile\ContentController;
+use App\Http\Controllers\Api\Mobile\DashboardController;
 use App\Http\Controllers\Api\Mobile\DiscussionScheduleController;
 use App\Http\Controllers\Api\Mobile\InternshipController;
 use App\Http\Controllers\Api\Mobile\MessageController;
@@ -48,11 +49,16 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::get('/', [ProfileController::class, 'show'])->name('show');
             Route::patch('/', [ProfileController::class, 'update'])->name('update');
             Route::patch('password', [ProfileController::class, 'updatePassword'])->name('password.update');
+            Route::patch('fcm-token', [ProfileController::class, 'updateFcmToken'])->name('fcm-token.update');
             Route::post('avatar', [ProfileController::class, 'uploadAvatar'])->name('avatar.upload');
             Route::post('cv', [ProfileController::class, 'uploadCv'])->name('cv.upload');
         });
 
         Route::get('specializations', [SpecializationController::class, 'index'])->name('specializations.index');
+
+        Route::prefix('dashboard')->name('dashboard.')->group(function () {
+            Route::get('home', [DashboardController::class, 'home'])->name('home');
+        });
 
         Route::prefix('companies')->name('companies.')->group(function () {
             Route::get('/', [CompanyController::class, 'index'])->name('index');

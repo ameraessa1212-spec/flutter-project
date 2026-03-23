@@ -14,6 +14,7 @@ use App\Policies\InternshipPolicy;
 use App\Policies\ReportPolicy;
 use App\Policies\UserNotificationPolicy;
 use App\Policies\UserSettingPolicy;
+use App\Observers\UserNotificationObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,11 +33,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Implicitly grant "Super Admin" role all permissions
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('super_admin') ? true : null;
+        });
+
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(Internship::class, InternshipPolicy::class);
         Gate::policy(Report::class, ReportPolicy::class);
         Gate::policy(ChatThread::class, ChatThreadPolicy::class);
         Gate::policy(UserNotification::class, UserNotificationPolicy::class);
         Gate::policy(UserSetting::class, UserSettingPolicy::class);
+        
+        UserNotification::observe(UserNotificationObserver::class);
     }
 }

@@ -61,13 +61,26 @@ class ApiClient {
     return _dio.patch(path, data: data, queryParameters: queryParameters);
   }
 
+  Future<Response<dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) {
+    return _dio.delete(path, queryParameters: queryParameters);
+  }
+
   DioException _mapError(DioException error) {
     final responseData = error.response?.data;
     final statusCode = error.response?.statusCode;
 
     String message = 'حدث خطأ أثناء الاتصال بالخادم.';
 
-    if (responseData is Map<String, dynamic>) {
+    if (statusCode == 401) {
+      message = 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+    } else if (statusCode == 403) {
+      message = 'تم رفض الطلب. تأكد من صلاحية الوصول ثم حاول مرة أخرى.';
+    } else if (statusCode != null && statusCode >= 500) {
+      message = 'حدث خطأ من جهة الخادم. حاول مرة أخرى بعد قليل.';
+    } else if (responseData is Map<String, dynamic>) {
       final apiMessage = responseData['message'];
       if (apiMessage is String && apiMessage.isNotEmpty) {
         message = apiMessage;
