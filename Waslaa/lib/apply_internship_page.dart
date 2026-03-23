@@ -288,18 +288,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                               : null,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _universityController,
-                  decoration: _inputDecoration(
-                    "الجامعة",
-                    icon: Icons.account_balance_outlined,
-                  ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال اسم الجامعة"
-                              : null,
-                ),
+
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _majorController,
@@ -314,58 +303,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                               : null,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _levelController,
-                  decoration: _inputDecoration(
-                    "السنة الدراسية / الفصل",
-                    icon: Icons.school_outlined,
-                  ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال السنة الدراسية أو الفصل"
-                              : null,
-                ),
-                const SizedBox(height: 22),
-                _sectionTitle("السيرة الذاتية"),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: _pickCvFile,
-                  borderRadius: BorderRadius.circular(18),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: primarycolor.withValues(alpha: 0.12),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.upload_file_rounded, color: primarycolor),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            _selectedCvName ??
-                                "اختر ملف السيرة الذاتية (PDF / Word)",
-                            style: TextStyle(
-                              color:
-                                  _selectedCvName == null
-                                      ? Colors.black.withValues(alpha: 0.55)
-                                      : Colors.black,
-                              fontSize: 13,
-                              fontWeight:
-                                  _selectedCvName == null
-                                      ? FontWeight.normal
-                                      : FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+
                 const SizedBox(height: 22),
                 _sectionTitle("رسالة تعريفية"),
                 const SizedBox(height: 12),

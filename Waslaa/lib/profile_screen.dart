@@ -114,7 +114,7 @@ class ProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "شدى الشريف",
+                            "أميرة عيسى ",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 20,

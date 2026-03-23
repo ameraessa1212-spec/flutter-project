@@ -307,51 +307,6 @@ class CompanyDetailsPage extends StatelessWidget {
 
               const SizedBox(height: 18),
 
-              /// نبذة عن الشركة
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.business_outlined,
-                          color: primarycolor,
-                          size: 20,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "نبذة عن الشركة",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: textDark,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      "$companyName توفر فرص تدريب للطلاب في عدد من التخصصات، وتهدف إلى منحهم تجربة عملية حقيقية داخل بيئة العمل.",
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(fontSize: 14, color: textMuted),
-                    ),
-                  ],
-                ),
-              ),
-
               SizedBox(height: AppDimensions.screenHeight * 0.04),
 
               /// زر التقديم
