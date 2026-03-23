@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'Intro2.dart';
 import 'welcome_screen.dart'; // استيراد شاشة الترحيب لتفعيل زر التخطي
 
@@ -94,7 +97,11 @@ class Intro1 extends StatelessWidget {
                 children: [
                   // زر تخطي - الآن يوجه إلى WelcomeScreen مباشرة
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      await context.read<AppSessionController>().markOnboardingSeen();
+                      if (!context.mounted) {
+                        return;
+                      }
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
