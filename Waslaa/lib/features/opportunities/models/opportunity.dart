@@ -100,3 +100,32 @@ class Opportunity {
     );
   }
 }
+
+class OpportunityListPage {
+  const OpportunityListPage({
+    required this.items,
+    required this.currentPage,
+    required this.lastPage,
+    required this.total,
+  });
+
+  final List<Opportunity> items;
+  final int currentPage;
+  final int lastPage;
+  final int total;
+
+  bool get hasMore => currentPage < lastPage;
+
+  factory OpportunityListPage.fromResponse(Map<String, dynamic> json) {
+    final data = (json['data'] as List<dynamic>? ?? const []);
+    final meta = (json['meta'] as Map<String, dynamic>? ?? const {});
+    return OpportunityListPage(
+      items: data
+          .map((item) => Opportunity.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      currentPage: (meta['current_page'] ?? 1) as int,
+      lastPage: (meta['last_page'] ?? 1) as int,
+      total: (meta['total'] ?? data.length) as int,
+    );
+  }
+}

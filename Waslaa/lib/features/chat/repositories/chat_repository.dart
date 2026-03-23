@@ -41,10 +41,15 @@ class ChatRepository {
     return ChatMessage.fromJson(data);
   }
 
-  Future<ChatMessage> sendAttachment(int threadId, {required String filePath, String? fileName}) async {
+  Future<ChatMessage> sendAttachment(
+    int threadId, {
+    required String filePath,
+    String? fileName,
+    String messageType = 'file',
+  }) async {
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath, filename: fileName ?? filePath.split('/').last),
-      'message_type': 'attachment',
+      'attachment': await MultipartFile.fromFile(filePath, filename: fileName ?? filePath.split('/').last),
+      'message_type': messageType,
     });
     final response = await _apiClient.post('/chat/threads/$threadId/attachments', data: formData);
     final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;

@@ -9,6 +9,7 @@ import 'package:Waslaa/features/applications/repositories/application_repository
 import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 import 'package:Waslaa/features/chat/repositories/chat_repository.dart';
 import 'package:Waslaa/features/content/repositories/content_repository.dart';
+import 'package:Waslaa/features/dashboard/repositories/dashboard_repository.dart';
 import 'package:Waslaa/features/discussion_schedules/repositories/discussion_schedule_repository.dart';
 import 'package:Waslaa/features/internships/repositories/internship_repository.dart';
 import 'package:Waslaa/features/notifications/repositories/notification_repository.dart';
@@ -71,6 +72,10 @@ class MyApp extends StatelessWidget {
         Provider(
           create: (context) =>
               SettingsRepository(apiClient: context.read<ApiClient>()),
+        ),
+        Provider(
+          create: (context) =>
+              DashboardRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
           create: (context) =>

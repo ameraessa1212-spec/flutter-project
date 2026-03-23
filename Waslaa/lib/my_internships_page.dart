@@ -5,8 +5,11 @@ import 'package:Waslaa/chat_page.dart';
 import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/applications/models/application.dart';
 import 'package:Waslaa/features/applications/repositories/application_repository.dart';
+import 'package:Waslaa/features/chat/models/chat_models.dart';
+import 'package:Waslaa/features/chat/repositories/chat_repository.dart';
 import 'package:Waslaa/features/internships/models/internship.dart';
 import 'package:Waslaa/features/internships/repositories/internship_repository.dart';
+import 'package:Waslaa/features/reports/repositories/report_repository.dart';
 import 'package:Waslaa/reports_page.dart';
 
 class MyInternshipsPage extends StatefulWidget {
@@ -19,6 +22,8 @@ class MyInternshipsPage extends StatefulWidget {
 class _MyInternshipsPageState extends State<MyInternshipsPage> {
   Internship? _currentInternship;
   List<Application> _applications = [];
+  List<ChatThread> _threads = [];
+  int _reportsCount = 0;
   bool _isLoading = true;
   String? _error;
 
@@ -36,16 +41,28 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
     try {
       final internshipRepo = context.read<InternshipRepository>();
       final applicationRepo = context.read<ApplicationRepository>();
+      final chatRepo = context.read<ChatRepository>();
+      final reportRepo = context.read<ReportRepository>();
 
       final results = await Future.wait([
         internshipRepo.getCurrentInternship(),
         applicationRepo.getApplications(perPage: 20),
+        chatRepo.getThreads(),
       ]);
+
+      final internship = results[0] as Internship?;
+      var reportsCount = 0;
+      if (internship != null) {
+        final reports = await reportRepo.getReports(internship.id);
+        reportsCount = reports.length;
+      }
 
       if (!mounted) return;
       setState(() {
-        _currentInternship = results[0] as Internship?;
+        _currentInternship = internship;
         _applications = results[1] as List<Application>;
+        _threads = results[2] as List<ChatThread>;
+        _reportsCount = reportsCount;
         _isLoading = false;
       });
     } on DioException catch (e) {
@@ -106,6 +123,7 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
 
   Widget _buildContent() {
     final internship = _currentInternship;
+    final activeThread = _activeThread;
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -115,6 +133,8 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
         children: [
           _InternshipSummaryCard(
             applicationsCount: _applications.length,
+            reportsCount: _reportsCount,
+            hasActiveInternship: internship != null,
           ),
           const SizedBox(height: 18),
 
@@ -131,7 +151,7 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 14,
                     offset: const Offset(0, 6),
                   ),
@@ -153,14 +173,27 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
               Expanded(
                 child: _QuickActionCard(
                   title: 'رفع التقرير',
-                  subtitle: 'إرسال التقرير الأسبوعي',
+                  subtitle: internship?.reportDueDate != null
+                      ? 'آخر موعد: ${internship!.reportDueDate}'
+                      : internship != null
+                          ? 'إرسال تقرير مرتبط بالتدريب الحالي'
+                          : 'يتطلب وجود تدريب نشط',
                   icon: Icons.upload_file_rounded,
+                  enabled: internship != null,
                   onTap: () {
+                    if (internship == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('لا يوجد تدريب نشط لرفع التقارير.'),
+                        ),
+                      );
+                      return;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ReportsPage(
-                          internshipId: internship?.id,
+                          internshipId: internship.id,
                         ),
                       ),
                     );
@@ -171,13 +204,31 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
               Expanded(
                 child: _QuickActionCard(
                   title: 'التواصل مع المشرف',
-                  subtitle: 'فتح المحادثة الحالية',
+                  subtitle: activeThread?.supervisorName != null
+                      ? 'المشرف: ${activeThread!.supervisorName}'
+                      : internship?.supervisor?.name != null
+                          ? 'المشرف: ${internship!.supervisor!.name}'
+                          : internship != null
+                              ? 'المحادثة غير متاحة بعد'
+                              : 'يتطلب وجود تدريب نشط',
                   icon: Icons.chat_bubble_outline_rounded,
+                  enabled: activeThread != null,
                   onTap: () {
+                    if (activeThread == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('لا توجد محادثة مرتبطة بالتدريب الحالي بعد.'),
+                        ),
+                      );
+                      return;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const ChatPage(),
+                        builder: (context) => ChatPage(
+                          threadId: activeThread.id,
+                          internshipId: activeThread.internshipId,
+                        ),
                       ),
                     );
                   },
@@ -199,12 +250,33 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
       ),
     );
   }
+
+  ChatThread? get _activeThread {
+    final internshipId = _currentInternship?.id;
+    if (internshipId == null) {
+      return null;
+    }
+
+    for (final thread in _threads) {
+      if (thread.internshipId == internshipId) {
+        return thread;
+      }
+    }
+
+    return null;
+  }
 }
 
 class _InternshipSummaryCard extends StatelessWidget {
   final int applicationsCount;
+  final int reportsCount;
+  final bool hasActiveInternship;
 
-  const _InternshipSummaryCard({this.applicationsCount = 0});
+  const _InternshipSummaryCard({
+    this.applicationsCount = 0,
+    this.reportsCount = 0,
+    this.hasActiveInternship = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -212,14 +284,14 @@ class _InternshipSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [primarycolor, primarycolor.withOpacity(0.82)],
+          colors: [primarycolor, primarycolor.withValues(alpha: 0.82)],
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: primarycolor.withOpacity(0.18),
+            color: primarycolor.withValues(alpha: 0.18),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -252,6 +324,22 @@ class _InternshipSummaryCard extends StatelessWidget {
                   icon: Icons.description_outlined,
                 ),
               ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _SummaryMiniBox(
+                  title: 'التقارير',
+                  value: reportsCount.toString(),
+                  icon: Icons.assignment_turned_in_outlined,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _SummaryMiniBox(
+                  title: 'الحالة',
+                  value: hasActiveInternship ? 'نشط' : 'لا يوجد',
+                  icon: Icons.cast_for_education_outlined,
+                ),
+              ),
             ],
           ),
         ],
@@ -276,7 +364,7 @@ class _SummaryMiniBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
+        color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -323,7 +411,7 @@ class _CurrentInternshipCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -338,7 +426,7 @@ class _CurrentInternshipCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.12),
+                  color: Colors.green.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -400,7 +488,7 @@ class _CurrentInternshipCard extends StatelessWidget {
             Text(
               'المشرف: ${supervisor.name}',
               style: TextStyle(
-                color: Colors.black.withOpacity(0.65),
+                color: Colors.black.withValues(alpha: 0.65),
                 fontSize: 13,
               ),
             ),
@@ -410,7 +498,7 @@ class _CurrentInternshipCard extends StatelessWidget {
             Text(
               'آخر موعد لرفع التقرير: ${internship.reportDueDate}',
               style: TextStyle(
-                color: Colors.black.withOpacity(0.65),
+                color: Colors.black.withValues(alpha: 0.65),
                 fontSize: 13,
               ),
             ),
@@ -420,7 +508,7 @@ class _CurrentInternshipCard extends StatelessWidget {
             Text(
               '${internship.startDate ?? ''} - ${internship.endDate ?? ''}',
               style: TextStyle(
-                color: Colors.black.withOpacity(0.55),
+                color: Colors.black.withValues(alpha: 0.55),
                 fontSize: 12,
               ),
             ),
@@ -458,7 +546,7 @@ class _SmallInfoChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF8F8FC),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primarycolor.withOpacity(0.10)),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.10)),
       ),
       child: Row(
         children: [
@@ -487,29 +575,33 @@ class _QuickActionCard extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final VoidCallback onTap;
+  final bool enabled;
 
   const _QuickActionCard({
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.onTap,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final accent = enabled ? primarycolor : Colors.grey;
+
     return InkWell(
       borderRadius: BorderRadius.circular(22),
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         height: 122,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: primarycolor.withOpacity(0.10)),
+          border: Border.all(color: accent.withValues(alpha: 0.10)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -518,12 +610,12 @@ class _QuickActionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: primarycolor, size: 26),
+            Icon(icon, color: accent, size: 26),
             const Spacer(),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.black,
+              style: TextStyle(
+                color: accent,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
@@ -532,7 +624,7 @@ class _QuickActionCard extends StatelessWidget {
             Text(
               subtitle,
               style: TextStyle(
-                color: Colors.black.withOpacity(0.55),
+                color: Colors.black.withValues(alpha: 0.55),
                 fontSize: 12,
                 height: 1.5,
               ),
@@ -566,7 +658,7 @@ class _ApplicationStatusCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 5),
           ),
@@ -611,7 +703,7 @@ class _ApplicationStatusCard extends StatelessWidget {
                   Text(
                     'تاريخ التقديم: $date',
                     style: TextStyle(
-                      color: Colors.black.withOpacity(0.50),
+                      color: Colors.black.withValues(alpha: 0.50),
                       fontSize: 12,
                     ),
                   ),
@@ -623,7 +715,7 @@ class _ApplicationStatusCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.12),
+              color: statusColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Text(

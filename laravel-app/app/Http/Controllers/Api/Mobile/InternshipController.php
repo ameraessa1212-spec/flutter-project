@@ -31,7 +31,7 @@ class InternshipController extends Controller
             ->first();
 
         return response()->json([
-            'data' => InternshipResource::make($internship),
+            'data' => $internship ? InternshipResource::make($internship) : null,
         ]);
     }
 

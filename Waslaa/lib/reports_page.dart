@@ -47,6 +47,16 @@ class _ReportsPageState extends State<ReportsPage> {
   }
 
   Future<void> _pickFiles() async {
+    if (widget.internshipId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('لا يوجد تدريب نشط متاح لرفع التقارير.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
     if (selectedFiles.length >= 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -90,8 +100,8 @@ class _ReportsPageState extends State<ReportsPage> {
     if (widget.internshipId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم إرسال الملفات بنجاح'),
-          backgroundColor: Colors.green,
+          content: Text('لا يوجد تدريب نشط مرتبط برفع التقارير.'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -478,10 +488,10 @@ class _ReportsPageState extends State<ReportsPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: primaryColor.withOpacity(0.08)),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -493,7 +503,7 @@ class _ReportsPageState extends State<ReportsPage> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.08),
+              color: primaryColor.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -524,7 +534,7 @@ class _ReportsPageState extends State<ReportsPage> {
                       : 'معلق',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: Colors.black.withOpacity(0.50),
+                    color: Colors.black.withValues(alpha: 0.50),
                   ),
                 ),
               ],
@@ -534,7 +544,7 @@ class _ReportsPageState extends State<ReportsPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.12),
+              color: statusColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(

@@ -78,6 +78,10 @@ class ChatThread {
     required this.status,
     this.lastMessageAt,
     this.supervisorName,
+    this.supervisorPhone,
+    this.supervisorEmail,
+    this.internshipTitle,
+    this.companyName,
   });
 
   final int id;
@@ -87,9 +91,15 @@ class ChatThread {
   final String status;
   final String? lastMessageAt;
   final String? supervisorName;
+  final String? supervisorPhone;
+  final String? supervisorEmail;
+  final String? internshipTitle;
+  final String? companyName;
 
   factory ChatThread.fromJson(Map<String, dynamic> json) {
     final supervisor = json['supervisor'] as Map<String, dynamic>?;
+    final internship = json['internship'] as Map<String, dynamic>?;
+    final company = internship?['company'] as Map<String, dynamic>?;
     return ChatThread(
       id: json['id'] as int,
       internshipId: json['internship_id'] as int,
@@ -98,6 +108,10 @@ class ChatThread {
       status: (json['status'] ?? '') as String,
       lastMessageAt: json['last_message_at'] as String?,
       supervisorName: supervisor?['name'] as String?,
+      supervisorPhone: supervisor?['phone'] as String?,
+      supervisorEmail: supervisor?['email'] as String?,
+      internshipTitle: internship?['title'] as String?,
+      companyName: company?['name'] as String?,
     );
   }
 }

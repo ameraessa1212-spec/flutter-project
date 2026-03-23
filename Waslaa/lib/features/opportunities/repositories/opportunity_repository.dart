@@ -6,7 +6,7 @@ class OpportunityRepository {
 
   final ApiClient _apiClient;
 
-  Future<List<Opportunity>> getOpportunities({
+  Future<OpportunityListPage> getOpportunitiesPage({
     String? search,
     int? specializationId,
     String? city,
@@ -25,10 +25,26 @@ class OpportunityRepository {
         if (isAvailable != null) 'is_available': isAvailable ? '1' : '0',
       },
     );
-    final data = (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
-    return data
-        .map((item) => Opportunity.fromJson(item as Map<String, dynamic>))
-        .toList();
+    return OpportunityListPage.fromResponse(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<Opportunity>> getOpportunities({
+    String? search,
+    int? specializationId,
+    String? city,
+    bool? isAvailable,
+    int page = 1,
+    int perPage = 15,
+  }) async {
+    final result = await getOpportunitiesPage(
+      search: search,
+      specializationId: specializationId,
+      city: city,
+      isAvailable: isAvailable,
+      page: page,
+      perPage: perPage,
+    );
+    return result.items;
   }
 
   Future<Opportunity> getOpportunity(int id) async {

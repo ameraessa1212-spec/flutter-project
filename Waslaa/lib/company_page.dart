@@ -1,9 +1,13 @@
 // ignore: file_names
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Waslaa/company_details.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/auth/models/specialization.dart';
+import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 import 'package:Waslaa/features/opportunities/models/opportunity.dart';
 import 'package:Waslaa/features/opportunities/repositories/opportunity_repository.dart';
 
@@ -17,69 +21,139 @@ class CompanyPage extends StatefulWidget {
 }
 
 class _CompanyPageState extends State<CompanyPage> {
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
   List<Opportunity> _opportunities = [];
-  List<Opportunity> _filtered = [];
+  List<Specialization> _specializations = const [];
   bool _isLoading = true;
+  bool _isLoadingFilters = true;
+  bool _isLoadingMore = false;
   String? _error;
   String _searchQuery = '';
-  String _selectedSpec = 'الكل';
+  int? _selectedSpecializationId;
+  bool? _selectedAvailability;
+  int _currentPage = 1;
+  int _lastPage = 1;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
     super.initState();
-    _loadOpportunities();
+    _scrollController.addListener(_handleScroll);
+    _loadInitialData();
   }
 
-  Future<void> _loadOpportunities() async {
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadInitialData() async {
     setState(() {
-      _isLoading = true;
-      _error = null;
+      _isLoadingFilters = true;
     });
+
     try {
-      final repo = context.read<OpportunityRepository>();
-      final list = await repo.getOpportunities(perPage: 50);
+      final authRepo = context.read<AuthRepository>();
+      final specializations = await authRepo.getSpecializations();
       if (!mounted) return;
       setState(() {
-        _opportunities = list;
-        _filtered = list;
+        _specializations = specializations;
+        _isLoadingFilters = false;
+      });
+    } on DioException {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingFilters = false;
+      });
+    }
+
+    await _loadOpportunities();
+  }
+
+  Future<void> _loadOpportunities({bool reset = true}) async {
+    if (_isLoadingMore || (!reset && _currentPage >= _lastPage)) {
+      return;
+    }
+
+    setState(() {
+      if (reset) {
+        _isLoading = true;
+        _error = null;
+      } else {
+        _isLoadingMore = true;
+      }
+    });
+
+    try {
+      final repo = context.read<OpportunityRepository>();
+      final nextPage = reset ? 1 : _currentPage + 1;
+      final result = await repo.getOpportunitiesPage(
+        page: nextPage,
+        perPage: 20,
+        search: _searchQuery,
+        specializationId: _selectedSpecializationId,
+        isAvailable: _selectedAvailability,
+      );
+      if (!mounted) return;
+      setState(() {
+        _opportunities = reset
+            ? result.items
+            : [..._opportunities, ...result.items];
+        _currentPage = result.currentPage;
+        _lastPage = result.lastPage;
         _isLoading = false;
+        _isLoadingMore = false;
       });
     } on DioException catch (e) {
       if (!mounted) return;
       setState(() {
         _error = e.message ?? 'حدث خطأ أثناء تحميل الفرص';
         _isLoading = false;
+        _isLoadingMore = false;
       });
     }
   }
 
-  void _applyFilters() {
-    setState(() {
-      _filtered = _opportunities.where((item) {
-        final title = item.title.toLowerCase();
-        final company = (item.company?.name ?? '').toLowerCase();
-        final spec = item.specialization?.name ?? '';
+  void _handleScroll() {
+    if (!_scrollController.hasClients || _isLoading || _isLoadingMore) {
+      return;
+    }
 
-        final matchesSearch = _searchQuery.isEmpty ||
-            title.contains(_searchQuery.toLowerCase()) ||
-            company.contains(_searchQuery.toLowerCase());
+    final threshold = _scrollController.position.maxScrollExtent - 240;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadOpportunities(reset: false);
+    }
+  }
 
-        final matchesSpec =
-            _selectedSpec == 'الكل' || spec == _selectedSpec;
+  Future<void> _reloadOpportunities() {
+    return _loadOpportunities(reset: true);
+  }
 
-        return matchesSearch && matchesSpec;
-      }).toList();
+  void _onSearchChanged(String value) {
+    _searchQuery = value.trim();
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      _reloadOpportunities();
     });
   }
 
-  List<String> get _specializationFilters {
-    final specs = _opportunities
-        .map((e) => e.specialization?.name ?? '')
-        .where((s) => s.isNotEmpty)
-        .toSet()
-        .toList();
-    specs.sort();
-    return ['الكل', ...specs];
+  String get _selectedSpecializationLabel {
+    if (_selectedSpecializationId == null) {
+      return 'كل التخصصات';
+    }
+
+    for (final specialization in _specializations) {
+      if (specialization.id == _selectedSpecializationId) {
+        return specialization.name;
+      }
+    }
+
+    return 'كل التخصصات';
   }
 
   @override
@@ -107,7 +181,7 @@ class _CompanyPageState extends State<CompanyPage> {
             Text(
               'استعرض الفرص المتاحة حسب التخصص',
               style: TextStyle(
-                color: Colors.black.withOpacity(0.45),
+                color: Colors.black.withValues(alpha: 0.45),
                 fontSize: 11,
               ),
             ),
@@ -153,24 +227,49 @@ class _CompanyPageState extends State<CompanyPage> {
         ),
       );
     }
-    if (_filtered.isEmpty) {
-      return const _EmptyState();
+    if (_opportunities.isEmpty) {
+      return _EmptyState(
+        hasFilters: _searchQuery.isNotEmpty || _selectedSpecializationId != null,
+      );
     }
-    return RefreshIndicator(
-      onRefresh: _loadOpportunities,
-      child: GridView.builder(
-        padding: const EdgeInsets.only(bottom: 20),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.74,
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 16,
+    return Column(
+      children: [
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _reloadOpportunities,
+            child: GridView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.only(bottom: 20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.74,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: _opportunities.length,
+              itemBuilder: (context, index) {
+                return _buildOpportunityCard(context, _opportunities[index]);
+              },
+            ),
+          ),
         ),
-        itemCount: _filtered.length,
-        itemBuilder: (context, index) {
-          return _buildOpportunityCard(context, _filtered[index]);
-        },
-      ),
+        if (_isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: CircularProgressIndicator(),
+          )
+        else if (_currentPage < _lastPage)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: OutlinedButton(
+              onPressed: () => _loadOpportunities(reset: false),
+              child: Text(
+                'تحميل المزيد',
+                style: TextStyle(color: primarycolor),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -183,65 +282,117 @@ class _CompanyPageState extends State<CompanyPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: primarycolor.withOpacity(0.18)),
+            border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: PopupMenuButton<String>(
+          child: PopupMenuButton<int?>(
             borderRadius: BorderRadius.circular(16),
             icon: Icon(Icons.filter_list_rounded, color: primarycolor, size: 24),
+            enabled: !_isLoadingFilters,
             onSelected: (value) {
-              _selectedSpec = value;
-              _applyFilters();
+              setState(() {
+                _selectedSpecializationId = value;
+              });
+              _reloadOpportunities();
             },
-            itemBuilder: (context) => _specializationFilters
+            itemBuilder: (context) => [
+              const PopupMenuItem<int?>(
+                value: null,
+                child: Text('كل التخصصات', textAlign: TextAlign.right),
+              ),
+              ..._specializations
                 .map(
-                  (spec) => PopupMenuItem<String>(
-                    value: spec,
-                    child: Text(spec, textAlign: TextAlign.right),
+                  (spec) => PopupMenuItem<int?>(
+                    value: spec.id,
+                    child: Text(spec.name, textAlign: TextAlign.right),
                   ),
-                )
-                .toList(),
+                ),
+            ],
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Container(
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: primarycolor.withOpacity(0.18)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+          child: Column(
+            children: [
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: TextField(
-              textAlign: TextAlign.right,
-              onChanged: (value) {
-                _searchQuery = value;
-                _applyFilters();
-              },
-              decoration: InputDecoration(
-                hintText: 'ابحث عن فرصة أو شركة...',
-                hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
-                border: InputBorder.none,
-                suffixIcon: Icon(Icons.search_rounded, color: primarycolor),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 15,
+                child: TextField(
+                  controller: _searchController,
+                  textAlign: TextAlign.right,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: 'ابحث عن فرصة أو شركة...',
+                    hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+                    border: InputBorder.none,
+                    suffixIcon: Icon(Icons.search_rounded, color: primarycolor),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 15,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.end,
+                  children: [
+                    Text(
+                      _selectedSpecializationLabel,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: Colors.black.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    _AvailabilityChip(
+                      label: 'الكل',
+                      selected: _selectedAvailability == null,
+                      onTap: () {
+                        setState(() => _selectedAvailability = null);
+                        _reloadOpportunities();
+                      },
+                    ),
+                    _AvailabilityChip(
+                      label: 'المتاحة',
+                      selected: _selectedAvailability == true,
+                      onTap: () {
+                        setState(() => _selectedAvailability = true);
+                        _reloadOpportunities();
+                      },
+                    ),
+                    _AvailabilityChip(
+                      label: 'المغلقة',
+                      selected: _selectedAvailability == false,
+                      onTap: () {
+                        setState(() => _selectedAvailability = false);
+                        _reloadOpportunities();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -274,7 +425,7 @@ class _CompanyPageState extends State<CompanyPage> {
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
@@ -294,13 +445,13 @@ class _CompanyPageState extends State<CompanyPage> {
                               imagePath,
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
-                                color: primarycolor.withOpacity(0.1),
+                                color: primarycolor.withValues(alpha: 0.1),
                                 child: Icon(Icons.business,
                                     size: 40, color: primarycolor),
                               ),
                             )
                           : Container(
-                              color: primarycolor.withOpacity(0.1),
+                              color: primarycolor.withValues(alpha: 0.1),
                               child: Icon(Icons.business,
                                   size: 40, color: primarycolor),
                             ),
@@ -312,7 +463,7 @@ class _CompanyPageState extends State<CompanyPage> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withOpacity(0.82),
+                              Colors.black.withValues(alpha: 0.82),
                               Colors.transparent,
                             ],
                           ),
@@ -327,8 +478,8 @@ class _CompanyPageState extends State<CompanyPage> {
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: item.isAvailable
-                              ? Colors.green.withOpacity(0.18)
-                              : Colors.red.withOpacity(0.18),
+                              ? Colors.green.withValues(alpha: 0.18)
+                              : Colors.red.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -415,7 +566,7 @@ class _CompanyPageState extends State<CompanyPage> {
             text,
             textAlign: TextAlign.right,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.70),
+              color: Colors.black.withValues(alpha: 0.70),
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -427,7 +578,9 @@ class _CompanyPageState extends State<CompanyPage> {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  final bool hasFilters;
+
+  const _EmptyState({this.hasFilters = false});
 
   @override
   Widget build(BuildContext context) {
@@ -436,21 +589,65 @@ class _EmptyState extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.search_off_rounded,
-              size: 52, color: Colors.grey.withOpacity(0.7)),
+              size: 52, color: Colors.grey.withValues(alpha: 0.7)),
           const SizedBox(height: 12),
-          const Text(
-            'لا توجد فرص مطابقة',
+          Text(
+            hasFilters ? 'لا توجد فرص مطابقة' : 'لا توجد فرص متاحة حالياً',
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.black54),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'جرّب تغيير البحث أو اختيار تخصص مختلف',
+          Text(
+            hasFilters
+                ? 'جرّب تغيير البحث أو اختيار تخصص مختلف'
+                : 'تحقق لاحقاً أو جرّب تحديث الصفحة لرؤية الفرص الجديدة',
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AvailabilityChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _AvailabilityChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected
+              ? primarycolor.withValues(alpha: 0.12)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected
+                ? primarycolor.withValues(alpha: 0.35)
+                : primarycolor.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: selected ? primarycolor : Colors.black.withValues(alpha: 0.6),
+          ),
+        ),
       ),
     );
   }
