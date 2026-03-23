@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
@@ -27,4 +28,91 @@ class AppConfig {
 
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);
+}
+
+class FirebaseConfig {
+  const FirebaseConfig._();
+
+  static const String _apiKey = String.fromEnvironment('FIREBASE_API_KEY');
+  static const String _appId = String.fromEnvironment('FIREBASE_APP_ID');
+  static const String _messagingSenderId = String.fromEnvironment(
+    'FIREBASE_MESSAGING_SENDER_ID',
+  );
+  static const String _projectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
+  static const String _authDomain = String.fromEnvironment('FIREBASE_AUTH_DOMAIN');
+  static const String _storageBucket = String.fromEnvironment(
+    'FIREBASE_STORAGE_BUCKET',
+  );
+  static const String _measurementId = String.fromEnvironment(
+    'FIREBASE_MEASUREMENT_ID',
+  );
+  static const String _databaseUrl = String.fromEnvironment('FIREBASE_DATABASE_URL');
+  static const String _iosBundleId = String.fromEnvironment('FIREBASE_IOS_BUNDLE_ID');
+  static const String _androidClientId = String.fromEnvironment(
+    'FIREBASE_ANDROID_CLIENT_ID',
+  );
+  static const String _iosClientId = String.fromEnvironment(
+    'FIREBASE_IOS_CLIENT_ID',
+  );
+  static const String _appGroupId = String.fromEnvironment('FIREBASE_APP_GROUP_ID');
+
+  static bool get isConfigured =>
+      _apiKey.isNotEmpty &&
+      _appId.isNotEmpty &&
+      _messagingSenderId.isNotEmpty &&
+      _projectId.isNotEmpty;
+
+  static FirebaseOptions get currentPlatform {
+    if (!isConfigured) {
+      throw StateError(
+        'Firebase is not configured. Pass FIREBASE_API_KEY, FIREBASE_APP_ID, '
+        'FIREBASE_MESSAGING_SENDER_ID, and FIREBASE_PROJECT_ID with --dart-define.',
+      );
+    }
+
+    return FirebaseOptions(
+      apiKey: _apiKey,
+      appId: _appId,
+      messagingSenderId: _messagingSenderId,
+      projectId: _projectId,
+      authDomain: _optionalValue(_authDomain),
+      storageBucket: _optionalValue(_storageBucket),
+      measurementId: _optionalValue(_measurementId),
+      databaseURL: _optionalValue(_databaseUrl),
+      iosBundleId: _optionalValue(_iosBundleId),
+      androidClientId: _optionalValue(_androidClientId),
+      iosClientId: _optionalValue(_iosClientId),
+      appGroupId: _optionalValue(_appGroupId),
+    );
+  }
+
+  static Future<bool> initialize() async {
+    if (Firebase.apps.isNotEmpty) {
+      return true;
+    }
+
+    if (isConfigured) {
+      await Firebase.initializeApp(options: currentPlatform);
+      return true;
+    }
+
+    if (!kIsWeb) {
+      try {
+        await Firebase.initializeApp();
+        return true;
+      } catch (error) {
+        debugPrint('Firebase initialization skipped: $error');
+      }
+    }
+
+    return false;
+  }
+
+  static String? _optionalValue(String value) {
+    if (value.isEmpty) {
+      return null;
+    }
+
+    return value;
+  }
 }

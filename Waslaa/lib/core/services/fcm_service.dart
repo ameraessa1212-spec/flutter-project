@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:Waslaa/core/api/api_client.dart';
@@ -14,6 +15,11 @@ class FCMService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> init(ApiClient apiClient) async {
+    if (Firebase.apps.isEmpty) {
+      debugPrint('Firebase Messaging skipped because Firebase is not initialized.');
+      return;
+    }
+
     // Request permissions for iOS
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
@@ -53,8 +59,10 @@ class FCMService {
       }
     });
 
-    // Handle background messages
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // Background handlers are registered only on non-web platforms.
+    if (!kIsWeb) {
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    }
   }
 
   Future<void> _sendTokenToServer(ApiClient apiClient, String token) async {

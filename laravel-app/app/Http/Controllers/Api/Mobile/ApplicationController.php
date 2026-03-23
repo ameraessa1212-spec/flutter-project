@@ -37,6 +37,8 @@ class ApplicationController extends Controller
     public function store(StoreApplicationRequest $request, InternshipOpportunity $opportunity): JsonResponse
     {
         $validated = $request->validated();
+        $user = $request->user();
+        $studentProfile = $user->studentProfile;
 
         $cvPath = null;
         if ($request->hasFile('cv')) {
@@ -44,15 +46,15 @@ class ApplicationController extends Controller
         }
 
         $application = Application::query()->create([
-            'student_id' => $request->user()->id,
+            'student_id' => $user->id,
             'opportunity_id' => $opportunity->id,
             'company_id' => $opportunity->company_id,
-            'full_name_snapshot' => $validated['full_name_snapshot'],
-            'phone_snapshot' => $validated['phone_snapshot'] ?? null,
-            'email_snapshot' => $validated['email_snapshot'] ?? null,
-            'university_snapshot' => $validated['university_snapshot'] ?? null,
-            'major_snapshot' => $validated['major_snapshot'] ?? null,
-            'level_snapshot' => $validated['level_snapshot'] ?? null,
+            'full_name_snapshot' => $validated['full_name_snapshot'] ?? $user->name ?? trim($user->first_name . ' ' . $user->last_name),
+            'phone_snapshot' => $validated['phone_snapshot'] ?? $user->phone,
+            'email_snapshot' => $validated['email_snapshot'] ?? $user->email,
+            'university_snapshot' => $validated['university_snapshot'] ?? $studentProfile?->university_name,
+            'major_snapshot' => $validated['major_snapshot'] ?? $studentProfile?->major,
+            'level_snapshot' => $validated['level_snapshot'] ?? $studentProfile?->level,
             'cv_file_path' => $cvPath,
             'notes' => $validated['notes'] ?? null,
             'status' => 'pending',

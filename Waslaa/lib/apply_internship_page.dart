@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Waslaa/const/color.dart';
@@ -26,6 +27,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
   bool _isSubmitting = false;
   String? _selectedCvPath;
   String? _selectedCvName;
+  List<int>? _selectedCvBytes;
 
   @override
   void dispose() {
@@ -36,11 +38,16 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
   Future<void> _pickCvFile() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx'],
+      allowedExtensions: ['pdf'],
+      withData: kIsWeb,
     );
     if (result != null && result.files.isNotEmpty) {
       setState(() {
-        _selectedCvPath = result.files.first.path;
+        if (kIsWeb) {
+          _selectedCvBytes = result.files.first.bytes;
+        } else {
+          _selectedCvPath = result.files.first.path;
+        }
         _selectedCvName = result.files.first.name;
       });
     }
@@ -48,6 +55,15 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
 
   Future<void> _submitApplication() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedCvPath == null && _selectedCvBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى إرفاق السيرة الذاتية (PDF) قبل الإرسال'),
+        ),
+      );
+      return;
+    }
 
     if (!_agreed) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -68,6 +84,8 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
             ? null
             : _noteController.text.trim(),
         cvFilePath: _selectedCvPath,
+        cvFileBytes: _selectedCvBytes,
+        cvFileName: _selectedCvName,
       );
 
       if (!mounted) return;
@@ -290,6 +308,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                           GestureDetector(
                             onTap: () => setState(() {
                               _selectedCvPath = null;
+                              _selectedCvBytes = null;
                               _selectedCvName = null;
                             }),
                             child: const Icon(Icons.close,

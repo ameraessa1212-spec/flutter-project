@@ -75,6 +75,7 @@ class _SplashScreenState extends State<SplachScreen> {
       AppLaunchDestination.welcome => const WelcomeScreen(),
       AppLaunchDestination.onboarding => const Intro1(),
       AppLaunchDestination.error => null,
+      _ => null,
     };
 
     if (destination == AppLaunchDestination.home) {

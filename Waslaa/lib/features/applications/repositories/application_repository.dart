@@ -22,11 +22,19 @@ class ApplicationRepository {
     required int opportunityId,
     String? notes,
     String? cvFilePath,
+    List<int>? cvFileBytes,
+    String? cvFileName,
   }) async {
+    MultipartFile? cvFile;
+    if (cvFileBytes != null && cvFileName != null) {
+      cvFile = MultipartFile.fromBytes(cvFileBytes, filename: cvFileName);
+    } else if (cvFilePath != null) {
+      cvFile = await MultipartFile.fromFile(cvFilePath);
+    }
+
     final formData = FormData.fromMap({
       if (notes != null && notes.isNotEmpty) 'notes': notes,
-      if (cvFilePath != null)
-        'cv_file': await MultipartFile.fromFile(cvFilePath),
+      if (cvFile != null) 'cv': cvFile,
     });
 
     final response = await _apiClient.post(

@@ -1,9 +1,9 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/core/api/api_client.dart';
+import 'package:Waslaa/core/config/app_config.dart';
 import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'package:Waslaa/core/session/session_storage.dart';
 import 'package:Waslaa/features/applications/repositories/application_repository.dart';
@@ -22,7 +22,12 @@ import 'package:Waslaa/splach_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  final firebaseEnabled = await FirebaseConfig.initialize();
+  if (!firebaseEnabled) {
+    debugPrint(
+      'Firebase is not configured. The app will start without Firebase-dependent services.',
+    );
+  }
   runApp(const MyApp());
 }
 
