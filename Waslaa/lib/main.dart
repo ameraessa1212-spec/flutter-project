@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +20,9 @@ import 'package:Waslaa/features/reports/repositories/report_repository.dart';
 import 'package:Waslaa/features/settings/repositories/settings_repository.dart';
 import 'package:Waslaa/splach_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -33,57 +36,67 @@ class MyApp extends StatelessWidget {
         Provider(create: (_) => SessionStorage()),
         Provider(
           create:
-              (context) => ApiClient(
-                sessionStorage: context.read<SessionStorage>(),
-              ),
+              (context) =>
+                  ApiClient(sessionStorage: context.read<SessionStorage>()),
         ),
         Provider(
           create:
               (context) => AuthRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              OpportunityRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  OpportunityRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              ApplicationRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  ApplicationRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              InternshipRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  InternshipRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              ReportRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  ReportRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              ChatRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) => ChatRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              NotificationRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  NotificationRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              ProfileRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  ProfileRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              SettingsRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  SettingsRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              DashboardRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  DashboardRepository(apiClient: context.read<ApiClient>()),
         ),
         Provider(
-          create: (context) =>
-              DiscussionScheduleRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) => DiscussionScheduleRepository(
+                apiClient: context.read<ApiClient>(),
+              ),
         ),
         Provider(
-          create: (context) =>
-              ContentRepository(apiClient: context.read<ApiClient>()),
+          create:
+              (context) =>
+                  ContentRepository(apiClient: context.read<ApiClient>()),
         ),
         ChangeNotifierProvider(
           create:

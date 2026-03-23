@@ -43,6 +43,8 @@ class MessageController extends Controller
 
         $thread->update(['last_message_at' => now()]);
 
+        broadcast(new \App\Events\MessageSent($message))->toOthers();
+
         return response()->json([
             'message' => 'Message sent successfully.',
             'data' => MessageResource::make($message),
@@ -75,6 +77,8 @@ class MessageController extends Controller
         ]);
 
         $thread->update(['last_message_at' => now()]);
+
+        broadcast(new \App\Events\MessageSent($message->load('attachments')))->toOthers();
 
         return response()->json([
             'message' => 'Attachment message sent successfully.',

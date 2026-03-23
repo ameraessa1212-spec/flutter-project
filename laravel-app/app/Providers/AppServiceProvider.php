@@ -14,6 +14,7 @@ use App\Policies\InternshipPolicy;
 use App\Policies\ReportPolicy;
 use App\Policies\UserNotificationPolicy;
 use App\Policies\UserSettingPolicy;
+use App\Observers\UserNotificationObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,5 +39,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ChatThread::class, ChatThreadPolicy::class);
         Gate::policy(UserNotification::class, UserNotificationPolicy::class);
         Gate::policy(UserSetting::class, UserSettingPolicy::class);
+        
+        UserNotification::observe(UserNotificationObserver::class);
     }
 }

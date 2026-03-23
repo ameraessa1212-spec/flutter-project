@@ -74,7 +74,13 @@ class ApiClient {
 
     String message = 'حدث خطأ أثناء الاتصال بالخادم.';
 
-    if (responseData is Map<String, dynamic>) {
+    if (statusCode == 401) {
+      message = 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+    } else if (statusCode == 403) {
+      message = 'تم رفض الطلب. تأكد من صلاحية الوصول ثم حاول مرة أخرى.';
+    } else if (statusCode != null && statusCode >= 500) {
+      message = 'حدث خطأ من جهة الخادم. حاول مرة أخرى بعد قليل.';
+    } else if (responseData is Map<String, dynamic>) {
       final apiMessage = responseData['message'];
       if (apiMessage is String && apiMessage.isNotEmpty) {
         message = apiMessage;

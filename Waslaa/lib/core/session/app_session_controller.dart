@@ -5,7 +5,7 @@ import 'package:Waslaa/core/session/session_storage.dart';
 import 'package:Waslaa/features/auth/models/auth_user.dart';
 import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 
-enum AppLaunchDestination { onboarding, welcome, home }
+enum AppLaunchDestination { onboarding, welcome, home, error }
 
 class AppSessionController extends ChangeNotifier {
   AppSessionController({
@@ -28,6 +28,11 @@ class AppSessionController extends ChangeNotifier {
   AuthUser? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
 
+  bool _shouldClearSession(DioException error) {
+    final statusCode = error.response?.statusCode;
+    return statusCode == 401 || statusCode == 403;
+  }
+
   Future<AppLaunchDestination> bootstrap() async {
     _isBootstrapping = true;
     _errorMessage = null;
@@ -46,15 +51,28 @@ class AppSessionController extends ChangeNotifier {
       return AppLaunchDestination.home;
     } on DioException catch (error) {
       _errorMessage = error.message;
-      await _sessionStorage.clearAccessToken();
-      final seenOnboarding = await _sessionStorage.hasSeenOnboarding();
-      return seenOnboarding
-          ? AppLaunchDestination.welcome
-          : AppLaunchDestination.onboarding;
+
+      if (_shouldClearSession(error)) {
+        _currentUser = null;
+        await _sessionStorage.clearAccessToken();
+        final seenOnboarding = await _sessionStorage.hasSeenOnboarding();
+        return seenOnboarding
+            ? AppLaunchDestination.welcome
+            : AppLaunchDestination.onboarding;
+      }
+
+      return AppLaunchDestination.error;
+    } catch (_) {
+      _errorMessage = 'تعذر تهيئة التطبيق حالياً. حاول مرة أخرى.';
+      return AppLaunchDestination.error;
     } finally {
       _isBootstrapping = false;
       notifyListeners();
     }
+  }
+
+  Future<AppLaunchDestination> retryBootstrap() {
+    return bootstrap();
   }
 
   Future<bool> signIn({required String login, required String password}) async {

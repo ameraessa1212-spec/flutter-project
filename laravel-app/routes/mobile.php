@@ -49,6 +49,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::get('/', [ProfileController::class, 'show'])->name('show');
             Route::patch('/', [ProfileController::class, 'update'])->name('update');
             Route::patch('password', [ProfileController::class, 'updatePassword'])->name('password.update');
+            Route::patch('fcm-token', [ProfileController::class, 'updateFcmToken'])->name('fcm-token.update');
             Route::post('avatar', [ProfileController::class, 'uploadAvatar'])->name('avatar.upload');
             Route::post('cv', [ProfileController::class, 'uploadCv'])->name('cv.upload');
         });

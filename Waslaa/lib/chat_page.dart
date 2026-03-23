@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/core/session/app_session_controller.dart';
+import 'package:Waslaa/core/services/pusher_service.dart';
 import 'package:Waslaa/features/chat/models/chat_models.dart';
 import 'package:Waslaa/features/chat/repositories/chat_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -40,6 +41,9 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
+    if (_activeThreadId != null) {
+      PusherService().unsubscribeFromChat(_activeThreadId!);
+    }
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -85,6 +89,17 @@ class _ChatPageState extends State<ChatPage> {
         });
         _scrollToBottom();
         await repo.markRead(_activeThreadId!);
+
+        // Subscribe to Pusher channel
+        PusherService().subscribeToChat(_activeThreadId!, (messageData) {
+          final newMessage = ChatMessage.fromJson(messageData);
+          if (mounted && newMessage.senderId != _currentUserId) {
+            setState(() {
+              _messages.add(newMessage);
+            });
+            _scrollToBottom();
+          }
+        });
       } else if (mounted) {
         setState(() {
           _isLoading = false;
@@ -323,8 +338,12 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _renderMessageContent(ChatMessage msg) {
-    final isFile = msg.messageType == 'file' || msg.messageType == 'attachment' || msg.messageType == 'image';
-    final firstAttachment = msg.attachments.isNotEmpty ? msg.attachments.first : null;
+    final isFile =
+        msg.messageType == 'file' ||
+        msg.messageType == 'attachment' ||
+        msg.messageType == 'image';
+    final firstAttachment =
+        msg.attachments.isNotEmpty ? msg.attachments.first : null;
 
     if (isFile) {
       final attachmentLabel = firstAttachment?.fileName ?? msg.body ?? 'مرفق';
@@ -378,43 +397,43 @@ class _ChatPageState extends State<ChatPage> {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.74,
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.74,
+        ),
+        decoration: BoxDecoration(
+          color: isMe ? primarycolor : const Color(0xFFF0ECEC),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isMe ? 18 : 6),
+            bottomRight: Radius.circular(isMe ? 6 : 18),
           ),
-          decoration: BoxDecoration(
-            color: isMe ? primarycolor : const Color(0xFFF0ECEC),
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(18),
-              topRight: const Radius.circular(18),
-              bottomLeft: Radius.circular(isMe ? 18 : 6),
-              bottomRight: Radius.circular(isMe ? 6 : 18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _renderMessageContent(msg),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                child: Text(
-                  _parseTime(msg.sentAt ?? msg.createdAt ?? ''),
-                  style: TextStyle(
-                    color: isMe ? Colors.white70 : Colors.black45,
-                    fontSize: 10.5,
-                  ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _renderMessageContent(msg),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: Text(
+                _parseTime(msg.sentAt ?? msg.createdAt ?? ''),
+                style: TextStyle(
+                  color: isMe ? Colors.white70 : Colors.black45,
+                  fontSize: 10.5,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     );
   }
 
@@ -505,9 +524,10 @@ class _ChatPageState extends State<ChatPage> {
       child: Row(
         children: [
           InkWell(
-            onTap: supervisorPhone != null && supervisorPhone.isNotEmpty
-                ? () => _callPhone(supervisorPhone)
-                : null,
+            onTap:
+                supervisorPhone != null && supervisorPhone.isNotEmpty
+                    ? () => _callPhone(supervisorPhone)
+                    : null,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: AppDimensions.screenWidth * 0.08,
@@ -521,9 +541,10 @@ class _ChatPageState extends State<ChatPage> {
           ),
           const SizedBox(width: 10),
           InkWell(
-            onTap: supervisorPhone != null && supervisorPhone.isNotEmpty
-                ? () => _openWhatsApp(supervisorPhone)
-                : null,
+            onTap:
+                supervisorPhone != null && supervisorPhone.isNotEmpty
+                    ? () => _openWhatsApp(supervisorPhone)
+                    : null,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: AppDimensions.screenWidth * 0.08,
@@ -583,64 +604,73 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             _buildTopBar(),
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _error != null
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
                       ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.error_outline, size: 44, color: Colors.redAccent),
-                                const SizedBox(height: 10),
-                                Text(_error!, textAlign: TextAlign.center),
-                                const SizedBox(height: 12),
-                                ElevatedButton(
-                                  onPressed: _initChat,
-                                  child: const Text('إعادة المحاولة'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : _activeThreadId == null
-                          ? const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(24),
-                                child: Text(
-                                  'لا توجد محادثات متاحة حالياً لهذا التدريب.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                                ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                size: 44,
+                                color: Colors.redAccent,
                               ),
-                            )
-                          : RefreshIndicator(
-                              onRefresh: _refreshMessages,
-                              child: _messages.isEmpty
-                                  ? ListView(
-                                      padding: const EdgeInsets.all(24),
-                                      children: const [
-                                        SizedBox(height: 120),
-                                        Text(
-                                          'ابدأ المحادثة مع المشرف بإرسال أول رسالة.',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(color: Colors.grey, fontSize: 14),
-                                        ),
-                                      ],
-                                    )
-                                  : ListView.builder(
-                                      controller: _scrollController,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
+                              const SizedBox(height: 10),
+                              Text(_error!, textAlign: TextAlign.center),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: _initChat,
+                                child: const Text('إعادة المحاولة'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      : _activeThreadId == null
+                      ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            'لا توجد محادثات متاحة حالياً لهذا التدريب.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                          ),
+                        ),
+                      )
+                      : RefreshIndicator(
+                        onRefresh: _refreshMessages,
+                        child:
+                            _messages.isEmpty
+                                ? ListView(
+                                  padding: const EdgeInsets.all(24),
+                                  children: const [
+                                    SizedBox(height: 120),
+                                    Text(
+                                      'ابدأ المحادثة مع المشرف بإرسال أول رسالة.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 14,
                                       ),
-                                      itemCount: _messages.length,
-                                      itemBuilder: (context, index) {
-                                        return _buildMessageItem(_messages[index]);
-                                      },
                                     ),
-                            ),
+                                  ],
+                                )
+                                : ListView.builder(
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  itemCount: _messages.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildMessageItem(_messages[index]);
+                                  },
+                                ),
+                      ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),

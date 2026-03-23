@@ -76,8 +76,6 @@ class _ImageSliderScreenState extends State<ImageSliderScreen> {
                 itemBuilder:
                     (_, i) {
                       final item = items[i];
-                      final imageAsset = item.imageAsset;
-                      final imageUrl = item.imageUrl;
                       return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 5),
                       child: ClipRRect(
@@ -85,37 +83,7 @@ class _ImageSliderScreenState extends State<ImageSliderScreen> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            if (imageUrl != null && imageUrl.isNotEmpty)
-                              Image.network(
-                                imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorBuilder: (_, __, ___) => Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [primarycolor, primarycolor.withValues(alpha: 0.72)],
-                                      begin: Alignment.topRight,
-                                      end: Alignment.bottomLeft,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            else if (imageAsset != null && imageAsset.isNotEmpty)
-                              Image.asset(
-                                imageAsset,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                              )
-                            else
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [primarycolor, primarycolor.withValues(alpha: 0.72)],
-                                    begin: Alignment.topRight,
-                                    end: Alignment.bottomLeft,
-                                  ),
-                                ),
-                              ),
+                            _buildSliderImage(item),
                             Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -182,6 +150,96 @@ class _ImageSliderScreenState extends State<ImageSliderScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSliderImage(DashboardContentItem item) {
+    final imageUrl = item.imageUrl;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _buildFallbackImage(item),
+        if (imageUrl != null && imageUrl.isNotEmpty)
+          Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            loadingBuilder: (_, child, progress) {
+              if (progress == null) {
+                return child;
+              }
+
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildFallbackImage(item),
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+            errorBuilder: (_, __, ___) => _buildFallbackImage(item),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFallbackImage(DashboardContentItem item) {
+    final imageAsset = item.imageAsset;
+
+    if (imageAsset != null && imageAsset.isNotEmpty) {
+      return Image.asset(
+        imageAsset,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (_, __, ___) => _buildGradientPlaceholder(),
+      );
+    }
+
+    return _buildGradientPlaceholder();
+  }
+
+  Widget _buildGradientPlaceholder() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primarycolor, primarycolor.withValues(alpha: 0.72)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+        ),
+      ),
+      child: Center(
+        child: Container(
+          width: 68,
+          height: 68,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+          ),
+          child: const Icon(
+            Icons.photo_library_outlined,
+            color: Colors.white,
+            size: 30,
+          ),
+        ),
       ),
     );
   }
