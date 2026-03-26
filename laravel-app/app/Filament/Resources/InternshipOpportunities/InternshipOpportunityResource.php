@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 use UnitEnum;
 
 class InternshipOpportunityResource extends Resource
+{
     /**
      * Scope queries so company users only see their own opportunities.
      */
@@ -34,7 +35,7 @@ class InternshipOpportunityResource extends Resource
         }
         return $query;
     }
-{
+
     protected static ?string $model = InternshipOpportunity::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;

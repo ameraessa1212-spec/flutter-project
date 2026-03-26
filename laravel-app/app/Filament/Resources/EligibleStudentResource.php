@@ -5,23 +5,25 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EligibleStudentResource\Pages;
 use App\Models\EligibleStudent;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Schemas\Schema; // <-- New Schema Import
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use Filament\Tables\Table;   // <-- New Table Import
 use Filament\Tables;
 
 class EligibleStudentResource extends Resource
 {
     protected static ?string $model = EligibleStudent::class;
-    protected static ?string $navigationIcon = 'heroicon-o-identification';
-    protected static ?string $navigationGroup = 'Students';
+    
+    protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-identification';
+    protected static \UnitEnum|string|null $navigationGroup = 'Students';
+    
     protected static ?string $label = 'Eligible Student';
     protected static ?string $pluralLabel = 'Eligible Students';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([ // <-- Changed from schema() to components()
                 Forms\Components\TextInput::make('student_number')
                     ->required()
                     ->unique(ignoreRecord: true),
