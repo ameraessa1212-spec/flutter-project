@@ -222,10 +222,14 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               const SizedBox(height: 14),
 
-              // الرقم الجامعي (اختياري)
+              // الرقم الجامعي / رقم القيد (إلزامي)
               _buildTextField(
                 controller: _studentNumberController,
-                hint: 'الرقم الجامعي (اختياري)',
+                hint: 'الرقم الجامعي / رقم القيد',
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'يرجى إدخال رقم القيد للتحقق';
+                  return null;
+                },
               ),
               const SizedBox(height: 14),
 
@@ -240,7 +244,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 isPassword: true,
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'يرجى إدخال كلمة المرور';
-                  if (v.length < 8) return 'كلمة المرور يجب أن لا تقل عن 8 أحرف';
+                  if (v.length < 6) return 'كلمة المرور يجب أن لا تقل عن 6 أحرف';
                   return null;
                 },
               ),

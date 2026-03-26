@@ -325,7 +325,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       if (value == null || value.isEmpty) {
                         return 'يرجى إدخال كلمة المرور';
                       }
-                      if (value.length < 8) return '8 أحرف على الأقل';
+                      if (value.length < 6) return '6 أحرف على الأقل';
                       return null;
                     },
                   ),

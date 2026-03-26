@@ -46,5 +46,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(UserSetting::class, UserSettingPolicy::class);
         
         UserNotification::observe(UserNotificationObserver::class);
+        \App\Models\Application::observe(\App\Observers\ApplicationObserver::class);
     }
 }
