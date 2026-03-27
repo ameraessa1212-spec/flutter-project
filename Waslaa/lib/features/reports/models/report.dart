@@ -11,6 +11,9 @@ class Report {
     this.submittedAt,
     this.reviewedAt,
     this.reviewNotes,
+    this.studentName,
+    this.studentId,
+    this.internshipId,
   });
 
   final int id;
@@ -24,6 +27,10 @@ class Report {
   final String? submittedAt;
   final String? reviewedAt;
   final String? reviewNotes;
+  // Examiner-facing fields
+  final String? studentName;
+  final int? studentId;
+  final int? internshipId;
 
   factory Report.fromJson(Map<String, dynamic> json) {
     return Report(
@@ -38,6 +45,9 @@ class Report {
       submittedAt: json['submitted_at'] as String?,
       reviewedAt: json['reviewed_at'] as String?,
       reviewNotes: json['review_notes'] as String?,
+      studentName: json['student_name'] as String?,
+      studentId: json['student_id'] as int?,
+      internshipId: json['internship_id'] as int?,
     );
   }
 }

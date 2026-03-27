@@ -6,6 +6,7 @@ import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'package:Waslaa/core/services/fcm_service.dart';
 import 'package:Waslaa/core/services/pusher_service.dart';
 import 'package:Waslaa/core/api/api_client.dart';
+import 'package:Waslaa/examiner_home_page.dart';
 import 'package:Waslaa/home_page.dart';
 import 'package:Waslaa/welcome_screen.dart';
 import 'package:Waslaa/dev_tool_screen.dart';
@@ -89,14 +90,6 @@ class _SplashScreenState extends State<SplachScreen> {
       return;
     }
 
-    final page = switch (destination) {
-      AppLaunchDestination.home => const HomePage(),
-      AppLaunchDestination.welcome => const WelcomeScreen(),
-      AppLaunchDestination.onboarding => const Intro1(),
-      AppLaunchDestination.error => null,
-      _ => null,
-    };
-
     if (destination == AppLaunchDestination.home) {
       try {
         await FCMService().init(context.read<ApiClient>());
@@ -106,13 +99,27 @@ class _SplashScreenState extends State<SplachScreen> {
       }
     }
 
+    // Route to the correct home screen based on the user's role.
+    Widget? page;
+    if (destination == AppLaunchDestination.home) {
+      final isExaminer = context.read<AppSessionController>().isExaminer;
+      page = isExaminer ? const ExaminerHomePage() : const HomePage();
+    } else {
+      page = switch (destination) {
+        AppLaunchDestination.welcome => const WelcomeScreen(),
+        AppLaunchDestination.onboarding => const Intro1(),
+        _ => null,
+      };
+    }
+
     if (page == null) {
       return;
     }
 
+    final Widget targetPage = page;
     Navigator.of(
       context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => page));
+    ).pushReplacement(MaterialPageRoute(builder: (_) => targetPage));
   }
 
   @override

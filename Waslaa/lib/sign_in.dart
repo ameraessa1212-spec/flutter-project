@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:Waslaa/core/session/app_session_controller.dart';
+import 'examiner_home_page.dart';
 import 'home_page.dart';
 import 'sign_up.dart';
 import 'forgot_password.dart';
@@ -49,9 +50,13 @@ class _SignInPageState extends State<SignInPage> {
     }
 
     if (success) {
+      final isExaminer = session.isExaminer;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(
+          builder: (context) =>
+              isExaminer ? const ExaminerHomePage() : const HomePage(),
+        ),
       );
       return;
     }
