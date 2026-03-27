@@ -74,4 +74,12 @@ class ProfileRepository {
     final userJson = data['user'] as Map<String, dynamic>;
     return UserProfile.fromJson(userJson);
   }
+
+  Future<void> updateFcmToken(String fcmToken) async {
+    await _apiClient.patch(
+      '/profile/fcm-token',
+      data: {'fcm_token': fcmToken},
+    );
+  }
 }
+

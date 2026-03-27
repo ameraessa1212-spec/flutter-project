@@ -108,8 +108,10 @@ class MyApp extends StatelessWidget {
               (context) => AppSessionController(
                 sessionStorage: context.read<SessionStorage>(),
                 authRepository: context.read<AuthRepository>(),
+                profileRepository: context.read<ProfileRepository>(),
               ),
         ),
+
       ],
       child: MaterialApp(
         title: 'Waslaa',

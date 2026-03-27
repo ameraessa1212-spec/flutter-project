@@ -1,9 +1,5 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-
-import 'package:Waslaa/core/session/session_storage.dart';
-import 'package:Waslaa/features/auth/models/auth_user.dart';
-import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
+import 'package:Waslaa/core/services/push_notification_service.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 
 enum AppLaunchDestination { onboarding, welcome, home, error }
 
@@ -11,11 +7,14 @@ class AppSessionController extends ChangeNotifier {
   AppSessionController({
     required SessionStorage sessionStorage,
     required AuthRepository authRepository,
+    required ProfileRepository profileRepository,
   }) : _sessionStorage = sessionStorage,
-       _authRepository = authRepository;
+       _authRepository = authRepository,
+       _profileRepository = profileRepository;
 
   final SessionStorage _sessionStorage;
   final AuthRepository _authRepository;
+  final ProfileRepository _profileRepository;
 
   bool _isBootstrapping = false;
   bool _isSigningIn = false;
@@ -27,6 +26,10 @@ class AppSessionController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   AuthUser? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
+
+  void _initializeNotifications() {
+    PushNotificationService(profileRepository: _profileRepository).initialize();
+  }
 
   bool _shouldClearSession(DioException error) {
     final statusCode = error.response?.statusCode;
@@ -48,6 +51,10 @@ class AppSessionController extends ChangeNotifier {
       }
 
       _currentUser = await _authRepository.getCurrentUser();
+      
+      // Initialize notifications
+      _initializeNotifications();
+      
       return AppLaunchDestination.home;
     } on DioException catch (error) {
       _errorMessage = error.message;
@@ -84,6 +91,10 @@ class AppSessionController extends ChangeNotifier {
       final session = await _authRepository.login(login: login, password: password);
       await _sessionStorage.writeAccessToken(session.token);
       _currentUser = session.user;
+      
+      // Initialize notifications
+      _initializeNotifications();
+      
       return true;
     } on DioException catch (error) {
       _errorMessage = error.message;
@@ -93,6 +104,7 @@ class AppSessionController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 
   Future<void> signOut() async {
     try {

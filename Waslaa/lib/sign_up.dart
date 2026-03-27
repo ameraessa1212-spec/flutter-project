@@ -109,15 +109,37 @@ class _SignUpPageState extends State<SignUpPage> {
       );
     } on DioException catch (error) {
       if (!mounted) return;
+
+      String errorMessage = 'حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.';
+
+      if (error.response?.statusCode == 422) {
+        final data = error.response?.data;
+        if (data is Map<String, dynamic> && data.containsKey('errors')) {
+          final errors = data['errors'] as Map<String, dynamic>;
+          if (errors.containsKey('student_number')) {
+            errorMessage = (errors['student_number'] as List).first.toString();
+          } else if (errors.isNotEmpty) {
+            errorMessage = (errors.values.first as List).first.toString();
+          }
+        } else if (data is Map<String, dynamic> && data.containsKey('message')) {
+          errorMessage = data['message'];
+        }
+      } else {
+        errorMessage = error.message ?? errorMessage;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            error.message ?? 'حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.',
+            errorMessage,
             textAlign: TextAlign.center,
+            style: const TextStyle(fontFamily: 'Cairo'),
           ),
+          backgroundColor: Colors.redAccent,
         ),
       );
     } finally {
+
       if (mounted) setState(() => _isLoading = false);
     }
   }
