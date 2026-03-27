@@ -4,9 +4,8 @@ namespace App\Livewire\Supervisor;
 
 use App\Events\MessageSent;
 use App\Models\ChatThread;
-use App\Models\Message;
+use Throwable;
 use Livewire\Component;
-use Livewire\Attributes\On;
 
 class ChatWindow extends Component
 {
@@ -17,23 +16,25 @@ class ChatWindow extends Component
     {
         if ($this->activeThread) {
             return [
-                "echo-private:chat.{$this->activeThread->id},MessageSent" => 'refreshMessages',
-                'threadSelected',
+                "echo-private:chat.{$this->activeThread->id},.message.sent" => 'refreshMessages',
+                'threadSelected' => 'threadSelected',
             ];
         }
         
-        return ['threadSelected'];
+        return ['threadSelected' => 'threadSelected'];
     }
 
     public function threadSelected($threadId)
     {
         $this->activeThread = ChatThread::with(['student', 'internship.company'])->find($threadId);
         $this->markAsRead();
+        $this->dispatch('chat-window-updated');
     }
 
     public function refreshMessages()
     {
         $this->markAsRead();
+        $this->dispatch('chat-window-updated');
     }
 
     public function markAsRead()
@@ -44,7 +45,7 @@ class ChatWindow extends Component
                 ->whereNull('read_at')
                 ->update(['read_at' => now()]);
                 
-            $this->dispatch('messageReceived'); // Update sidebar badging
+            $this->dispatch('messageReceived');
         }
     }
 
@@ -69,9 +70,14 @@ class ChatWindow extends Component
 
         $this->newMessageBody = '';
 
-        broadcast(new MessageSent($message))->toOthers();
+        try {
+            broadcast(new MessageSent($message))->toOthers();
+        } catch (Throwable $exception) {
+            report($exception);
+        }
 
-        $this->dispatch('messageReceived'); 
+        $this->dispatch('messageReceived');
+        $this->dispatch('chat-window-updated');
     }
 
     public function render()
@@ -79,7 +85,7 @@ class ChatWindow extends Component
         $messages = [];
         
         if ($this->activeThread) {
-            $messages = $this->activeThread->messages()->with('attachments')->oldest()->get();
+            $messages = $this->activeThread->messages()->oldest()->get();
         }
 
         return view('livewire.supervisor.chat-window', [

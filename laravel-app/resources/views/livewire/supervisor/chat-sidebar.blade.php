@@ -1,11 +1,13 @@
-<div class="flex flex-col h-full bg-white dark:bg-gray-800">
-    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-3">
+<div class="flex h-full min-h-0 flex-col bg-white dark:bg-gray-800">
+    <div class="space-y-3 border-b border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
         <div class="flex items-center justify-between">
             <h2 class="text-lg font-bold text-gray-900 dark:text-white">المحادثات</h2>
         </div>
         <div class="relative">
             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <x-heroicon-o-magnifying-glass class="w-5 h-5 text-gray-400" />
+                <span class="chat-fixed-icon text-gray-400">
+                    <x-heroicon-o-magnifying-glass class="chat-fixed-icon" />
+                </span>
             </div>
             <input 
                 type="text" 
@@ -16,17 +18,16 @@
         </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto w-full p-2 space-y-1" >
+    <div class="flex-1 space-y-1 overflow-y-auto p-2">
         @forelse ($threads as $thread)
             @php
                 $isActive = $activeThreadId === $thread->id;
                 $lastMessage = $thread->messages->first();
-                // We'll consider a thread having unread messages if the last message was sent by the student and read_at is null
-                $isUnread = $lastMessage && $lastMessage->sender_id !== auth()->id() && is_null($lastMessage->read_at);
+                $isUnread = $thread->unread_messages_count > 0;
             @endphp
             <button 
                 wire:click="$dispatch('threadSelected', { threadId: {{ $thread->id }} })"
-                class="w-full relative flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {{ $isActive ? 'bg-primary-50 dark:bg-primary-900/20 shadow-sm border border-primary-100 dark:border-primary-800/30' : '' }}"
+                class="relative flex w-full items-center rounded-xl p-3 text-right transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 {{ $isActive ? 'border border-primary-100 bg-primary-50 shadow-sm dark:border-primary-800/30 dark:bg-primary-900/20' : '' }}"
             >
                 <div class="flex-shrink-0 relative">
                     <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300">
@@ -50,15 +51,8 @@
                                 @if($lastMessage->sender_id === auth()->id())
                                     <span class="text-gray-400">أنت: </span>
                                 @endif
-                                
-                                @if($lastMessage->message_type === 'text')
-                                    {{ $lastMessage->body }}
-                                @else
-                                    <span class="text-gray-400 flex items-center gap-1">
-                                        <x-heroicon-s-paper-clip class="w-3 h-3" />
-                                        مرفق  
-                                    </span>
-                                @endif
+
+                                {{ $lastMessage->body ?: 'رسالة جديدة' }}
                             @else
                                 <span class="text-gray-400">لا توجد رسائل...</span>
                             @endif
@@ -71,8 +65,16 @@
                 </div>
             </button>
         @empty
-            <div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                لا توجد محادثات حالياً
+            <div class="flex h-full min-h-[14rem] items-center justify-center p-4">
+                <div class="w-full max-w-xs rounded-2xl border border-dashed border-gray-200 bg-gray-50/70 px-5 py-8 text-center dark:border-gray-700 dark:bg-gray-900/40">
+                    <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300">
+                        <span class="chat-fixed-icon">
+                            <x-heroicon-o-chat-bubble-left-right class="chat-fixed-icon" />
+                        </span>
+                    </div>
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-200">لا توجد محادثات حالياً</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">ستظهر هنا محادثات الطلاب بعد بدء التواصل.</p>
+                </div>
             </div>
         @endforelse
     </div>
