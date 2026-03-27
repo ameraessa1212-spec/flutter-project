@@ -32,7 +32,6 @@ class AppSessionController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   AuthUser? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
-  bool get isExaminer => _currentUser?.role == 'examiner';
 
   void _initializeNotifications() {
     PushNotificationService(profileRepository: _profileRepository).initialize();

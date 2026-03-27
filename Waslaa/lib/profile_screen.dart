@@ -100,12 +100,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final sessionUser = context.watch<AppSessionController>().currentUser;
     final displayName = _profile?.name ?? sessionUser?.name ?? 'مستخدم';
     final displayPhone = _profile?.phone ?? sessionUser?.phone ?? '';
-    final role = _profile?.role ?? sessionUser?.role ?? '';
-    final displayRole = switch (role) {
-      'student' => 'طالب تدريب ميداني',
-      'examiner' => 'محكّم',
-      _ => role,
-    };
+    final displayRole =
+        (_profile?.role == 'student' || sessionUser?.role == 'student')
+            ? 'طالب تدريب ميداني'
+            : (_profile?.role ?? sessionUser?.role ?? '');
     final avatarPath = _profile?.studentProfile?.profileImagePath;
 
     return Scaffold(

@@ -51,42 +51,4 @@ class ReportRepository {
   Future<void> deleteReport(int reportId) async {
     await _apiClient.delete('/reports/$reportId');
   }
-
-  // ── Examiner-specific methods ──────────────────────────────────────────────
-
-  /// Returns all student reports visible to the currently logged-in examiner.
-  Future<List<Report>> getExaminerReports({String? status}) async {
-    final queryParams = <String, dynamic>{};
-    if (status != null) queryParams['status'] = status;
-    final response = await _apiClient.get(
-      '/examiner/reports',
-      queryParameters: queryParams.isEmpty ? null : queryParams,
-    );
-    final data =
-        (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
-    return data
-        .map((item) => Report.fromJson(item as Map<String, dynamic>))
-        .toList();
-  }
-
-  /// Approves or rejects a report as an examiner.
-  ///
-  /// [status] must be `'approved'` or `'rejected'`.
-  Future<Report> evaluateReport({
-    required int reportId,
-    required String status,
-    String? reviewNotes,
-  }) async {
-    final response = await _apiClient.post(
-      '/reports/$reportId/evaluate',
-      data: {
-        'status': status,
-        if (reviewNotes != null && reviewNotes.isNotEmpty)
-          'review_notes': reviewNotes,
-      },
-    );
-    final data =
-        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
-    return Report.fromJson(data);
-  }
 }
