@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "622454016128",
+    "project_id": "waslla-app",
+    "storage_bucket": "waslla-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:622454016128:android:dc6c574577c4308cbf3e65",
+        "android_client_info": {
+          "package_name": "com.example.Waslaa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKMFCy4PCFopOoyrMJ9tvW8C4-fzXfjfE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:622454016128:android:cfb54ce9feb41995bf3e65",
+        "android_client_info": {
+          "package_name": "com.example.shadaa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKMFCy4PCFopOoyrMJ9tvW8C4-fzXfjfE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

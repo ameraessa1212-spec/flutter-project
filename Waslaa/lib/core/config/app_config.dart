@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppConfig {
   const AppConfig._();
 
-  static const String _debugApiBaseUrl = 'http://127.0.0.1:8000/api/mobile/v1';
+  static const String _debugApiBaseUrl =
+      'https://flutter-project-main-vmkevy.free.laravel.cloud/api/mobile/v1';
 
   static String? _customApiBaseUrl;
 

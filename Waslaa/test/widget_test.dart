@@ -23,7 +23,7 @@ void main() {
         final storage = FakeSessionStorage(onboardingSeen: false);
         final controller = AppSessionController(
           sessionStorage: storage,
-          authRepository: FakeAuthRepository(),
+          authRepository: FakeAuthRepository(), profileRepository: null,
         );
 
         final destination = await controller.bootstrap();
@@ -44,7 +44,7 @@ void main() {
           sessionStorage: storage,
           authRepository: FakeAuthRepository(
             bootstrapError: _dioError(statusCode: 401, message: 'Unauthorized'),
-          ),
+          ), profileRepository: ,
         );
 
         final destination = await controller.bootstrap();
