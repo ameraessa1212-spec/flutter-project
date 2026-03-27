@@ -8,7 +8,8 @@ class DashboardRepository {
 
   Future<HomeDashboard> getHomeDashboard() async {
     final response = await _apiClient.get('/dashboard/home');
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return HomeDashboard.fromJson(data);
   }
 }

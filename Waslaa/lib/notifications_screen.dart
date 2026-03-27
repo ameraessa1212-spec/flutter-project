@@ -67,15 +67,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       await repo.markAllRead();
       if (!mounted) return;
       setState(() {
-        _notifications = _notifications
-            .map((n) => n.copyWith(isRead: true))
-            .toList();
+        _notifications =
+            _notifications.map((n) => n.copyWith(isRead: true)).toList();
       });
     } on DioException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'حدث خطأ')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message ?? 'حدث خطأ')));
     }
   }
 
@@ -103,7 +102,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         leading: Padding(
           padding: const EdgeInsets.only(top: 20),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: primary, size: 18),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: primary,
+              size: 18,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -140,8 +143,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 12),
-            Text(_error!, textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red)),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadNotifications,
@@ -201,11 +207,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       itemCount: _notifications.length,
-      separatorBuilder: (_, __) => Divider(
-        color: primary.withOpacity(0.1),
-        thickness: 1,
-        height: 30,
-      ),
+      separatorBuilder:
+          (_, __) => Divider(
+            color: primary.withOpacity(0.1),
+            thickness: 1,
+            height: 30,
+          ),
       itemBuilder: (context, index) {
         final n = _notifications[index];
         return GestureDetector(
@@ -236,9 +243,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: n.isRead
-                                  ? FontWeight.normal
-                                  : FontWeight.bold,
+                              fontWeight:
+                                  n.isRead
+                                      ? FontWeight.normal
+                                      : FontWeight.bold,
                               color: const Color(0xFF4A4A4A),
                               fontFamily: 'Cairo',
                             ),
@@ -284,7 +292,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 color: const Color(0xFF0019B7),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: Colors.white, width: 1.2),
+                                  color: Colors.white,
+                                  width: 1.2,
+                                ),
                               ),
                             ),
                           ),

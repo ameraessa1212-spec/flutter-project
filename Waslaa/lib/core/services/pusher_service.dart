@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:Waslaa/core/session/session_storage.dart';
+import 'package:Waslaa/core/config/app_config.dart';
 
 class PusherService {
   static final PusherService _instance = PusherService._internal();
@@ -16,11 +17,15 @@ class PusherService {
 
     try {
       final token = await SessionStorage().readAccessToken();
+      final apiBase = AppConfig.apiBaseUrl;
+      final authEndpoint = apiBase.replaceAll(
+        '/mobile/v1',
+        '/broadcasting/auth',
+      );
 
       await pusher.init(
-        apiKey: "pnbqosojiv97hmrgutf5", // REVERB_APP_KEY from backend
-        cluster:
-            "mt1", // not used for reverb but required by pusher format sometimes
+        apiKey: "pnbqosojiv97hmrgutf5", // REVERB_APP_KEY
+        cluster: "mt1",
         onConnectionStateChange: onConnectionStateChange,
         onError: onError,
         onSubscriptionSucceeded: onSubscriptionSucceeded,
@@ -29,15 +34,14 @@ class PusherService {
         onDecryptionFailure: onDecryptionFailure,
         onMemberAdded: onMemberAdded,
         onMemberRemoved: onMemberRemoved,
-        authEndpoint:
-            "http://10.0.2.2:8000/api/broadcasting/auth", // Adjust for real API
+        authEndpoint: authEndpoint,
         authParams: {
           'headers': {
             'Authorization': 'Bearer $token',
             'Accept': 'application/json',
           },
         },
-        useTLS: false, // Set to true in production
+        useTLS: false,
       );
       await pusher.connect();
       _isInitialized = true;

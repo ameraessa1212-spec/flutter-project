@@ -91,9 +91,9 @@ class _ReportsPageState extends State<ReportsPage> {
 
   Future<void> _submitFiles() async {
     if (selectedFiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى اختيار ملف أولاً')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('يرجى اختيار ملف أولاً')));
       return;
     }
 
@@ -478,9 +478,10 @@ class _ReportsPageState extends State<ReportsPage> {
   }
 
   Widget _buildSubmittedReportCard(Report report) {
-    final statusColor = report.status == 'approved'
-        ? Colors.green
-        : report.status == 'rejected'
+    final statusColor =
+        report.status == 'approved'
+            ? Colors.green
+            : report.status == 'rejected'
             ? Colors.red
             : Colors.orange;
     return Container(

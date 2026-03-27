@@ -2,7 +2,8 @@ import 'package:Waslaa/core/api/api_client.dart';
 import 'package:Waslaa/features/opportunities/models/opportunity.dart';
 
 class OpportunityRepository {
-  OpportunityRepository({required ApiClient apiClient}) : _apiClient = apiClient;
+  OpportunityRepository({required ApiClient apiClient})
+    : _apiClient = apiClient;
 
   final ApiClient _apiClient;
 
@@ -25,7 +26,9 @@ class OpportunityRepository {
         if (isAvailable != null) 'is_available': isAvailable ? '1' : '0',
       },
     );
-    return OpportunityListPage.fromResponse(response.data as Map<String, dynamic>);
+    return OpportunityListPage.fromResponse(
+      response.data as Map<String, dynamic>,
+    );
   }
 
   Future<List<Opportunity>> getOpportunities({
@@ -49,7 +52,8 @@ class OpportunityRepository {
 
   Future<Opportunity> getOpportunity(int id) async {
     final response = await _apiClient.get('/opportunities/$id');
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return Opportunity.fromJson(data);
   }
 }

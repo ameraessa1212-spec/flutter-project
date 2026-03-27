@@ -9,7 +9,8 @@ class ReportRepository {
 
   Future<List<Report>> getReports(int internshipId) async {
     final response = await _apiClient.get('/internships/$internshipId/reports');
-    final data = (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
     return data
         .map((item) => Report.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -35,13 +36,15 @@ class ReportRepository {
       '/internships/$internshipId/reports',
       data: formData,
     );
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return Report.fromJson(data);
   }
 
   Future<Report> getReport(int reportId) async {
     final response = await _apiClient.get('/reports/$reportId');
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return Report.fromJson(data);
   }
 

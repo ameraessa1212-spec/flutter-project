@@ -101,9 +101,8 @@ class _CompanyPageState extends State<CompanyPage> {
       );
       if (!mounted) return;
       setState(() {
-        _opportunities = reset
-            ? result.items
-            : [..._opportunities, ...result.items];
+        _opportunities =
+            reset ? result.items : [..._opportunities, ...result.items];
         _currentPage = result.currentPage;
         _lastPage = result.lastPage;
         _isLoading = false;
@@ -229,7 +228,8 @@ class _CompanyPageState extends State<CompanyPage> {
     }
     if (_opportunities.isEmpty) {
       return _EmptyState(
-        hasFilters: _searchQuery.isNotEmpty || _selectedSpecializationId != null,
+        hasFilters:
+            _searchQuery.isNotEmpty || _selectedSpecializationId != null,
       );
     }
     return Column(
@@ -293,7 +293,11 @@ class _CompanyPageState extends State<CompanyPage> {
           ),
           child: PopupMenuButton<int?>(
             borderRadius: BorderRadius.circular(16),
-            icon: Icon(Icons.filter_list_rounded, color: primarycolor, size: 24),
+            icon: Icon(
+              Icons.filter_list_rounded,
+              color: primarycolor,
+              size: 24,
+            ),
             enabled: !_isLoadingFilters,
             onSelected: (value) {
               setState(() {
@@ -301,19 +305,19 @@ class _CompanyPageState extends State<CompanyPage> {
               });
               _reloadOpportunities();
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem<int?>(
-                value: null,
-                child: Text('كل التخصصات', textAlign: TextAlign.right),
-              ),
-              ..._specializations
-                .map(
-                  (spec) => PopupMenuItem<int?>(
-                    value: spec.id,
-                    child: Text(spec.name, textAlign: TextAlign.right),
+            itemBuilder:
+                (context) => [
+                  const PopupMenuItem<int?>(
+                    value: null,
+                    child: Text('كل التخصصات', textAlign: TextAlign.right),
                   ),
-                ),
-            ],
+                  ..._specializations.map(
+                    (spec) => PopupMenuItem<int?>(
+                      value: spec.id,
+                      child: Text(spec.name, textAlign: TextAlign.right),
+                    ),
+                  ),
+                ],
           ),
         ),
         const SizedBox(width: 12),
@@ -325,7 +329,9 @@ class _CompanyPageState extends State<CompanyPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
+                  border: Border.all(
+                    color: primarycolor.withValues(alpha: 0.18),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.03),
@@ -340,7 +346,10 @@ class _CompanyPageState extends State<CompanyPage> {
                   onChanged: _onSearchChanged,
                   decoration: InputDecoration(
                     hintText: 'ابحث عن فرصة أو شركة...',
-                    hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+                    hintStyle: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
                     border: InputBorder.none,
                     suffixIcon: Icon(Icons.search_rounded, color: primarycolor),
                     contentPadding: const EdgeInsets.symmetric(
@@ -413,9 +422,7 @@ class _CompanyPageState extends State<CompanyPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CompanyDetailsPage(
-              opportunity: item,
-            ),
+            builder: (context) => CompanyDetailsPage(opportunity: item),
           ),
         );
       },
@@ -440,21 +447,31 @@ class _CompanyPageState extends State<CompanyPage> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: imagePath != null
-                          ? Image.network(
-                              imagePath,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
+                      child:
+                          imagePath != null
+                              ? Image.network(
+                                imagePath,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) => Container(
+                                      color: primarycolor.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      child: Icon(
+                                        Icons.business,
+                                        size: 40,
+                                        color: primarycolor,
+                                      ),
+                                    ),
+                              )
+                              : Container(
                                 color: primarycolor.withValues(alpha: 0.1),
-                                child: Icon(Icons.business,
-                                    size: 40, color: primarycolor),
+                                child: Icon(
+                                  Icons.business,
+                                  size: 40,
+                                  color: primarycolor,
+                                ),
                               ),
-                            )
-                          : Container(
-                              color: primarycolor.withValues(alpha: 0.1),
-                              child: Icon(Icons.business,
-                                  size: 40, color: primarycolor),
-                            ),
                     ),
                     Positioned.fill(
                       child: Container(
@@ -475,19 +492,23 @@ class _CompanyPageState extends State<CompanyPage> {
                       left: 10,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
-                          color: item.isAvailable
-                              ? Colors.green.withValues(alpha: 0.18)
-                              : Colors.red.withValues(alpha: 0.18),
+                          color:
+                              item.isAvailable
+                                  ? Colors.green.withValues(alpha: 0.18)
+                                  : Colors.red.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           item.isAvailable ? 'متاح' : 'مغلق',
                           style: TextStyle(
-                            color: item.isAvailable
-                                ? Colors.greenAccent
-                                : Colors.redAccent,
+                            color:
+                                item.isAvailable
+                                    ? Colors.greenAccent
+                                    : Colors.redAccent,
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
@@ -539,12 +560,13 @@ class _CompanyPageState extends State<CompanyPage> {
                     if (location.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       _infoRow(
-                          icon: Icons.location_on_outlined, text: location),
+                        icon: Icons.location_on_outlined,
+                        text: location,
+                      ),
                     ],
                     if (duration.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      _infoRow(
-                          icon: Icons.access_time_rounded, text: duration),
+                      _infoRow(icon: Icons.access_time_rounded, text: duration),
                     ],
                   ],
                 ),
@@ -588,15 +610,19 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off_rounded,
-              size: 52, color: Colors.grey.withValues(alpha: 0.7)),
+          Icon(
+            Icons.search_off_rounded,
+            size: 52,
+            color: Colors.grey.withValues(alpha: 0.7),
+          ),
           const SizedBox(height: 12),
           Text(
             hasFilters ? 'لا توجد فرص مطابقة' : 'لا توجد فرص متاحة حالياً',
             style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black54),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -630,14 +656,13 @@ class _AvailabilityChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: selected
-              ? primarycolor.withValues(alpha: 0.12)
-              : Colors.white,
+          color: selected ? primarycolor.withValues(alpha: 0.12) : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected
-                ? primarycolor.withValues(alpha: 0.35)
-                : primarycolor.withValues(alpha: 0.12),
+            color:
+                selected
+                    ? primarycolor.withValues(alpha: 0.35)
+                    : primarycolor.withValues(alpha: 0.12),
           ),
         ),
         child: Text(
@@ -645,7 +670,8 @@ class _AvailabilityChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
-            color: selected ? primarycolor : Colors.black.withValues(alpha: 0.6),
+            color:
+                selected ? primarycolor : Colors.black.withValues(alpha: 0.6),
           ),
         ),
       ),

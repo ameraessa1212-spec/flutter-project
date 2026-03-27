@@ -1,28 +1,31 @@
 class ChatAttachment {
   const ChatAttachment({
-    required this.id,
-    required this.messageId,
+    this.id,
+    this.messageId,
     this.filePath,
     this.fileName,
     this.fileType,
     this.fileSize,
+    this.fileUrl,
   });
 
-  final int id;
-  final int messageId;
+  final dynamic id;
+  final dynamic messageId;
   final String? filePath;
   final String? fileName;
   final String? fileType;
   final int? fileSize;
+  final String? fileUrl;
 
   factory ChatAttachment.fromJson(Map<String, dynamic> json) {
     return ChatAttachment(
-      id: json['id'] as int,
-      messageId: json['message_id'] as int,
+      id: json['id'],
+      messageId: json['message_id'],
       filePath: json['file_path'] as String?,
       fileName: json['file_name'] as String?,
       fileType: json['file_type'] as String?,
       fileSize: json['file_size'] as int?,
+      fileUrl: json['file_url'] as String?,
     );
   }
 }
@@ -30,8 +33,10 @@ class ChatAttachment {
 class ChatMessage {
   const ChatMessage({
     required this.id,
-    required this.threadId,
+    this.threadId,
     required this.senderId,
+    this.fromId,
+    this.toId,
     required this.messageType,
     this.body,
     this.sentAt,
@@ -40,9 +45,11 @@ class ChatMessage {
     this.attachments = const [],
   });
 
-  final int id;
-  final int threadId;
+  final dynamic id;
+  final int? threadId;
   final int senderId;
+  final int? fromId;
+  final int? toId;
   final String messageType;
   final String? body;
   final String? sentAt;
@@ -53,15 +60,18 @@ class ChatMessage {
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     final attachmentsRaw = json['attachments'] as List<dynamic>?;
     return ChatMessage(
-      id: json['id'] as int,
-      threadId: json['thread_id'] as int,
-      senderId: json['sender_id'] as int,
+      id: json['id'],
+      threadId: json['thread_id'] as int?,
+      senderId: (json['sender_id'] ?? json['from_id'] ?? 0) as int,
+      fromId: json['from_id'] as int?,
+      toId: json['to_id'] as int?,
       messageType: (json['message_type'] ?? 'text') as String,
       body: json['body'] as String?,
-      sentAt: json['sent_at'] as String?,
-      readAt: json['read_at'] as String?,
+      sentAt: (json['sent_at'] ?? json['created_at']) as String?,
+      readAt: (json['read_at'] ?? json['updated_at']) as String?,
       createdAt: json['created_at'] as String?,
-      attachments: attachmentsRaw
+      attachments:
+          attachmentsRaw
               ?.map((a) => ChatAttachment.fromJson(a as Map<String, dynamic>))
               .toList() ??
           [],

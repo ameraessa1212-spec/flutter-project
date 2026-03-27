@@ -98,7 +98,9 @@ class Intro1 extends StatelessWidget {
                   // زر تخطي - الآن يوجه إلى WelcomeScreen مباشرة
                   TextButton(
                     onPressed: () async {
-                      await context.read<AppSessionController>().markOnboardingSeen();
+                      await context
+                          .read<AppSessionController>()
+                          .markOnboardingSeen();
                       if (!context.mounted) {
                         return;
                       }

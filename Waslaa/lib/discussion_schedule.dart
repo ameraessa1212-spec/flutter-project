@@ -90,8 +90,11 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 12),
-            Text(_error!, textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red)),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadSchedules,
@@ -105,7 +108,11 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
       return const Center(
         child: Text(
           'لا توجد مواعيد مناقشات حاليًا',
-          style: TextStyle(fontFamily: 'Cairo', fontSize: 14, color: Colors.grey),
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 14,
+            color: Colors.grey,
+          ),
         ),
       );
     }
@@ -113,10 +120,13 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
       onRefresh: _loadSchedules,
       child: ListView.builder(
         padding: const EdgeInsets.only(
-            top: 20.0, left: 20.0, right: 20.0, bottom: 40.0),
+          top: 20.0,
+          left: 20.0,
+          right: 20.0,
+          bottom: 40.0,
+        ),
         itemCount: _schedules.length,
-        itemBuilder: (context, index) =>
-            _buildScheduleCard(_schedules[index]),
+        itemBuilder: (context, index) => _buildScheduleCard(_schedules[index]),
       ),
     );
   }
@@ -148,7 +158,9 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
               if (schedule.academicTerm != null)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -188,7 +200,8 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
             ),
           ],
 
-          if (schedule.description != null && schedule.description!.isNotEmpty) ...[
+          if (schedule.description != null &&
+              schedule.description!.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
               schedule.description!,
@@ -234,8 +247,11 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.image_search_outlined,
-              size: 50, color: primary.withOpacity(0.4)),
+          Icon(
+            Icons.image_search_outlined,
+            size: 50,
+            color: primary.withOpacity(0.4),
+          ),
           const SizedBox(height: 12),
           const Text(
             'سيتم عرض صورة الجدول هنا عند توفرها',

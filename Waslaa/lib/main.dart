@@ -22,6 +22,7 @@ import 'package:Waslaa/splach_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppConfig.init();
   final firebaseEnabled = await FirebaseConfig.initialize();
   if (!firebaseEnabled) {
     debugPrint(
@@ -111,7 +112,6 @@ class MyApp extends StatelessWidget {
                 profileRepository: context.read<ProfileRepository>(),
               ),
         ),
-
       ],
       child: MaterialApp(
         title: 'Waslaa',

@@ -9,6 +9,7 @@ import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 import 'package:Waslaa/terms_and_conditions_page.dart';
 import 'package:Waslaa/discussion_schedule.dart';
 import 'package:Waslaa/settings_page.dart';
+import 'package:Waslaa/chat_page.dart';
 import 'package:Waslaa/sign_in.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -99,9 +100,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final sessionUser = context.watch<AppSessionController>().currentUser;
     final displayName = _profile?.name ?? sessionUser?.name ?? 'مستخدم';
     final displayPhone = _profile?.phone ?? sessionUser?.phone ?? '';
-    final displayRole = (_profile?.role == 'student' || sessionUser?.role == 'student')
-        ? 'طالب تدريب ميداني'
-        : (_profile?.role ?? sessionUser?.role ?? '');
+    final displayRole =
+        (_profile?.role == 'student' || sessionUser?.role == 'student')
+            ? 'طالب تدريب ميداني'
+            : (_profile?.role ?? sessionUser?.role ?? '');
     final avatarPath = _profile?.studentProfile?.profileImagePath;
 
     return Scaffold(
@@ -144,23 +146,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
-                      child: avatarPath != null
-                          ? ClipOval(
-                              child: Image.network(
-                                avatarPath,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                  size: 34,
+                      child:
+                          avatarPath != null
+                              ? ClipOval(
+                                child: Image.network(
+                                  avatarPath,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (_, __, ___) => const Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 34,
+                                      ),
                                 ),
+                              )
+                              : const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 34,
                               ),
-                            )
-                          : const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 34,
-                            ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -249,6 +253,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: Column(
                   children: [
+                    _ProfileMenuTile(
+                      title: "الدعم الفني",
+                      subtitle: "تواصل مع إدارة النظام للاستفسارات التقنية",
+                      icon: Icons.support_agent_rounded,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const ChatPage(
+                                  receiverId: 1,
+                                  receiverName: 'إدارة النظام (الدعم الفني)',
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                    _tileDivider(),
                     _ProfileMenuTile(
                       title: "مواعيد المناقشات",
                       subtitle: "الاطلاع على جدول مواعيد مناقشة التقارير",

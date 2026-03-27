@@ -8,10 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 class CompanyDetailsPage extends StatelessWidget {
   final Opportunity opportunity;
 
-  const CompanyDetailsPage({
-    super.key,
-    required this.opportunity,
-  });
+  const CompanyDetailsPage({super.key, required this.opportunity});
 
   static const Color textDark = Color(0xFF1F2937);
   static const Color textMuted = Color(0xFF6B7280);
@@ -70,18 +67,24 @@ class CompanyDetailsPage extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
-                      child: imagePath != null
-                          ? Image.network(
-                              imagePath,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder: (_, __, ___) => Icon(
+                      child:
+                          imagePath != null
+                              ? Image.network(
+                                imagePath,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                errorBuilder:
+                                    (_, __, ___) => Icon(
+                                      Icons.business,
+                                      size: 60,
+                                      color: primarycolor,
+                                    ),
+                              )
+                              : Icon(
                                 Icons.business,
                                 size: 60,
                                 color: primarycolor,
                               ),
-                            )
-                          : Icon(Icons.business, size: 60, color: primarycolor),
                     ),
                   ),
                   Container(
@@ -103,11 +106,14 @@ class CompanyDetailsPage extends StatelessWidget {
                     left: 14,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: opportunity.isAvailable
-                            ? Colors.green.withOpacity(0.85)
-                            : Colors.red.withOpacity(0.85),
+                        color:
+                            opportunity.isAvailable
+                                ? Colors.green.withOpacity(0.85)
+                                : Colors.red.withOpacity(0.85),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -184,9 +190,8 @@ class CompanyDetailsPage extends StatelessWidget {
                             child: _MiniInfoCard(
                               icon: Icons.location_on_outlined,
                               title: 'الموقع',
-                              value: location.isNotEmpty
-                                  ? location
-                                  : companyCity,
+                              value:
+                                  location.isNotEmpty ? location : companyCity,
                             ),
                           ),
                       ],
@@ -276,13 +281,15 @@ class CompanyDetailsPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.info_outline_rounded,
-                              color: primarycolor, size: 20),
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: primarycolor,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           const Text(
                             'وصف فرصة التدريب',
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.black),
+                            style: TextStyle(fontSize: 16, color: Colors.black),
                           ),
                         ],
                       ),
@@ -321,8 +328,11 @@ class CompanyDetailsPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.business_outlined,
-                              color: primarycolor, size: 20),
+                          Icon(
+                            Icons.business_outlined,
+                            color: primarycolor,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           const Text(
                             'نبذة عن الشركة',
@@ -340,8 +350,7 @@ class CompanyDetailsPage extends StatelessWidget {
                             ? companyDescription
                             : '$companyName توفر فرص تدريب للطلاب في عدد من التخصصات، وتهدف إلى منحهم تجربة عملية حقيقية داخل بيئة العمل.',
                         textAlign: TextAlign.right,
-                        style: const TextStyle(
-                            fontSize: 14, color: textMuted),
+                        style: const TextStyle(fontSize: 14, color: textMuted),
                       ),
                     ],
                   ),
@@ -352,18 +361,20 @@ class CompanyDetailsPage extends StatelessWidget {
 
               // زر التقديم
               ElevatedButton(
-                onPressed: opportunity.isAvailable
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ApplyInternshipPage(
-                              opportunity: opportunity,
+                onPressed:
+                    opportunity.isAvailable
+                        ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => ApplyInternshipPage(
+                                    opportunity: opportunity,
+                                  ),
                             ),
-                          ),
-                        );
-                      }
-                    : null,
+                          );
+                        }
+                        : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primarycolor,
                   disabledBackgroundColor: Colors.grey.shade300,

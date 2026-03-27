@@ -93,31 +93,34 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: Colors.red),
-                      const SizedBox(height: 12),
-                      Text(_error!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        child: const Text('إعادة المحاولة'),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: _buildContent(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadData,
+                      child: const Text('إعادة المحاولة'),
+                    ),
+                  ],
                 ),
+              )
+              : RefreshIndicator(onRefresh: _loadData, child: _buildContent()),
     );
   }
 
@@ -173,9 +176,10 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
               Expanded(
                 child: _QuickActionCard(
                   title: 'رفع التقرير',
-                  subtitle: internship?.reportDueDate != null
-                      ? 'آخر موعد: ${internship!.reportDueDate}'
-                      : internship != null
+                  subtitle:
+                      internship?.reportDueDate != null
+                          ? 'آخر موعد: ${internship!.reportDueDate}'
+                          : internship != null
                           ? 'إرسال تقرير مرتبط بالتدريب الحالي'
                           : 'يتطلب وجود تدريب نشط',
                   icon: Icons.upload_file_rounded,
@@ -192,9 +196,9 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ReportsPage(
-                          internshipId: internship.id,
-                        ),
+                        builder:
+                            (context) =>
+                                ReportsPage(internshipId: internship.id),
                       ),
                     );
                   },
@@ -204,20 +208,23 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
               Expanded(
                 child: _QuickActionCard(
                   title: 'التواصل مع المشرف',
-                  subtitle: activeThread?.supervisorName != null
-                      ? 'المشرف: ${activeThread!.supervisorName}'
-                      : internship?.supervisor?.name != null
+                  subtitle:
+                      activeThread?.supervisorName != null
+                          ? 'المشرف: ${activeThread!.supervisorName}'
+                          : internship?.supervisor?.name != null
                           ? 'المشرف: ${internship!.supervisor!.name}'
                           : internship != null
-                              ? 'المحادثة غير متاحة بعد'
-                              : 'يتطلب وجود تدريب نشط',
+                          ? 'المحادثة غير متاحة بعد'
+                          : 'يتطلب وجود تدريب نشط',
                   icon: Icons.chat_bubble_outline_rounded,
                   enabled: activeThread != null,
                   onTap: () {
                     if (activeThread == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('لا توجد محادثة مرتبطة بالتدريب الحالي بعد.'),
+                          content: Text(
+                            'لا توجد محادثة مرتبطة بالتدريب الحالي بعد.',
+                          ),
                         ),
                       );
                       return;
@@ -225,10 +232,11 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChatPage(
-                          threadId: activeThread.id,
-                          internshipId: activeThread.internshipId,
-                        ),
+                        builder:
+                            (context) => ChatPage(
+                              threadId: activeThread.id,
+                              internshipId: activeThread.internshipId,
+                            ),
                       ),
                     );
                   },
@@ -241,10 +249,12 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
             const SizedBox(height: 22),
             const _SectionTitle(title: 'طلباتي'),
             const SizedBox(height: 10),
-            ..._applications.map((app) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _ApplicationStatusCard(application: app),
-                )),
+            ..._applications.map(
+              (app) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _ApplicationStatusCard(application: app),
+              ),
+            ),
           ],
         ],
       ),
@@ -311,8 +321,7 @@ class _InternshipSummaryCard extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             'اطلع على طلبك، حالة تدريبك الحالي، والتقارير المرفوعة من مكان واحد.',
-            style: TextStyle(
-                color: Colors.white70, fontSize: 13, height: 1.6),
+            style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.6),
           ),
           const SizedBox(height: 16),
           Row(
@@ -400,8 +409,7 @@ class _CurrentInternshipCard extends StatelessWidget {
     final company = internship.company;
     final opportunity = internship.opportunity;
     final supervisor = internship.supervisor;
-    final location =
-        opportunity?.locationText ?? opportunity?.city ?? '';
+    final location = opportunity?.locationText ?? opportunity?.city ?? '';
     final duration = opportunity?.durationText ?? '';
 
     return Container(
@@ -424,7 +432,9 @@ class _CurrentInternshipCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 5),
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.green.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -647,9 +657,10 @@ class _ApplicationStatusCard extends StatelessWidget {
     final statusLabel = _statusLabel(application.status);
     final companyName = application.company?.name ?? '';
     final opportunityTitle = application.opportunity?.title ?? '';
-    final date = application.submittedAt != null
-        ? _formatDate(application.submittedAt!)
-        : '';
+    final date =
+        application.submittedAt != null
+            ? _formatDate(application.submittedAt!)
+            : '';
 
     return Container(
       padding: const EdgeInsets.all(16),

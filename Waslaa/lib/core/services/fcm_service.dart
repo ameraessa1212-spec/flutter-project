@@ -16,7 +16,9 @@ class FCMService {
 
   Future<void> init(ApiClient apiClient) async {
     if (Firebase.apps.isEmpty) {
-      debugPrint('Firebase Messaging skipped because Firebase is not initialized.');
+      debugPrint(
+        'Firebase Messaging skipped because Firebase is not initialized.',
+      );
       return;
     }
 
@@ -61,7 +63,9 @@ class FCMService {
 
     // Background handlers are registered only on non-web platforms.
     if (!kIsWeb) {
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
     }
   }
 

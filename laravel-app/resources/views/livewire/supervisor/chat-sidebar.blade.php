@@ -1,6 +1,19 @@
 <div class="flex flex-col h-full bg-white dark:bg-gray-800">
-    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
-        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">المحادثات</h2>
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-3">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">المحادثات</h2>
+        </div>
+        <div class="relative">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <x-heroicon-o-magnifying-glass class="w-5 h-5 text-gray-400" />
+            </div>
+            <input 
+                type="text" 
+                wire:model.live.debounce.300ms="search" 
+                class="block w-full rounded-lg border-0 py-2 pr-10 pl-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:ring-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-primary-500" 
+                placeholder="بحث عن طالب أو شركة..."
+            >
+        </div>
     </div>
 
     <div class="flex-1 overflow-y-auto w-full p-2 space-y-1" >

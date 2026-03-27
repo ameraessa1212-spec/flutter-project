@@ -9,7 +9,8 @@ class ProfileRepository {
 
   Future<UserProfile> getProfile() async {
     final response = await _apiClient.get('/profile');
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     final userJson = data['user'] as Map<String, dynamic>;
     return UserProfile.fromJson(userJson);
   }
@@ -29,7 +30,8 @@ class ProfileRepository {
         if (phone != null) 'phone': phone,
       },
     );
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     final userJson = data['user'] as Map<String, dynamic>;
     return UserProfile.fromJson(userJson);
   }
@@ -57,7 +59,8 @@ class ProfileRepository {
       ),
     });
     final response = await _apiClient.post('/profile/avatar', data: formData);
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     final userJson = data['user'] as Map<String, dynamic>;
     return UserProfile.fromJson(userJson);
   }
@@ -70,16 +73,13 @@ class ProfileRepository {
       ),
     });
     final response = await _apiClient.post('/profile/cv', data: formData);
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     final userJson = data['user'] as Map<String, dynamic>;
     return UserProfile.fromJson(userJson);
   }
 
   Future<void> updateFcmToken(String fcmToken) async {
-    await _apiClient.patch(
-      '/profile/fcm-token',
-      data: {'fcm_token': fcmToken},
-    );
+    await _apiClient.patch('/profile/fcm-token', data: {'fcm_token': fcmToken});
   }
 }
-

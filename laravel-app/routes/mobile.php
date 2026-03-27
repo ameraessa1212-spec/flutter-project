@@ -99,6 +99,11 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::post('threads/{thread}/messages', [MessageController::class, 'store'])->name('messages.store');
             Route::post('threads/{thread}/attachments', [MessageController::class, 'storeAttachment'])->name('messages.attachments.store');
             Route::post('threads/{thread}/read', [MessageController::class, 'markRead'])->name('messages.read');
+
+            // --- Chatify Bridge Routes ---
+            Route::get('contacts', [\App\Http\Controllers\Api\Mobile\MobileChatController::class, 'contacts']);
+            Route::get('messages', [\App\Http\Controllers\Api\Mobile\MobileChatController::class, 'getMessages']);
+            Route::post('messages', [\App\Http\Controllers\Api\Mobile\MobileChatController::class, 'sendMessage']);
         });
 
         Route::prefix('notifications')->name('notifications.')->group(function () {

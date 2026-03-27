@@ -255,9 +255,8 @@ class _SignInPageState extends State<SignInPage> {
       // تغيير من TextField إلى TextFormField
       controller: controller,
       validator: validator,
-      textDirection: _isArabic(controller.text)
-          ? TextDirection.rtl
-          : TextDirection.ltr,
+      textDirection:
+          _isArabic(controller.text) ? TextDirection.rtl : TextDirection.ltr,
       textAlign: TextAlign.start,
       obscureText: isPassword,
       onChanged: (value) {

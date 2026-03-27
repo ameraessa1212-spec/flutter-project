@@ -8,6 +8,7 @@ import 'package:Waslaa/core/services/pusher_service.dart';
 import 'package:Waslaa/core/api/api_client.dart';
 import 'package:Waslaa/home_page.dart';
 import 'package:Waslaa/welcome_screen.dart';
+import 'package:Waslaa/dev_tool_screen.dart';
 import 'Intro1.dart';
 
 class SplachScreen extends StatefulWidget {
@@ -23,6 +24,8 @@ class _SplashScreenState extends State<SplachScreen> {
   double _opacity = 0;
   double _scale = 0.5;
   AppLaunchDestination? _pendingDestination;
+  int _logoTaps = 0;
+  Timer? _tapTimer;
 
   @override
   void initState() {
@@ -45,7 +48,23 @@ class _SplashScreenState extends State<SplachScreen> {
 
   @override
   void dispose() {
+    _tapTimer?.cancel();
     super.dispose();
+  }
+
+  void _handleLogoTap() {
+    _logoTaps++;
+    _tapTimer?.cancel();
+    _tapTimer = Timer(const Duration(seconds: 1), () {
+      _logoTaps = 0;
+    });
+
+    if (_logoTaps >= 5) {
+      _logoTaps = 0;
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const DevToolScreen()));
+    }
   }
 
   Future<void> _bootstrapApp() async {
@@ -115,7 +134,10 @@ class _SplashScreenState extends State<SplachScreen> {
                 child: AnimatedOpacity(
                   opacity: _opacity,
                   duration: const Duration(seconds: 2),
-                  child: Image.asset('assets/images/Vector.png', width: 200),
+                  child: GestureDetector(
+                    onTap: _handleLogoTap,
+                    child: Image.asset('assets/images/Vector.png', width: 200),
+                  ),
                 ),
               ),
               const SizedBox(height: 28),

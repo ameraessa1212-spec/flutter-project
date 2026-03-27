@@ -3,16 +3,21 @@ import 'package:Waslaa/core/api/api_client.dart';
 import 'package:Waslaa/features/applications/models/application.dart';
 
 class ApplicationRepository {
-  ApplicationRepository({required ApiClient apiClient}) : _apiClient = apiClient;
+  ApplicationRepository({required ApiClient apiClient})
+    : _apiClient = apiClient;
 
   final ApiClient _apiClient;
 
-  Future<List<Application>> getApplications({int page = 1, int perPage = 15}) async {
+  Future<List<Application>> getApplications({
+    int page = 1,
+    int perPage = 15,
+  }) async {
     final response = await _apiClient.get(
       '/applications',
       queryParameters: {'page': page, 'per_page': perPage},
     );
-    final data = (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
     return data
         .map((item) => Application.fromJson(item as Map<String, dynamic>))
         .toList();
@@ -41,7 +46,8 @@ class ApplicationRepository {
       '/opportunities/$opportunityId/applications',
       data: formData,
     );
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return Application.fromJson(data);
   }
 

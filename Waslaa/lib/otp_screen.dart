@@ -10,11 +10,7 @@ import 'reset_password.dart';
 enum OtpFlow { registration, passwordReset }
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({
-    super.key,
-    required this.identifier,
-    required this.flow,
-  });
+  const OtpScreen({super.key, required this.identifier, required this.flow});
 
   /// البريد الإلكتروني أو رقم الهاتف المستخدم في عملية التحقق
   final String identifier;
@@ -89,19 +85,14 @@ class _OtpScreenState extends State<OtpScreen> {
         );
       } else {
         // OTP لاسترجاع كلمة المرور
-        await repo.verifyResetOtp(
-          identifier: widget.identifier,
-          otp: otp,
-        );
+        await repo.verifyResetOtp(identifier: widget.identifier, otp: otp);
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder:
-                (_) => ResetPasswordPage(
-                  identifier: widget.identifier,
-                  otp: otp,
-                ),
+                (_) =>
+                    ResetPasswordPage(identifier: widget.identifier, otp: otp),
           ),
         );
       }
@@ -110,7 +101,8 @@ class _OtpScreenState extends State<OtpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            error.message ?? 'حدث خطأ. يرجى التحقق من الرمز والمحاولة مرة أخرى.',
+            error.message ??
+                'حدث خطأ. يرجى التحقق من الرمز والمحاولة مرة أخرى.',
             textAlign: TextAlign.center,
           ),
         ),

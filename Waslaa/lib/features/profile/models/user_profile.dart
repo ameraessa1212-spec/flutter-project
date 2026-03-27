@@ -36,12 +36,16 @@ class UserProfile {
       phone: (json['phone'] ?? '') as String,
       role: (json['role'] ?? '') as String,
       status: (json['status'] ?? '') as String,
-      studentProfile: json['student_profile'] != null
-          ? StudentProfile.fromJson(json['student_profile'] as Map<String, dynamic>)
-          : null,
-      settings: json['settings'] != null
-          ? UserSettings.fromJson(json['settings'] as Map<String, dynamic>)
-          : null,
+      studentProfile:
+          json['student_profile'] != null
+              ? StudentProfile.fromJson(
+                json['student_profile'] as Map<String, dynamic>,
+              )
+              : null,
+      settings:
+          json['settings'] != null
+              ? UserSettings.fromJson(json['settings'] as Map<String, dynamic>)
+              : null,
     );
   }
 }
@@ -106,9 +110,12 @@ class UserSettings {
     return UserSettings(
       id: json['id'] as int,
       language: (json['language'] ?? 'ar') as String,
-      pushNotificationsEnabled: (json['push_notifications_enabled'] ?? true) as bool,
-      emailNotificationsEnabled: (json['email_notifications_enabled'] ?? true) as bool,
-      chatNotificationsEnabled: (json['chat_notifications_enabled'] ?? true) as bool,
+      pushNotificationsEnabled:
+          (json['push_notifications_enabled'] ?? true) as bool,
+      emailNotificationsEnabled:
+          (json['email_notifications_enabled'] ?? true) as bool,
+      chatNotificationsEnabled:
+          (json['chat_notifications_enabled'] ?? true) as bool,
       theme: (json['theme'] ?? 'light') as String,
     );
   }

@@ -30,9 +30,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
     try {
       final repo = context.read<AuthRepository>();
-      await repo.forgotPassword(
-        identifier: _identifierController.text.trim(),
-      );
+      await repo.forgotPassword(identifier: _identifierController.text.trim());
 
       if (!mounted) return;
 
@@ -127,7 +125,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     horizontal: 20,
                     vertical: 18,
                   ),
-                  errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
+                  errorStyle: const TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 12,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,

@@ -50,12 +50,18 @@ class Application {
       submittedAt: json['submitted_at'] as String?,
       reviewedAt: json['reviewed_at'] as String?,
       reviewNotes: json['review_notes'] as String?,
-      company: json['company'] != null
-          ? OpportunityCompany.fromJson(json['company'] as Map<String, dynamic>)
-          : null,
-      opportunity: json['opportunity'] != null
-          ? Opportunity.fromJson(json['opportunity'] as Map<String, dynamic>)
-          : null,
+      company:
+          json['company'] != null
+              ? OpportunityCompany.fromJson(
+                json['company'] as Map<String, dynamic>,
+              )
+              : null,
+      opportunity:
+          json['opportunity'] != null
+              ? Opportunity.fromJson(
+                json['opportunity'] as Map<String, dynamic>,
+              )
+              : null,
     );
   }
 }

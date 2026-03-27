@@ -1,12 +1,35 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppConfig {
   const AppConfig._();
 
   static const String _debugApiBaseUrl = 'http://127.0.0.1:8000/api/mobile/v1';
 
+  static String? _customApiBaseUrl;
+
+  static Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _customApiBaseUrl = prefs.getString('custom_api_base_url');
+  }
+
+  static Future<void> setCustomApiBaseUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (url.isEmpty) {
+      await prefs.remove('custom_api_base_url');
+      _customApiBaseUrl = null;
+    } else {
+      await prefs.setString('custom_api_base_url', url);
+      _customApiBaseUrl = url;
+    }
+  }
+
   static String get apiBaseUrl {
+    if (_customApiBaseUrl != null && _customApiBaseUrl!.isNotEmpty) {
+      return _customApiBaseUrl!;
+    }
+
     final configuredValue = const String.fromEnvironment(
       'API_BASE_URL',
       defaultValue: '',
@@ -65,15 +88,18 @@ class FirebaseConfig {
     'FIREBASE_DATABASE_URL',
     defaultValue: 'https://laraval-appfor-waslaa.firebaseio.com',
   );
-  static const String _iosBundleId = String.fromEnvironment('FIREBASE_IOS_BUNDLE_ID');
+  static const String _iosBundleId = String.fromEnvironment(
+    'FIREBASE_IOS_BUNDLE_ID',
+  );
   static const String _androidClientId = String.fromEnvironment(
     'FIREBASE_ANDROID_CLIENT_ID',
   );
   static const String _iosClientId = String.fromEnvironment(
     'FIREBASE_IOS_CLIENT_ID',
   );
-  static const String _appGroupId = String.fromEnvironment('FIREBASE_APP_GROUP_ID');
-
+  static const String _appGroupId = String.fromEnvironment(
+    'FIREBASE_APP_GROUP_ID',
+  );
 
   static bool get isConfigured =>
       _apiKey.isNotEmpty &&

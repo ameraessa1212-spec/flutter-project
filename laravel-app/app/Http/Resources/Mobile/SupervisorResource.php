@@ -16,6 +16,7 @@ class SupervisorResource extends JsonResource
             'email' => $this->email,
             'type' => $this->type,
             'department' => $this->department,
+            'user_id' => $this->user_id,
         ];
     }
 }

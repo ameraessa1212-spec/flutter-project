@@ -8,7 +8,7 @@ class PushNotificationService {
   final ProfileRepository? _profileRepository;
 
   PushNotificationService({ProfileRepository? profileRepository})
-      : _profileRepository = profileRepository;
+    : _profileRepository = profileRepository;
 
   Future<void> initialize() async {
     if (kIsWeb) return;
@@ -30,7 +30,9 @@ class PushNotificationService {
       debugPrint('Message data: ${message.data}');
 
       if (message.notification != null) {
-        debugPrint('Message also contained a notification: ${message.notification?.title}');
+        debugPrint(
+          'Message also contained a notification: ${message.notification?.title}',
+        );
       }
     });
 

@@ -8,7 +8,8 @@ class SettingsRepository {
 
   Future<UserSettings> getSettings() async {
     final response = await _apiClient.get('/settings');
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return UserSettings.fromJson(data);
   }
 
@@ -22,14 +23,18 @@ class SettingsRepository {
     final response = await _apiClient.patch(
       '/settings',
       data: {
-        if (pushNotificationsEnabled != null) 'push_notifications_enabled': pushNotificationsEnabled,
-        if (emailNotificationsEnabled != null) 'email_notifications_enabled': emailNotificationsEnabled,
-        if (chatNotificationsEnabled != null) 'chat_notifications_enabled': chatNotificationsEnabled,
+        if (pushNotificationsEnabled != null)
+          'push_notifications_enabled': pushNotificationsEnabled,
+        if (emailNotificationsEnabled != null)
+          'email_notifications_enabled': emailNotificationsEnabled,
+        if (chatNotificationsEnabled != null)
+          'chat_notifications_enabled': chatNotificationsEnabled,
         if (language != null) 'language': language,
         if (theme != null) 'theme': theme,
       },
     );
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return UserSettings.fromJson(data);
   }
 }

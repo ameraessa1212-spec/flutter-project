@@ -63,10 +63,19 @@ class DashboardController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        $unreadMessagesCount = \App\Models\Message::query()
+            ->whereHas('thread', function ($q) use ($user) {
+                $q->where('student_id', $user->id);
+            })
+            ->where('sender_id', '!=', $user->id)
+            ->whereNull('read_at')
+            ->count();
+
         return response()->json([
             'data' => [
                 'applications_count' => $applicationsCount,
                 'unread_notifications_count' => $unreadNotificationsCount,
+                'unread_messages_count' => $unreadMessagesCount,
                 'current_internship' => $currentInternship
                     ? InternshipResource::make($currentInternship)->resolve()
                     : null,
@@ -76,6 +85,7 @@ class DashboardController extends Controller
                 'announcements' => $this->mapDashboardContentItems($announcements),
             ],
         ]);
+
     }
 
     private function mapDashboardContentItems(Collection $items): array

@@ -80,7 +80,9 @@ class Intro2 extends StatelessWidget {
               Center(
                 child: ElevatedButton(
                   onPressed: () async {
-                    await context.read<AppSessionController>().markOnboardingSeen();
+                    await context
+                        .read<AppSessionController>()
+                        .markOnboardingSeen();
                     if (!context.mounted) {
                       return;
                     }

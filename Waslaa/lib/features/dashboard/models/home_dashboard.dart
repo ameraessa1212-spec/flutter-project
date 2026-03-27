@@ -34,6 +34,7 @@ class HomeDashboard {
   const HomeDashboard({
     required this.applicationsCount,
     required this.unreadNotificationsCount,
+    required this.unreadMessagesCount,
     this.currentInternship,
     this.featuredOpportunities = const [],
     this.sliderItems = const [],
@@ -43,6 +44,7 @@ class HomeDashboard {
 
   final int applicationsCount;
   final int unreadNotificationsCount;
+  final int unreadMessagesCount;
   final Internship? currentInternship;
   final List<Opportunity> featuredOpportunities;
   final List<DashboardContentItem> sliderItems;
@@ -56,25 +58,45 @@ class HomeDashboard {
     final announcementsRaw = json['announcements'] as List<dynamic>?;
     return HomeDashboard(
       applicationsCount: (json['applications_count'] ?? 0) as int,
-      unreadNotificationsCount: (json['unread_notifications_count'] ?? 0) as int,
-      currentInternship: json['current_internship'] != null
-          ? Internship.fromJson(json['current_internship'] as Map<String, dynamic>)
-          : null,
-      featuredOpportunities: featuredRaw
-              ?.map((item) => Opportunity.fromJson(item as Map<String, dynamic>))
+      unreadNotificationsCount:
+          (json['unread_notifications_count'] ?? 0) as int,
+      unreadMessagesCount: (json['unread_messages_count'] ?? 0) as int,
+      currentInternship:
+          json['current_internship'] != null
+              ? Internship.fromJson(
+                json['current_internship'] as Map<String, dynamic>,
+              )
+              : null,
+      featuredOpportunities:
+          featuredRaw
+              ?.map(
+                (item) => Opportunity.fromJson(item as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
-        sliderItems: sliderRaw
-            ?.map((item) => DashboardContentItem.fromJson(item as Map<String, dynamic>))
-            .toList() ??
+      sliderItems:
+          sliderRaw
+              ?.map(
+                (item) =>
+                    DashboardContentItem.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
           const [],
-        tipCards: tipsRaw
-            ?.map((item) => DashboardContentItem.fromJson(item as Map<String, dynamic>))
-            .toList() ??
+      tipCards:
+          tipsRaw
+              ?.map(
+                (item) =>
+                    DashboardContentItem.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
           const [],
-        announcements: announcementsRaw
-            ?.map((item) => DashboardContentItem.fromJson(item as Map<String, dynamic>))
-            .toList() ??
+      announcements:
+          announcementsRaw
+              ?.map(
+                (item) =>
+                    DashboardContentItem.fromJson(item as Map<String, dynamic>),
+              )
+              .toList() ??
           const [],
     );
   }

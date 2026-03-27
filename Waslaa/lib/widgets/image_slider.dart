@@ -73,68 +73,68 @@ class _ImageSliderScreenState extends State<ImageSliderScreen> {
               child: PageView.builder(
                 controller: _pageCtrl,
                 itemCount: items.length,
-                itemBuilder:
-                    (_, i) {
-                      final item = items[i];
-                      return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            _buildSliderImage(item),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [
-                                    Colors.black.withValues(alpha: 0.72),
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              right: 20,
-                              left: 20,
-                              bottom: 20,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.title,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 21,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                  if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      item.subtitle!,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 12.5,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
+                itemBuilder: (_, i) {
+                  final item = items[i];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          _buildSliderImage(item),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.72),
+                                  Colors.transparent,
                                 ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          Positioned(
+                            right: 20,
+                            left: 20,
+                            bottom: 20,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                if (item.subtitle != null &&
+                                    item.subtitle!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    item.subtitle!,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12.5,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                    },
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -187,7 +187,9 @@ class _ImageSliderScreenState extends State<ImageSliderScreen> {
                         padding: EdgeInsets.all(10),
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       ),
                     ),

@@ -18,9 +18,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   UserSettings? _settings;
   bool _loadingSettings = true;
@@ -65,12 +67,14 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       final repo = context.read<ProfileRepository>();
       await repo.updateProfile(
-        username: _userNameController.text.trim().isEmpty
-            ? null
-            : _userNameController.text.trim(),
-        phone: _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
+        username:
+            _userNameController.text.trim().isEmpty
+                ? null
+                : _userNameController.text.trim(),
+        phone:
+            _phoneController.text.trim().isEmpty
+                ? null
+                : _phoneController.text.trim(),
       );
       if (!mounted) return;
       _showSnackBar('تم تحديث المعلومات الشخصية');
@@ -99,8 +103,10 @@ class _SettingsPageState extends State<SettingsPage> {
       _confirmPasswordController.clear();
     } on DioException catch (e) {
       if (!mounted) return;
-      _showSnackBar(e.message ?? 'حدث خطأ أثناء تغيير كلمة المرور',
-          isError: true);
+      _showSnackBar(
+        e.message ?? 'حدث خطأ أثناء تغيير كلمة المرور',
+        isError: true,
+      );
     } finally {
       if (mounted) setState(() => _isUpdatingPassword = false);
     }
@@ -130,9 +136,11 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message,
-            textAlign: TextAlign.right,
-            style: const TextStyle(fontFamily: 'Cairo', fontSize: 12)),
+        content: Text(
+          message,
+          textAlign: TextAlign.right,
+          style: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
+        ),
         backgroundColor: isError ? Colors.red : primary,
         behavior: SnackBarBehavior.floating,
       ),
@@ -161,30 +169,46 @@ class _SettingsPageState extends State<SettingsPage> {
         filled: true,
         fillColor: Colors.white,
         hintText: hint,
-        hintStyle:
-            const TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.grey),
+        hintStyle: const TextStyle(
+          fontFamily: 'Cairo',
+          fontSize: 12,
+          color: Colors.grey,
+        ),
         prefixIcon: Icon(icon, color: primary, size: 18),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 12,
+        ),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
+        ),
         focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: primary, width: 1.5)),
-        errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 10, color: Colors.red),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primary, width: 1.5),
+        ),
+        errorStyle: const TextStyle(
+          fontFamily: 'Cairo',
+          fontSize: 10,
+          color: Colors.red,
+        ),
         errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 1)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
         focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 1.5)),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        ),
       ),
     );
   }
 
-  Widget _buildActionButton(String text, VoidCallback? onPressed,
-      {bool isLoading = false}) {
+  Widget _buildActionButton(
+    String text,
+    VoidCallback? onPressed, {
+    bool isLoading = false,
+  }) {
     return SizedBox(
       width: 180,
       height: 42,
@@ -193,22 +217,29 @@ class _SettingsPageState extends State<SettingsPage> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
           elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
-              )
-            : Text(text,
-                style: const TextStyle(
+        child:
+            isLoading
+                ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+                : Text(
+                  text,
+                  style: const TextStyle(
                     fontFamily: 'Cairo',
                     color: Colors.white,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold)),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
       ),
     );
   }
@@ -227,10 +258,11 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Text(
             'الإعدادات',
             style: TextStyle(
-                fontFamily: 'Cairo',
-                color: primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 15),
+              fontFamily: 'Cairo',
+              color: primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
           ),
         ),
         leading: Padding(
@@ -243,7 +275,11 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(
-            top: 30.0, left: 25.0, right: 25.0, bottom: 40.0),
+          top: 30.0,
+          left: 25.0,
+          right: 25.0,
+          bottom: 40.0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -256,10 +292,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   const Text(
                     'المعلومات الشخصية',
                     style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 13,
-                        color: primary,
-                        fontWeight: FontWeight.bold),
+                      fontFamily: 'Cairo',
+                      fontSize: 13,
+                      color: primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 15),
                   _buildTextField(
@@ -297,10 +334,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   const Text(
                     'تغيير كلمة المرور',
                     style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 13,
-                        color: primary,
-                        fontWeight: FontWeight.bold),
+                      fontFamily: 'Cairo',
+                      fontSize: 13,
+                      color: primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 15),
                   _buildTextField(
@@ -363,10 +401,11 @@ class _SettingsPageState extends State<SettingsPage> {
               const Text(
                 'إعدادات الإشعارات',
                 style: TextStyle(
-                    fontFamily: 'Cairo',
-                    fontSize: 13,
-                    color: primary,
-                    fontWeight: FontWeight.bold),
+                  fontFamily: 'Cairo',
+                  fontSize: 13,
+                  color: primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               _buildSwitchTile(
@@ -407,11 +446,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: primary,
-          ),
+          Switch(value: value, onChanged: onChanged, activeColor: primary),
           Text(
             title,
             style: const TextStyle(fontFamily: 'Cairo', fontSize: 13),

@@ -91,12 +91,18 @@ class Opportunity {
       endDate: json['end_date'] as String?,
       applicationDeadline: json['application_deadline'] as String?,
       imagePath: json['image_path'] as String?,
-      company: json['company'] != null
-          ? OpportunityCompany.fromJson(json['company'] as Map<String, dynamic>)
-          : null,
-      specialization: json['specialization'] != null
-          ? Specialization.fromJson(json['specialization'] as Map<String, dynamic>)
-          : null,
+      company:
+          json['company'] != null
+              ? OpportunityCompany.fromJson(
+                json['company'] as Map<String, dynamic>,
+              )
+              : null,
+      specialization:
+          json['specialization'] != null
+              ? Specialization.fromJson(
+                json['specialization'] as Map<String, dynamic>,
+              )
+              : null,
     );
   }
 }
@@ -120,9 +126,10 @@ class OpportunityListPage {
     final data = (json['data'] as List<dynamic>? ?? const []);
     final meta = (json['meta'] as Map<String, dynamic>? ?? const {});
     return OpportunityListPage(
-      items: data
-          .map((item) => Opportunity.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      items:
+          data
+              .map((item) => Opportunity.fromJson(item as Map<String, dynamic>))
+              .toList(),
       currentPage: (meta['current_page'] ?? 1) as int,
       lastPage: (meta['last_page'] ?? 1) as int,
       total: (meta['total'] ?? data.length) as int,

@@ -7,7 +7,8 @@ import 'package:Waslaa/core/session/session_storage.dart';
 class ApiClient {
   ApiClient({required SessionStorage sessionStorage, Dio? dio})
     : _sessionStorage = sessionStorage,
-      _dio = dio ??
+      _dio =
+          dio ??
           Dio(
             BaseOptions(
               baseUrl: AppConfig.apiBaseUrl,

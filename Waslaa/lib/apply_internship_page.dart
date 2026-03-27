@@ -10,10 +10,7 @@ import 'package:Waslaa/features/opportunities/models/opportunity.dart';
 class ApplyInternshipPage extends StatefulWidget {
   final Opportunity opportunity;
 
-  const ApplyInternshipPage({
-    super.key,
-    required this.opportunity,
-  });
+  const ApplyInternshipPage({super.key, required this.opportunity});
 
   @override
   State<ApplyInternshipPage> createState() => _ApplyInternshipPageState();
@@ -80,9 +77,10 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
       final repo = context.read<ApplicationRepository>();
       await repo.apply(
         opportunityId: widget.opportunity.id,
-        notes: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
+        notes:
+            _noteController.text.trim().isEmpty
+                ? null
+                : _noteController.text.trim(),
         cvFilePath: _selectedCvPath,
         cvFileBytes: _selectedCvBytes,
         cvFileName: _selectedCvName,
@@ -158,7 +156,10 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 13, color: Colors.black)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 13, color: Colors.black),
+            ),
           ],
         ),
       ),
@@ -200,10 +201,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        primarycolor,
-                        primarycolor.withOpacity(0.82),
-                      ],
+                      colors: [primarycolor, primarycolor.withOpacity(0.82)],
                       begin: Alignment.topRight,
                       end: Alignment.bottomLeft,
                     ),
@@ -223,7 +221,9 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                         Text(
                           companyName,
                           style: const TextStyle(
-                              color: Colors.white70, fontSize: 13),
+                            color: Colors.white70,
+                            fontSize: 13,
+                          ),
                         ),
                       const SizedBox(height: 6),
                       Text(
@@ -282,8 +282,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                          color: primarycolor.withOpacity(0.12)),
+                      border: Border.all(color: primarycolor.withOpacity(0.12)),
                     ),
                     child: Row(
                       children: [
@@ -294,25 +293,31 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                             _selectedCvName ??
                                 'اختر ملف السيرة الذاتية (PDF / Word)',
                             style: TextStyle(
-                              color: _selectedCvName == null
-                                  ? Colors.black.withOpacity(0.55)
-                                  : Colors.black,
+                              color:
+                                  _selectedCvName == null
+                                      ? Colors.black.withOpacity(0.55)
+                                      : Colors.black,
                               fontSize: 13,
-                              fontWeight: _selectedCvName == null
-                                  ? FontWeight.normal
-                                  : FontWeight.bold,
+                              fontWeight:
+                                  _selectedCvName == null
+                                      ? FontWeight.normal
+                                      : FontWeight.bold,
                             ),
                           ),
                         ),
                         if (_selectedCvName != null)
                           GestureDetector(
-                            onTap: () => setState(() {
-                              _selectedCvPath = null;
-                              _selectedCvBytes = null;
-                              _selectedCvName = null;
-                            }),
-                            child: const Icon(Icons.close,
-                                size: 18, color: Colors.grey),
+                            onTap:
+                                () => setState(() {
+                                  _selectedCvPath = null;
+                                  _selectedCvBytes = null;
+                                  _selectedCvName = null;
+                                }),
+                            child: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.grey,
+                            ),
                           ),
                       ],
                     ),
@@ -338,8 +343,8 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                 const SizedBox(height: 14),
                 CheckboxListTile(
                   value: _agreed,
-                  onChanged: (value) =>
-                      setState(() => _agreed = value ?? false),
+                  onChanged:
+                      (value) => setState(() => _agreed = value ?? false),
                   activeColor: primarycolor,
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
@@ -361,23 +366,24 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.3,
-                            color: Colors.white,
+                  child:
+                      _isSubmitting
+                          ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.3,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Text(
+                            'إرسال الطلب',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        )
-                      : const Text(
-                          'إرسال الطلب',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                 ),
                 const SizedBox(height: 20),
               ],

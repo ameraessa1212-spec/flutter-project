@@ -168,7 +168,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 hint: 'كلمة المرور الجديدة',
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'يرجى إدخال كلمة المرور';
-                  if (v.length < 8) return 'كلمة المرور يجب أن لا تقل عن 8 أحرف';
+                  if (v.length < 8)
+                    return 'كلمة المرور يجب أن لا تقل عن 8 أحرف';
                   return null;
                 },
               ),
@@ -179,7 +180,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 hint: 'تأكيد كلمة المرور',
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'يرجى تأكيد كلمة المرور';
-                  if (v != _passwordController.text) return 'كلمتا المرور غير متطابقتين';
+                  if (v != _passwordController.text)
+                    return 'كلمتا المرور غير متطابقتين';
                   return null;
                 },
               ),

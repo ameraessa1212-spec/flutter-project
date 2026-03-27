@@ -121,7 +121,8 @@ class _SignUpPageState extends State<SignUpPage> {
           } else if (errors.isNotEmpty) {
             errorMessage = (errors.values.first as List).first.toString();
           }
-        } else if (data is Map<String, dynamic> && data.containsKey('message')) {
+        } else if (data is Map<String, dynamic> &&
+            data.containsKey('message')) {
           errorMessage = data['message'];
         }
       } else {
@@ -139,7 +140,6 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       );
     } finally {
-
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -190,7 +190,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 controller: _firstNameController,
                 hint: 'الاسم الأول',
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'يرجى إدخال الاسم الأول';
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال الاسم الأول';
                   return null;
                 },
               ),
@@ -201,7 +202,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 controller: _lastNameController,
                 hint: 'اسم العائلة',
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'يرجى إدخال اسم العائلة';
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال اسم العائلة';
                   return null;
                 },
               ),
@@ -212,8 +214,10 @@ class _SignUpPageState extends State<SignUpPage> {
                 controller: _usernameController,
                 hint: 'اسم المستخدم',
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'يرجى إدخال اسم المستخدم';
-                  if (v.trim().length < 3) return 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل';
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال اسم المستخدم';
+                  if (v.trim().length < 3)
+                    return 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل';
                   return null;
                 },
               ),
@@ -225,7 +229,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 hint: 'البريد الإلكتروني',
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'يرجى إدخال البريد الإلكتروني';
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال البريد الإلكتروني';
                   if (!v.contains('@')) return 'يرجى إدخال بريد إلكتروني صحيح';
                   return null;
                 },
@@ -238,7 +243,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 hint: 'رقم الهاتف',
                 keyboardType: TextInputType.phone,
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'يرجى إدخال رقم الهاتف';
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال رقم الهاتف';
                   return null;
                 },
               ),
@@ -249,7 +255,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 controller: _studentNumberController,
                 hint: 'الرقم الجامعي / رقم القيد',
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'يرجى إدخال رقم القيد للتحقق';
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال رقم القيد للتحقق';
                   return null;
                 },
               ),
@@ -266,7 +273,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 isPassword: true,
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'يرجى إدخال كلمة المرور';
-                  if (v.length < 6) return 'كلمة المرور يجب أن لا تقل عن 6 أحرف';
+                  if (v.length < 6)
+                    return 'كلمة المرور يجب أن لا تقل عن 6 أحرف';
                   return null;
                 },
               ),
@@ -279,7 +287,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 isPassword: true,
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'يرجى تأكيد كلمة المرور';
-                  if (v != _passwordController.text) return 'كلمتا المرور غير متطابقتين';
+                  if (v != _passwordController.text)
+                    return 'كلمتا المرور غير متطابقتين';
                   return null;
                 },
               ),
@@ -361,21 +370,30 @@ class _SignUpPageState extends State<SignUpPage> {
                   isExpanded: true,
                   hint: const Text(
                     'التخصص (اختياري)',
-                    style: TextStyle(fontFamily: 'Cairo', color: Colors.grey, fontSize: 14),
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
                   ),
                   value: _selectedSpecializationId,
-                  items: _specializations
-                      .map(
-                        (s) => DropdownMenuItem<int>(
-                          value: s.id,
-                          child: Text(
-                            s.name,
-                            style: const TextStyle(fontFamily: 'Cairo', fontSize: 14),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedSpecializationId = val),
+                  items:
+                      _specializations
+                          .map(
+                            (s) => DropdownMenuItem<int>(
+                              value: s.id,
+                              child: Text(
+                                s.name,
+                                style: const TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                  onChanged:
+                      (val) => setState(() => _selectedSpecializationId = val),
                 ),
               ),
     );

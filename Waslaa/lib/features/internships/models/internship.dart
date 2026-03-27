@@ -6,9 +6,11 @@ class InternshipSupervisor {
     required this.name,
     this.phone,
     this.email,
+    this.userId,
   });
 
   final int id;
+  final int? userId;
   final String name;
   final String? phone;
   final String? email;
@@ -16,6 +18,7 @@ class InternshipSupervisor {
   factory InternshipSupervisor.fromJson(Map<String, dynamic> json) {
     return InternshipSupervisor(
       id: json['id'] as int,
+      userId: json['user_id'] as int?,
       name: (json['name'] ?? '') as String,
       phone: json['phone'] as String?,
       email: json['email'] as String?,
@@ -24,11 +27,7 @@ class InternshipSupervisor {
 }
 
 class TimelineItem {
-  const TimelineItem({
-    required this.key,
-    required this.status,
-    this.date,
-  });
+  const TimelineItem({required this.key, required this.status, this.date});
 
   final String key;
   final String status;
@@ -77,15 +76,24 @@ class Internship {
       endDate: json['end_date'] as String?,
       reportDueDate: json['report_due_date'] as String?,
       notes: json['notes'] as String?,
-      company: json['company'] != null
-          ? OpportunityCompany.fromJson(json['company'] as Map<String, dynamic>)
-          : null,
-      opportunity: json['opportunity'] != null
-          ? Opportunity.fromJson(json['opportunity'] as Map<String, dynamic>)
-          : null,
-      supervisor: json['supervisor'] != null
-          ? InternshipSupervisor.fromJson(json['supervisor'] as Map<String, dynamic>)
-          : null,
+      company:
+          json['company'] != null
+              ? OpportunityCompany.fromJson(
+                json['company'] as Map<String, dynamic>,
+              )
+              : null,
+      opportunity:
+          json['opportunity'] != null
+              ? Opportunity.fromJson(
+                json['opportunity'] as Map<String, dynamic>,
+              )
+              : null,
+      supervisor:
+          json['supervisor'] != null
+              ? InternshipSupervisor.fromJson(
+                json['supervisor'] as Map<String, dynamic>,
+              )
+              : null,
     );
   }
 }

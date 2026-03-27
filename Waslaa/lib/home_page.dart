@@ -141,9 +141,7 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
     final internshipId = _dashboard?.currentInternship?.id;
     if (internshipId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('لا يوجد تدريب نشط لرفع تقرير مرتبط به.'),
-        ),
+        const SnackBar(content: Text('لا يوجد تدريب نشط لرفع تقرير مرتبط به.')),
       );
       return;
     }
@@ -157,12 +155,16 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
   }
 
   Future<void> _openChat() async {
+    final supervisor = _dashboard?.currentInternship?.supervisor;
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatPage(
-          internshipId: _dashboard?.currentInternship?.id,
-        ),
+        builder:
+            (context) => ChatPage(
+              internshipId: _dashboard?.currentInternship?.id,
+              receiverId: supervisor?.userId,
+              receiverName: supervisor?.name,
+            ),
       ),
     );
   }
@@ -227,9 +229,10 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
               Expanded(
                 child: _QuickStatCard(
                   title: 'إشعارات',
-                  value: _dashboard != null
-                      ? _dashboard!.unreadNotificationsCount.toString()
-                      : '–',
+                  value:
+                      _dashboard != null
+                          ? _dashboard!.unreadNotificationsCount.toString()
+                          : '–',
                   icon: Icons.notifications_none_rounded,
                 ),
               ),
@@ -237,9 +240,10 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
               Expanded(
                 child: _QuickStatCard(
                   title: 'طلباتي',
-                  value: _dashboard != null
-                      ? _dashboard!.applicationsCount.toString()
-                      : '–',
+                  value:
+                      _dashboard != null
+                          ? _dashboard!.applicationsCount.toString()
+                          : '–',
                   icon: Icons.description_outlined,
                 ),
               ),
@@ -273,27 +277,31 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
           ),
           const SizedBox(height: 12),
           if (_isLoadingHomeData)
-            const Center(child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: CircularProgressIndicator(),
-            ))
-          else if (_dashboard == null || _dashboard!.featuredOpportunities.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_dashboard == null ||
+              _dashboard!.featuredOpportunities.isEmpty)
             _EmptyFeaturedOpportunitiesCard(onTap: widget.onOpenCompanies)
           else
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: _dashboard!.featuredOpportunities
-                    .map(
-                      (opportunity) => Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: _FeaturedOpportunityCard(
-                          opportunity: opportunity,
-                          onTap: () => _openOpportunity(opportunity),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                children:
+                    _dashboard!.featuredOpportunities
+                        .map(
+                          (opportunity) => Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: _FeaturedOpportunityCard(
+                              opportunity: opportunity,
+                              onTap: () => _openOpportunity(opportunity),
+                            ),
+                          ),
+                        )
+                        .toList(),
               ),
             ),
           if (_dashboard != null && _dashboard!.announcements.isNotEmpty) ...[
@@ -317,9 +325,11 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
                   title: 'التواصل مع المشرف',
                   subtitle: _chatSubtitle(),
                   icon: Icons.chat_bubble_outline_rounded,
+                  badgeCount: _dashboard?.unreadMessagesCount ?? 0,
                   onTap: _openChat,
                 ),
               ),
+
               const SizedBox(width: 12),
               Expanded(
                 child: _ActionCard(
@@ -338,7 +348,9 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
             const SizedBox(height: 12),
             ..._dashboard!.tipCards.asMap().entries.map(
               (entry) => Padding(
-                padding: EdgeInsets.only(bottom: entry.key == _dashboard!.tipCards.length - 1 ? 0 : 10),
+                padding: EdgeInsets.only(
+                  bottom: entry.key == _dashboard!.tipCards.length - 1 ? 0 : 10,
+                ),
                 child: _InfoTipCard(item: entry.value),
               ),
             ),
@@ -556,11 +568,22 @@ class _FeaturedOpportunityCard extends StatelessWidget {
             Positioned.fill(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(22),
-                child: imagePath != null
-                    ? Image.network(
-                        imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                child:
+                    imagePath != null
+                        ? Image.network(
+                          imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (_, __, ___) => Container(
+                                color: primarycolor.withValues(alpha: 0.10),
+                                child: Icon(
+                                  Icons.business_center_rounded,
+                                  size: 42,
+                                  color: primarycolor,
+                                ),
+                              ),
+                        )
+                        : Container(
                           color: primarycolor.withValues(alpha: 0.10),
                           child: Icon(
                             Icons.business_center_rounded,
@@ -568,15 +591,6 @@ class _FeaturedOpportunityCard extends StatelessWidget {
                             color: primarycolor,
                           ),
                         ),
-                      )
-                    : Container(
-                        color: primarycolor.withValues(alpha: 0.10),
-                        child: Icon(
-                          Icons.business_center_rounded,
-                          size: 42,
-                          color: primarycolor,
-                        ),
-                      ),
               ),
             ),
             Positioned.fill(
@@ -598,19 +612,24 @@ class _FeaturedOpportunityCard extends StatelessWidget {
               top: 12,
               left: 12,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
-                  color: opportunity.isAvailable
-                      ? Colors.green.withValues(alpha: 0.18)
-                      : Colors.red.withValues(alpha: 0.18),
+                  color:
+                      opportunity.isAvailable
+                          ? Colors.green.withValues(alpha: 0.18)
+                          : Colors.red.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   opportunity.isAvailable ? 'متاح' : 'مغلق',
                   style: TextStyle(
-                    color: opportunity.isAvailable
-                        ? Colors.greenAccent
-                        : Colors.redAccent,
+                    color:
+                        opportunity.isAvailable
+                            ? Colors.greenAccent
+                            : Colors.redAccent,
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
@@ -674,6 +693,7 @@ class _ActionCard extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool enabled;
+  final int badgeCount;
 
   const _ActionCard({
     required this.title,
@@ -681,6 +701,7 @@ class _ActionCard extends StatelessWidget {
     required this.icon,
     required this.onTap,
     this.enabled = true,
+    this.badgeCount = 0,
   });
 
   @override
@@ -698,28 +719,52 @@ class _ActionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: accentColor.withValues(alpha: 0.18)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Icon(icon, color: accentColor, size: 28),
-            const Spacer(),
-            Text(
-              title,
-              style: TextStyle(
-                color: accentColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: accentColor, size: 28),
+                const Spacer(),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: accentColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.black.withValues(alpha: 0.58),
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 5),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: Colors.black.withValues(alpha: 0.58),
-                fontSize: 12,
-                height: 1.5,
+            if (badgeCount > 0)
+              Positioned(
+                left: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: Colors.redAccent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    badgeCount > 9 ? '9+' : badgeCount.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -757,89 +802,93 @@ class _CurrentInternshipCard extends StatelessWidget {
           ),
         ],
       ),
-      child: activeInternship == null
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'لا يوجد تدريب نشط حالياً',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'ابدأ بالتقديم على فرص التدريب المتاحة ليظهر تدريبك الحالي هنا.',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    height: 1.6,
-                    color: Colors.black.withValues(alpha: 0.6),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: onOpenCompanies,
-                    child: Text(
-                      'استعرض الفرص',
-                      style: TextStyle(color: primarycolor),
+      child:
+          activeInternship == null
+              ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'لا يوجد تدريب نشط حالياً',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
-                ),
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activeInternship.title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  activeInternship.company?.name ?? 'شركة غير محددة',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.black.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _InternshipMetaChip(
-                      icon: Icons.badge_outlined,
-                      label: activeInternship.supervisor?.name ?? 'المشرف غير محدد',
-                    ),
-                    _InternshipMetaChip(
-                      icon: Icons.event_note_rounded,
-                      label: activeInternship.reportDueDate != null
-                          ? 'التقرير: ${activeInternship.reportDueDate}'
-                          : 'لا يوجد موعد تقرير بعد',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: onOpenInternships,
-                    child: Text(
-                      'عرض تفاصيل التدريب',
-                      style: TextStyle(color: primarycolor),
+                  const SizedBox(height: 8),
+                  Text(
+                    'ابدأ بالتقديم على فرص التدريب المتاحة ليظهر تدريبك الحالي هنا.',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.6,
+                      color: Colors.black.withValues(alpha: 0.6),
                     ),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(height: 14),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: onOpenCompanies,
+                      child: Text(
+                        'استعرض الفرص',
+                        style: TextStyle(color: primarycolor),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+              : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    activeInternship.title,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    activeInternship.company?.name ?? 'شركة غير محددة',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.black.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _InternshipMetaChip(
+                        icon: Icons.badge_outlined,
+                        label:
+                            activeInternship.supervisor?.name ??
+                            'المشرف غير محدد',
+                      ),
+                      _InternshipMetaChip(
+                        icon: Icons.event_note_rounded,
+                        label:
+                            activeInternship.reportDueDate != null
+                                ? 'التقرير: ${activeInternship.reportDueDate}'
+                                : 'لا يوجد موعد تقرير بعد',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: onOpenInternships,
+                      child: Text(
+                        'عرض تفاصيل التدريب',
+                        style: TextStyle(color: primarycolor),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
     );
   }
 }
@@ -1074,7 +1123,10 @@ class _AnnouncementCard extends StatelessWidget {
                     ),
                     if (item.badge != null && item.badge!.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: primarycolor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),

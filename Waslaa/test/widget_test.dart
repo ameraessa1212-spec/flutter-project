@@ -17,55 +17,70 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('routes to onboarding when there is no token and onboarding is unseen', () async {
-      final storage = FakeSessionStorage(onboardingSeen: false);
-      final controller = AppSessionController(
-        sessionStorage: storage,
-        authRepository: FakeAuthRepository(),
-      );
+    test(
+      'routes to onboarding when there is no token and onboarding is unseen',
+      () async {
+        final storage = FakeSessionStorage(onboardingSeen: false);
+        final controller = AppSessionController(
+          sessionStorage: storage,
+          authRepository: FakeAuthRepository(),
+        );
 
-      final destination = await controller.bootstrap();
+        final destination = await controller.bootstrap();
 
-      expect(destination, AppLaunchDestination.onboarding);
-      expect(storage.clearAccessTokenCalls, 0);
-    });
+        expect(destination, AppLaunchDestination.onboarding);
+        expect(storage.clearAccessTokenCalls, 0);
+      },
+    );
 
-    test('clears token and routes to welcome on unauthorized bootstrap', () async {
-      final storage = FakeSessionStorage(token: 'expired-token', onboardingSeen: true);
-      final controller = AppSessionController(
-        sessionStorage: storage,
-        authRepository: FakeAuthRepository(
-          bootstrapError: _dioError(statusCode: 401, message: 'Unauthorized'),
-        ),
-      );
-
-      final destination = await controller.bootstrap();
-
-      expect(destination, AppLaunchDestination.welcome);
-      expect(storage.clearAccessTokenCalls, 1);
-      expect(await storage.readAccessToken(), isNull);
-    });
-
-    test('keeps token and returns error on transient network failure', () async {
-      final storage = FakeSessionStorage(token: 'valid-token', onboardingSeen: true);
-      final controller = AppSessionController(
-        sessionStorage: storage,
-        authRepository: FakeAuthRepository(
-          bootstrapError: DioException(
-            requestOptions: RequestOptions(path: '/auth/me'),
-            type: DioExceptionType.connectionError,
-            message: 'offline',
+    test(
+      'clears token and routes to welcome on unauthorized bootstrap',
+      () async {
+        final storage = FakeSessionStorage(
+          token: 'expired-token',
+          onboardingSeen: true,
+        );
+        final controller = AppSessionController(
+          sessionStorage: storage,
+          authRepository: FakeAuthRepository(
+            bootstrapError: _dioError(statusCode: 401, message: 'Unauthorized'),
           ),
-        ),
-      );
+        );
 
-      final destination = await controller.bootstrap();
+        final destination = await controller.bootstrap();
 
-      expect(destination, AppLaunchDestination.error);
-      expect(storage.clearAccessTokenCalls, 0);
-      expect(await storage.readAccessToken(), 'valid-token');
-      expect(controller.errorMessage, 'offline');
-    });
+        expect(destination, AppLaunchDestination.welcome);
+        expect(storage.clearAccessTokenCalls, 1);
+        expect(await storage.readAccessToken(), isNull);
+      },
+    );
+
+    test(
+      'keeps token and returns error on transient network failure',
+      () async {
+        final storage = FakeSessionStorage(
+          token: 'valid-token',
+          onboardingSeen: true,
+        );
+        final controller = AppSessionController(
+          sessionStorage: storage,
+          authRepository: FakeAuthRepository(
+            bootstrapError: DioException(
+              requestOptions: RequestOptions(path: '/auth/me'),
+              type: DioExceptionType.connectionError,
+              message: 'offline',
+            ),
+          ),
+        );
+
+        final destination = await controller.bootstrap();
+
+        expect(destination, AppLaunchDestination.error);
+        expect(storage.clearAccessTokenCalls, 0);
+        expect(await storage.readAccessToken(), 'valid-token');
+        expect(controller.errorMessage, 'offline');
+      },
+    );
   });
 
   group('AppSessionController.signIn', () {
@@ -82,7 +97,10 @@ void main() {
         ),
       );
 
-      final success = await controller.signIn(login: 'student', password: 'secret');
+      final success = await controller.signIn(
+        login: 'student',
+        password: 'secret',
+      );
 
       expect(success, isTrue);
       expect(await storage.readAccessToken(), 'fresh-token');
@@ -155,11 +173,7 @@ class FakeSessionStorage extends SessionStorage {
 
 class FakeAuthRepository extends AuthRepository {
   FakeAuthRepository({this.bootstrapError, this.signInSession})
-    : super(
-        apiClient: ApiClient(
-          sessionStorage: FakeSessionStorage(),
-        ),
-      );
+    : super(apiClient: ApiClient(sessionStorage: FakeSessionStorage()));
 
   final DioException? bootstrapError;
   final AuthSession? signInSession;

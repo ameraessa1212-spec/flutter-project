@@ -17,8 +17,8 @@ class PrivacyPolicyPage extends StatelessWidget {
           child: Text(
             "سياسات الاستخدام",
             style: TextStyle(
-              fontFamily: 'Cairo', 
-              color: Color(0xFF6A5AE0), 
+              fontFamily: 'Cairo',
+              color: Color(0xFF6A5AE0),
               fontWeight: FontWeight.bold,
               fontSize: 15, // الحجم الذي طلبته لعنوان الصفحة
             ),
@@ -27,34 +27,57 @@ class PrivacyPolicyPage extends StatelessWidget {
         leading: Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF6A5AE0), size: 18),
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: Color(0xFF6A5AE0),
+              size: 18,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 30.0, left: 25.0, right: 25.0, bottom: 40.0),
+        padding: const EdgeInsets.only(
+          top: 30.0,
+          left: 25.0,
+          right: 25.0,
+          bottom: 40.0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             _buildSectionTitle("أهدافنا"),
-            _buildParagraph("تجربة التدريب ميداني رقمية سهلة وموثوقة تربط الطلبة بسوق العمل"),
-            
+            _buildParagraph(
+              "تجربة التدريب ميداني رقمية سهلة وموثوقة تربط الطلبة بسوق العمل",
+            ),
+
             const SizedBox(height: 10),
             _buildSectionTitle("استخدام المنصة"),
             _buildBulletItem("الحسابات المعتمدة: يُسمح باستخدام المنصة للطلبة"),
-            _buildBulletItem("دقة البيانات: يجب إدخال بيانات صحيحة لتفادي رفض الطلب"),
-            _buildBulletItem("الغرض من الاستخدام: المنصة مخصصة لأعمال التدريب الميداني فقط"),
-            
+            _buildBulletItem(
+              "دقة البيانات: يجب إدخال بيانات صحيحة لتفادي رفض الطلب",
+            ),
+            _buildBulletItem(
+              "الغرض من الاستخدام: المنصة مخصصة لأعمال التدريب الميداني فقط",
+            ),
+
             const SizedBox(height: 20),
             _buildSectionTitle("المحتوى والملفات"),
-            _buildBulletItem("رفع الملفات: يتيح النظام للطالب رفع تقرير التدريب والبحث العلمي بصيغ معتمدة"),
-            _buildBulletItem("مسؤولية المحتوى: الطالب مسؤول عن صحة الملفات ومحتواها"),
-            _buildBulletItem("المراجعة: تخضع الملفات للمراجعة من الممتحنين وفق إجراءات الكلية"),
-            
+            _buildBulletItem(
+              "رفع الملفات: يتيح النظام للطالب رفع تقرير التدريب والبحث العلمي بصيغ معتمدة",
+            ),
+            _buildBulletItem(
+              "مسؤولية المحتوى: الطالب مسؤول عن صحة الملفات ومحتواها",
+            ),
+            _buildBulletItem(
+              "المراجعة: تخضع الملفات للمراجعة من الممتحنين وفق إجراءات الكلية",
+            ),
+
             const SizedBox(height: 20),
             _buildSectionTitle("التزامنا"),
-            _buildParagraph("نلتزم بتقديم تجربة استخدام واضحة وآمنة، ونسعى لتحسين المنصة باستمرار من خلال الاستماع لملاحظات الطلبة"),
+            _buildParagraph(
+              "نلتزم بتقديم تجربة استخدام واضحة وآمنة، ونسعى لتحسين المنصة باستمرار من خلال الاستماع لملاحظات الطلبة",
+            ),
           ],
         ),
       ),
@@ -65,10 +88,10 @@ class PrivacyPolicyPage extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(
-        fontFamily: 'Cairo', 
+        fontFamily: 'Cairo',
         fontSize: 13, // حجم العناوين الجانبية
-        color: Color(0xFF6A5AE0), 
-        fontWeight: FontWeight.bold
+        color: Color(0xFF6A5AE0),
+        fontWeight: FontWeight.bold,
       ),
     );
   }
@@ -80,10 +103,10 @@ class PrivacyPolicyPage extends StatelessWidget {
         text,
         textAlign: TextAlign.right,
         style: const TextStyle(
-          fontFamily: 'Cairo', 
+          fontFamily: 'Cairo',
           fontSize: 12, // حجم نصوص الفقرات
-          color: Colors.black87, 
-          height: 1.6
+          color: Colors.black87,
+          height: 1.6,
         ),
       ),
     );
@@ -94,22 +117,27 @@ class PrivacyPolicyPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start, // لموازنة الأيقونة مع النصوص الطويلة
+        crossAxisAlignment:
+            CrossAxisAlignment.start, // لموازنة الأيقونة مع النصوص الطويلة
         children: [
           Expanded(
             child: Text(
-              text, 
-              textAlign: TextAlign.right, 
+              text,
+              textAlign: TextAlign.right,
               style: const TextStyle(
-                fontFamily: 'Cairo', 
-                fontSize: 12 // حجم نصوص القائمة
-              )
-            )
+                fontFamily: 'Cairo',
+                fontSize: 12, // حجم نصوص القائمة
+              ),
+            ),
           ),
           const SizedBox(width: 10),
           const Padding(
             padding: EdgeInsets.only(top: 2),
-            child: Icon(Icons.check_circle, color: Color(0xFF6A5AE0), size: 16), // تصغير الأيقونة لتناسب الخط
+            child: Icon(
+              Icons.check_circle,
+              color: Color(0xFF6A5AE0),
+              size: 16,
+            ), // تصغير الأيقونة لتناسب الخط
           ),
         ],
       ),

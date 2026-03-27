@@ -17,14 +17,11 @@ class AuthRepository {
   }) async {
     final response = await _apiClient.post(
       '/auth/login',
-      data: {
-        'login': login,
-        'password': password,
-        'device_name': deviceName,
-      },
+      data: {'login': login, 'password': password, 'device_name': deviceName},
     );
 
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     final token = data['token'] as String;
     final userJson = data['user'] as Map<String, dynamic>;
 
@@ -33,7 +30,8 @@ class AuthRepository {
 
   Future<AuthUser> getCurrentUser() async {
     final response = await _apiClient.get('/auth/me');
-    final data = (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     final userJson = data['user'] as Map<String, dynamic>;
     return AuthUser.fromJson(userJson);
   }
@@ -48,7 +46,8 @@ class AuthRepository {
 
   Future<List<Specialization>> getSpecializations() async {
     final response = await _apiClient.get('/specializations');
-    final data = (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
     return data
         .map((item) => Specialization.fromJson(item as Map<String, dynamic>))
         .toList();
