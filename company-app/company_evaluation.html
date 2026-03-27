@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج تقييم مشرف التدريب - الكلية التقنية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="company_evaluation.css">
+</head>
+<body>
+    <div class="glass-background">
+        <div class="glow-sphere s1"></div>
+        <div class="glow-sphere s2"></div>
+    </div>
+
+    <div id="evaluationView" class="view-container active">
+        <div class="evaluation-container reveal">
+            <header class="eval-header animate-fade">
+                <div class="college-brand">
+                  
+                    <div>
+                        <h1>كلية التقنية الإلكترونية - طرابلس</h1>
+                        <p>نموذج تقييم أداء الطالب بجهة التدريب (تعبئة المشرف)</p>
+                    </div>
+                </div>
+                <div class="doc-info">
+                    
+                    <small id="currentSemester">الفصل الدراسي: خريف 2025</small>
+                </div>
+            </header>
+
+            <div class="student-meta-grid animate-fade delay-1">
+                <div class="meta-item"><strong>اسم الطالب:</strong> <input type="text" placeholder="اسم الطالب بالكامل" id="stName"></div>
+                <div class="meta-item"><strong>رقم القيد:</strong> <input type="text" placeholder="000000" id="stID"></div>
+                <div class="meta-item"><strong>جهة التدريب:</strong> <input type="text" placeholder="اسم الشركة" id="stCompany"></div>
+                <div class="meta-item"><strong>المشرف:</strong> <input type="text" placeholder="اسم المشرف المباشر"></div>
+                <div class="meta-item date-box"><strong>تاريخ بداية التدريب:</strong> <input type="date" id="startDate"></div>
+                <div class="meta-item date-box"><strong>تاريخ نهاية التدريب:</strong> <input type="date" id="endDate"></div>
+            </div>
+
+            <div class="full-table-wrapper">
+                <div class="domain-section animate-slide delay-2">
+                    <div class="domain-header purple">1. المجال المعرفي (35 درجة)</div>
+                    <div class="criteria-row">
+                        <span class="c-num">1</span>
+                        <p class="c-text">مدى المعرفة بالأنشطة التخصصية المختلفة في بيئة العمل.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="7" placeholder="0"> <small>/ 7</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">2</span>
+                        <p class="c-text">مدى المعرفة بالنظام المؤسسي وقوانين وأخلاقيات العمل.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="7" placeholder="0"> <small>/ 7</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">3</span>
+                        <p class="c-text">القدرة على توظيف المعرفة النظرية والتقنية في التدريب.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="7" placeholder="0"> <small>/ 7</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">4</span>
+                        <p class="c-text">التعرف على تقنيات تخصصية جديدة أثناء التدريب.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="7" placeholder="0"> <small>/ 7</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">5</span>
+                        <p class="c-text">مدى المعرفة بسوق العمل في مجال التخصص.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="7" placeholder="0"> <small>/ 7</small></div>
+                    </div>
+                </div>
+
+                <div class="domain-section animate-slide delay-3">
+                    <div class="domain-header orange">2. المجال المهني (35 درجة)</div>
+                    <div class="criteria-row">
+                        <span class="c-num">1</span>
+                        <p class="c-text">جودة الأداء المهني في بيئة العمل.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">2</span>
+                        <p class="c-text">الالتزام بالقوانين وأخلاقيات المهنة.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">3</span>
+                        <p class="c-text">الالتزام بمواعيد العمل.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">4</span>
+                        <p class="c-text">تقبل النقد والتوجيه.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">5</span>
+                        <p class="c-text">العلاقة مع الرؤساء والزملاء والعملاء.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">6</span>
+                        <p class="c-text">إبراز الشخصية الهندسية في بيئة العمل.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="5" placeholder="0"> <small>/ 5</small></div>
+                    </div>
+                </div>
+
+                <div class="domain-section animate-slide delay-4">
+                    <div class="domain-header green">3. مجال القدرات والمهارات (30 درجة)</div>
+                    <div class="criteria-row">
+                        <span class="c-num">1</span>
+                        <p class="c-text">القدرة على التعلم الذاتي وتحصيل المعرفة.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">2</span>
+                        <p class="c-text">القدرة على الاتصال الفعال والحوار البناء.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">3</span>
+                        <p class="c-text">القدرة على تقديم العروض المرئية والمناقشة.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">4</span>
+                        <p class="c-text">جودة الأعمال الموثقة (المقترحات والتقارير).</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                    <div class="criteria-row">
+                        <span class="c-num">5</span>
+                        <p class="c-text">جودة الأداء في العمل الجماعي ضمن فريق.</p>
+                        <div class="c-input-wrapper"><input type="number" class="grade-input" data-max="6" placeholder="0"> <small>/ 6</small></div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="notes-section animate-fade delay-5">
+                <div class="section-banner grey"><i class="ri-edit-2-line"></i> <span>ملاحظات المشرف المباشر (إلزامي)</span></div>
+                <textarea id="supervisorNotes" class="notes-area" placeholder="اكتب تقييماً مختصراً لأداء الطالب خلال فترة التدريب..."></textarea>
+            </section>
+
+            <footer class="eval-footer animate-fade delay-6">
+                <div class="total-result">
+                    <div class="total-text">
+                        <h3>إجمالي درجة التقييم</h3>
+                        <p>يتم احتساب المجموع  من 100 درجة</p>
+                    </div>
+                    <div class="total-circle pulse-animation"><span id="totalScore">0</span><small>%</small></div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-print" onclick="window.print()"><i class="ri-printer-line"></i> حفظ PDF</button>
+                    <button class="btn-send" onclick="submitEvaluation()"><i class="ri-checkbox-circle-line"></i> اعتماد وإرسال التقييم</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="company_evaluation.js"></script>
+</body>
+</html>

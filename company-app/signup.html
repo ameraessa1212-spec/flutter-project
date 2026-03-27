@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل شركة جديدة - وصلة تدريب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="signup.css">
+</head>
+<body>
+
+    <div class="signup-wrapper">
+        <div class="signup-card fade-up">
+            <div class="signup-header">
+                <div class="logo">WASLAT TADREIB<span>.</span></div>
+                <h2>تسجيل شركة جديدة</h2>
+                <p>انضم إلينا وساهم في بناء مستقبل الكفاءات الشابة</p>
+            </div>
+
+            <form id="signupForm" class="grid-form">
+                <div class="form-group">
+                    <label>اسم الشركة</label>
+                    <div class="input-box">
+                        <i class="ri-building-line"></i>
+                        <input type="text" placeholder="مثلاً: شركة تكنو كود" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <div class="input-box">
+                        <i class="ri-mail-line"></i>
+                        <input type="email" placeholder="hr@company.ly" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>الموقع الجغرافي</label>
+                    <div class="input-box">
+                        <i class="ri-map-pin-line"></i>
+                        <input type="text" placeholder="المدينة - الحي">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>المجال التدريبي المطلوب</label>
+                    <div class="input-box">
+                        <i class="ri-code-s-slash-line"></i>
+                        <input type="text" placeholder="مثلاً: حاسب آلي (تطوير ويب)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>عدد المتدربين</label>
+                    <div class="input-box">
+                        <i class="ri-group-line"></i>
+                        <input type="number" placeholder="مثلاً: 5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>مدة التدريب</label>
+                    <div class="input-box">
+                        <i class="ri-time-line"></i>
+                        <input type="text" placeholder="مثلاً: شهرين">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>رابط حساب التواصل الاجتماعي (LinkedIn/Facebook)</label>
+                    <div class="input-box">
+                        <i class="ri-global-line"></i>
+                        <input type="url" placeholder="https://linkedin.com/company/...">
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>نبذة تعريفية عن الشركة</label>
+                    <div class="input-box">
+                        <i class="ri-information-line"></i>
+                        <textarea placeholder="تخصص الشركة وأهدافها التدريبية..." rows="3"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">إرسال طلب الانضمام</button>
+            </form>
+
+            <div class="signup-footer">
+                <span>لديك حساب بالفعل؟</span>
+                <a href="login.html">تسجيل الدخول</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="signup.js"></script>
+</body>
+</html>

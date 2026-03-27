@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - وصلة تدريب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-card fade-up">
+            <div class="login-header">
+                <div class="login-logo">WASLAT TADREIB<span>.</span></div>
+                <h2>مرحباً بك مجدداً</h2>
+                <p>الرجاء إدخال بياناتك للوصول إلى لوحة التحكم</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <div class="input-container">
+                        <i class="ri-mail-line"></i>
+                        <input type="email" id="email" placeholder="name@company.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <div class="input-container">
+                        <i class="ri-lock-password-line"></i>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn" id="submitBtn">
+                    <span>دخول للمنصة</span>
+                    <i class="ri-arrow-left-line"></i>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <span>ليس لديك حساب؟</span>
+                <a href="signup.html">سجل شركتك الآن</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>

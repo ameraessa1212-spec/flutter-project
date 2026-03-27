@@ -1,7 +1,6 @@
-<div class="flex flex-col h-full w-full bg-gray-50 dark:bg-gray-900 relative">
+<div class="relative flex h-full min-h-[34rem] min-w-0 flex-col bg-gray-50 dark:bg-gray-900 xl:min-h-0">
     @if($activeThread)
-        <!-- Header -->
-        <div class="px-5 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between shrink-0">
+        <div class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-200 bg-white px-5 py-4 dark:border-gray-700 dark:bg-gray-800">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold bg-primary-100 text-primary-600 dark:bg-primary-900 dark:text-primary-300">
                     {{ str($activeThread->student->name ?? 'ط')->limit(1, '') }}
@@ -14,52 +13,35 @@
                 </div>
             </div>
             
-            <a href="{{ route('filament.admin-waslaa.resources.internships.edit', $activeThread->internship_id) }}" target="_blank" class="text-xs text-primary-600 dark:text-primary-400 hover:underline">
+            <a href="{{ route('filament.admin-waslaa.resources.internships.edit', $activeThread->internship_id) }}" target="_blank" class="hidden text-xs text-primary-600 hover:underline dark:text-primary-400 sm:block">
                 تفاصيل التدريب
             </a>
         </div>
 
-        <!-- Messages Area -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages-container" x-data="{
+        <div
+            class="flex-1 space-y-4 overflow-y-auto p-4"
+            id="chat-messages-container"
+            x-data="{
                 scrollToBottom() {
-                    this.$el.scrollTop = this.$el.scrollHeight;
+                    this.$nextTick(() => {
+                        this.$el.scrollTop = this.$el.scrollHeight;
+                    });
+                },
+                init() {
+                    this.scrollToBottom();
                 }
-            }" x-init="
-                scrollToBottom();
-                $watch('messages', () => { setTimeout(() => scrollToBottom(), 50) });
-                Livewire.on('messageReceived', () => { setTimeout(() => scrollToBottom(), 50) });
-            ">
+            }"
+            x-init="init()"
+            x-on:chat-window-updated.window="scrollToBottom()"
+        >
             @forelse($messages as $message)
                 @php
                     $isOwn = $message->sender_id === auth()->id();
                 @endphp
                 <div class="flex w-full {{ $isOwn ? 'justify-end' : 'justify-start' }}">
-                    <div class="max-w-[75%] flex flex-col {{ $isOwn ? 'items-end' : 'items-start' }}">
-                        <div class="p-3 rounded-2xl {{ $isOwn ? 'bg-primary-600 text-white rounded-tl-none' : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-100 rounded-tr-none shadow-sm' }}">
-                            @if($message->message_type === 'text')
-                                <p class="text-sm whitespace-pre-wrap leading-relaxed">{{ $message->body }}</p>
-                            @else
-                                <!-- Attachments -->
-                                @if($message->attachments->count() > 0)
-                                    <div class="flex flex-col gap-2">
-                                        @foreach($message->attachments as $attachment)
-                                            @if(Str::startsWith($attachment->mime_type, 'image/'))
-                                                <a href="{{ Storage::url($attachment->file_path) }}" target="_blank">
-                                                    <img src="{{ Storage::url($attachment->file_path) }}" class="rounded-lg max-h-48 object-cover border {{ $isOwn ? 'border-primary-500' : 'border-gray-200' }}" alt="Attachment">
-                                                </a>
-                                            @else
-                                                <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="flex items-center gap-2 p-2 rounded-lg bg-black/10 hover:bg-black/20 transition">
-                                                    <x-heroicon-s-document class="w-5 h-5" />
-                                                    <span class="text-sm underline shrink-0">{{ $attachment->file_name ?? 'ملف' }}</span>
-                                                </a>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                @endif
-                                @if($message->body)
-                                    <p class="text-sm mt-2">{{ $message->body }}</p>
-                                @endif
-                            @endif
+                    <div class="flex max-w-[85%] flex-col {{ $isOwn ? 'items-end' : 'items-start' }} sm:max-w-[75%]">
+                        <div class="rounded-2xl p-3 {{ $isOwn ? 'rounded-tl-none bg-primary-600 text-white' : 'rounded-tr-none border border-gray-100 bg-white text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100' }}">
+                            <p class="text-sm leading-relaxed whitespace-pre-wrap">{{ $message->body ?: 'رسالة جديدة' }}</p>
                         </div>
                         <span class="text-[10px] text-gray-500 mt-1 mx-1">
                             {{ $message->sent_at?->format('g:i A') }}
@@ -72,15 +54,21 @@
                     </div>
                 </div>
             @empty
-                <div class="flex flex-col items-center justify-center h-full text-gray-400">
-                    <x-heroicon-o-chat-bubble-left-right class="w-12 h-12 mb-2 opacity-50" />
-                    <p class="text-sm">لا توجد رسائل سابقة. ابدأ المحادثة الآن!</p>
+                <div class="flex min-h-full items-center justify-center py-8">
+                    <div class="w-full max-w-md rounded-3xl border border-dashed border-gray-200 bg-white/90 px-6 py-10 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800/90">
+                        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300">
+                            <span class="chat-fixed-icon-lg">
+                                <x-heroicon-o-chat-bubble-left-right class="chat-fixed-icon-lg" />
+                            </span>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">لا توجد رسائل سابقة</p>
+                        <p class="mt-2 text-xs leading-6 text-gray-500 dark:text-gray-400">ابدأ المحادثة الآن، وستظهر الرسائل هنا بشكل منظم داخل هذه النافذة.</p>
+                    </div>
                 </div>
             @endforelse
         </div>
 
-        <!-- Input Area -->
-        <div class="px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shrink-0">
+        <div class="shrink-0 border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
             <form wire:submit.prevent="sendMessage" class="flex items-end gap-2">
                 <div class="flex-1 relative">
                     <textarea 
@@ -88,7 +76,7 @@
                         wire:keydown.enter.prevent="sendMessage"
                         rows="1"
                         placeholder="اكتب رسالة..."
-                        class="w-full text-sm block rounded-full border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-800 focus:ring-primary-500 focus:border-primary-500 px-4 py-3 resize-none hide-scrollbar max-h-32"
+                        class="block max-h-32 w-full resize-none rounded-2xl border-gray-300 bg-gray-50 px-4 py-3 text-sm focus:border-primary-500 focus:bg-white focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:focus:bg-gray-800"
                         x-data="{ resize() { $el.style.height = 'auto'; $el.style.height = ($el.scrollHeight < 120 ? $el.scrollHeight : 120) + 'px' } }"
                         x-init="resize()"
                         @input="resize()"
@@ -96,7 +84,7 @@
                 </div>
                 
                 <button type="submit" 
-                    class="shrink-0 p-3 bg-primary-600 hover:bg-primary-500 text-white rounded-full transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex shrink-0 items-center justify-center rounded-full bg-primary-600 p-3 text-white transition-colors hover:bg-primary-500 disabled:cursor-not-allowed disabled:opacity-50"
                     wire:loading.attr="disabled"
                     wire:target="sendMessage">
                     <x-heroicon-s-paper-airplane class="w-5 h-5 rtl:-scale-x-100" />
@@ -104,10 +92,16 @@
             </form>
         </div>
     @else
-        <div class="flex flex-col items-center justify-center h-full w-full text-gray-400 bg-white dark:bg-gray-800 rounded-xl">
-            <x-heroicon-o-chat-bubble-oval-left-ellipsis class="w-16 h-16 mb-4 opacity-30 text-primary-500" />
-            <h3 class="text-lg font-medium text-gray-500">اختر محادثة</h3>
-            <p class="text-sm text-gray-400 mt-1">اختر طالباً من القائمة الجانبية لبدء التواصل</p>
+        <div class="flex h-full min-h-[34rem] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.08),_transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,250,251,0.98))] px-6 py-10 text-gray-400 dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.16),_transparent_35%),linear-gradient(180deg,rgba(17,24,39,0.98),rgba(3,7,18,0.98))]">
+            <div class="mx-auto flex w-full max-w-lg flex-col items-center rounded-[2rem] border border-white/70 bg-white/90 px-8 py-10 text-center shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur dark:border-gray-700/80 dark:bg-gray-900/85">
+                <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary-50 text-primary-600 ring-8 ring-primary-50/60 dark:bg-primary-900/30 dark:text-primary-300 dark:ring-primary-900/20">
+                    <span class="chat-fixed-icon-lg">
+                        <x-heroicon-o-chat-bubble-oval-left-ellipsis class="chat-fixed-icon-lg" />
+                    </span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">اختر محادثة</h3>
+                <p class="mt-2 max-w-sm text-sm leading-7 text-gray-500 dark:text-gray-400">اختر طالباً من القائمة الجانبية لعرض المحادثة وبدء التواصل داخل هذه النافذة.</p>
+            </div>
         </div>
     @endif
 </div>

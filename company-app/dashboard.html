@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | وصلة تدريب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">وصلة<span></span>تدريب.</div>
+            </div> 
+            
+            <nav class="menu">
+                <div class="menu-label">القائمة الرئيسية</div>
+                
+                <a href="#" class="menu-item active" id="homeLink">
+                    <div class="icon-box"><i class="ri-dashboard-fill"></i></div>
+                    <span>الرئيسية</span>
+                </a>
+
+                <a href="#" class="menu-item" id="requestsLink">
+                    <div class="icon-box"><i class="ri-group-line"></i></div>
+                    <span>طلبات الطلبة</span>
+                    <span class="badge-new">5 جديد</span>
+                </a>
+
+                <a href="#" class="menu-item" id="evalLink">
+                    <div class="icon-box"><i class="ri-bar-chart-box-line"></i></div>
+                    <span>تقييم الطلبة</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="company-mini-card">
+                    <img src="https://ui-avatars.com/api/?name=Almadar&background=6A5AE0&color=fff" alt="">
+                    <div class="info">
+                        <p class="name">المدار الجديد</p>
+                        <p class="role">مسؤول التدريب</p>
+                    </div>
+                </div>
+                <a href="index.html" class="logout-btn" id="logoutBtn">
+                    <i class="ri-logout-circle-r-line"></i>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header animate-fade">
+                <div class="header-title">
+                    <h2 id="greetingText">طاب يومك، شركة المدار الجديد 👋</h2>
+                    <p id="subTitle">إليك ما يحدث في برنامج التدريب الخاص بك اليوم</p>
+                </div>
+                <div class="header-actions">
+                    <button class="notif-btn"><i class="ri-notification-3-line"></i><span class="dot"></span></button>
+                    <div class="date-display">
+                        <i class="ri-calendar-event-line"></i>
+                        <span>26 فبراير 2026</span>
+                    </div>
+                </div>
+            </header>
+            
+            <iframe id="evalFrame" src=""></iframe>
+
+            <div id="mainDashboardBody">
+                <section class="stats-grid">
+                    <div class="stat-card purple animate-up">
+                        <div class="stat-header">
+                            <div class="icon"><i class="ri-user-follow-line"></i></div>
+                            <span class="trend">+12%</span>
+                        </div>
+                        <div class="stat-body">
+                            <h3>42</h3>
+                            <p>متدرب نشط حالياً</p>
+                        </div>
+                    </div>
+                    <div class="stat-card blue animate-up" style="animation-delay: 0.1s;">
+                        <div class="stat-header">
+                            <div class="icon"><i class="ri-file-list-3-line"></i></div>
+                        </div>
+                        <div class="stat-body">
+                            <h3>15</h3>
+                            <p>فرصة تدريب معلنة</p>
+                        </div>
+                    </div>
+                    <div class="stat-card green animate-up" style="animation-delay: 0.2s;">
+                        <div class="stat-header">
+                            <div class="icon"><i class="ri-star-smile-line"></i></div>
+                            <span class="trend">4.8</span>
+                        </div>
+                        <div class="stat-body">
+                            <h3>5</h3>
+                            <p>عدد الطلبات المعلقه</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-body">
+                    <div class="welcome-banner animate-up" style="animation-delay: 0.3s;">
+                        <div class="banner-text">
+                            <h3>جاهز لاستقطاب مبدعين جدد؟ 🚀</h3>
+                            <p>لديك 5 طلبات جديدة من طلاب هندسة البرمجيات بانتظار موافقتك.</p>
+                            <button class="btn-primary" id="reviewBtn">مراجعة الطلبات</button>
+                        </div>
+                        <div class="banner-img">
+                            <i class="ri-rocket-2-fill"></i>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
