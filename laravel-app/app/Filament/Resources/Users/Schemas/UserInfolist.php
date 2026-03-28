@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\Section;
-use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\ImageEntry;
-use Filament\Infolists\Components\Group;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class UserInfolist
@@ -40,7 +40,7 @@ class UserInfolist
                 
                 Section::make('الملف الشخصي للطالب (Student Profile)')
                     ->relationship('studentProfile')
-                    ->visible(fn ($record) => $record?->role?->value === 'student' || $record?->role === 'student')
+                    ->visible(fn ($record) => data_get($record, 'role.value') === 'student' || data_get($record, 'role') === 'student')
                     ->schema([
                         Grid::make(3)->schema([
                             ImageEntry::make('profile_image_path')->label('الصورة الشخصية')->circular(),

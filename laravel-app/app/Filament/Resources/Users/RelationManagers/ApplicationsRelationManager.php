@@ -26,12 +26,7 @@ class ApplicationsRelationManager extends RelationManager
             ])
             ->filters([])
             ->headerActions([])
-            ->actions([
-                Tables\Actions\Action::make('view')
-                    ->label('عرض')
-                    ->url(fn ($record) => route('filament.admin.resources.applications.view', $record))
-                    ->icon('heroicon-m-eye')
-            ])
+            ->actions([])
             ->bulkActions([]);
     }
 }
