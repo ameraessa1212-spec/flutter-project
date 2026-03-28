@@ -225,7 +225,7 @@
 
                             if (response.ok) {
                                 alert("تم إرسال التقييم بنجاح.");
-                                window.location.href = 'dashboard.html';
+                                window.parent.location.reload();
                             } else {
                                 alert("حدث خطأ أثناء الإرسال.");
                             }

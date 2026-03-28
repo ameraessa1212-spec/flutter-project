@@ -21,23 +21,23 @@
             <nav class="menu">
                 <div class="menu-label">القائمة الرئيسية</div>
                 
-                <a href="#" class="menu-item" :class="{ 'active': activeTab === 'home' }" @click.prevent="showHome()">
+                <a href="#home" class="menu-item" :class="{ 'active': activeTab === 'home' }">
                     <div class="icon-box"><i class="ri-dashboard-fill"></i></div>
                     <span>الرئيسية</span>
                 </a>
 
-                <a href="#" class="menu-item" :class="{ 'active': activeTab === 'post' }" @click.prevent="loadSubPage('post', 'post_opportunity.html', 'إضافة فرصة تدريبية', 'اطلب متدربين جدد للانضمام إلى فريقك')">
+                <a href="#post" class="menu-item" :class="{ 'active': activeTab === 'post' }">
                     <div class="icon-box"><i class="ri-add-circle-line"></i></div>
                     <span>إضافة فرصة تدريبية</span>
                 </a>
 
-                <a href="#" class="menu-item" :class="{ 'active': activeTab === 'requests' }" @click.prevent="loadSubPage('requests', 'students_requests.html', 'طلبات التدريب الواردة', 'إدارة ومراجعة طلبات الطلاب المتقدمين للفرص التدريبية')">
+                <a href="#requests" class="menu-item" :class="{ 'active': activeTab === 'requests' }">
                     <div class="icon-box"><i class="ri-group-line"></i></div>
                     <span>طلبات الطلبة</span>
                     <span class="badge-new" x-show="stats.pendingRequests > 0" x-text="`${stats.pendingRequests} جديد`" style="display: none;"></span>
                 </a>
 
-                <a href="#" class="menu-item" :class="{ 'active': activeTab === 'eval' }" @click.prevent="loadSubPage('eval', 'company_evaluation.html', 'نموذج تقييم المتدربين', 'تقييم الأداء المهني والسلوكي للطلاب خلال فترة التدريب')">
+                <a href="#eval" class="menu-item" :class="{ 'active': activeTab === 'eval' }">
                     <div class="icon-box"><i class="ri-bar-chart-box-line"></i></div>
                     <span>تقييم الطلبة</span>
                 </a>
@@ -172,6 +172,26 @@
                     rating: '4.8'
                 },
                 studentsList: [],
+                pagesInfo: {
+                    home: { url: '', title: '', sub: '' },
+                    post: { url: 'post_opportunity.html', title: 'إضافة فرصة تدريبية', sub: 'اطلب متدربين جدد للانضمام إلى فريقك' },
+                    requests: { url: 'students_requests.html', title: 'طلبات التدريب الواردة', sub: 'إدارة ومراجعة طلبات الطلاب المتقدمين للفرص التدريبية' },
+                    eval: { url: 'company_evaluation.html', title: 'نموذج تقييم المتدربين', sub: 'تقييم الأداء المهني والسلوكي للطلاب خلال فترة التدريب' }
+                },
+                handleRoute() {
+                    let hash = window.location.hash.replace('#', '');
+                    if (!hash || !this.pagesInfo[hash]) hash = 'home';
+                    this.activeTab = hash;
+                    if (hash === 'home') {
+                        this.iframeSrc = '';
+                        this.updateGreeting();
+                    } else {
+                        this.iframeSrc = this.pagesInfo[hash].url;
+                        this.headerTitle = this.pagesInfo[hash].title;
+                        this.headerSubtitle = this.pagesInfo[hash].sub;
+                    }
+                },
+
 
                 init() {
                     const profile = localStorage.getItem('company_profile');
@@ -189,7 +209,7 @@
                         } catch(e){}
                     }
 
-                    this.showHome();
+                    this.handleRoute(); window.addEventListener("hashchange", () => this.handleRoute());
                     this.fetchDashboardData();
                     this.fetchStats();
                 },
