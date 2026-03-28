@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:Waslaa/core/session/session_storage.dart';
 import 'package:Waslaa/core/config/app_config.dart';
@@ -22,27 +23,62 @@ class PusherService {
         '/mobile/v1',
         '/broadcasting/auth',
       );
+      final authHeaders = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
 
-      await pusher.init(
-        apiKey: "pnbqosojiv97hmrgutf5", // REVERB_APP_KEY
-        cluster: "mt1",
-        onConnectionStateChange: onConnectionStateChange,
-        onError: onError,
-        onSubscriptionSucceeded: onSubscriptionSucceeded,
-        onEvent: onEvent,
-        onSubscriptionError: onSubscriptionError,
-        onDecryptionFailure: onDecryptionFailure,
-        onMemberAdded: onMemberAdded,
-        onMemberRemoved: onMemberRemoved,
-        authEndpoint: authEndpoint,
-        authParams: {
-          'headers': {
-            'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
+      if (kIsWeb) {
+        await pusher.init(
+          apiKey: "pnbqosojiv97hmrgutf5", // REVERB_APP_KEY
+          cluster: "mt1",
+          onConnectionStateChange: onConnectionStateChange,
+          onError: onError,
+          onSubscriptionSucceeded: onSubscriptionSucceeded,
+          onEvent: onEvent,
+          onSubscriptionError: onSubscriptionError,
+          onDecryptionFailure: onDecryptionFailure,
+          onMemberAdded: onMemberAdded,
+          onMemberRemoved: onMemberRemoved,
+          authEndpoint: authEndpoint,
+          onAuthorizer: (channelName, socketId, options) async {
+            final response = await Dio().post(
+              authEndpoint,
+              data: {
+                'socket_id': socketId,
+                'channel_name': channelName,
+              },
+              options: Options(headers: authHeaders),
+            );
+
+            final data = response.data as Map<String, dynamic>;
+            return {
+              'auth': data['auth'],
+              'channel_data': data['channel_data'],
+              'shared_secret': data['shared_secret'],
+            };
           },
-        },
-        useTLS: false,
-      );
+          useTLS: false,
+        );
+      } else {
+        await pusher.init(
+          apiKey: "pnbqosojiv97hmrgutf5", // REVERB_APP_KEY
+          cluster: "mt1",
+          onConnectionStateChange: onConnectionStateChange,
+          onError: onError,
+          onSubscriptionSucceeded: onSubscriptionSucceeded,
+          onEvent: onEvent,
+          onSubscriptionError: onSubscriptionError,
+          onDecryptionFailure: onDecryptionFailure,
+          onMemberAdded: onMemberAdded,
+          onMemberRemoved: onMemberRemoved,
+          authEndpoint: authEndpoint,
+          authParams: {
+            'headers': authHeaders,
+          },
+          useTLS: false,
+        );
+      }
       await pusher.connect();
       _isInitialized = true;
     } catch (e) {
