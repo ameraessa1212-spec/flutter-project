@@ -3,8 +3,11 @@
 use App\Http\Controllers\Api\CurrentUserController;
 use App\Http\Controllers\Api\Mobile\MobileChatController;
 use App\Http\Controllers\Api\Company\CompanyAuthController;
-use App\Http\Controllers\Api\Company\CompanyDashboardController;
-use App\Http\Controllers\Api\Company\CompanyOpportunityController;
+use App\Http\Controllers\Api\Company\ApplicationController;
+use App\Http\Controllers\Api\Company\DashboardController;
+use App\Http\Controllers\Api\Company\EvaluationController;
+use App\Http\Controllers\Api\Company\InternshipController;
+use App\Http\Controllers\Api\Company\OpportunityController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -20,9 +23,21 @@ Route::prefix('company')->name('company.')->group(function () {
     Route::post('/login', [CompanyAuthController::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/dashboard/students', [CompanyDashboardController::class, 'getStudents']);
-        Route::get('/opportunities', [CompanyOpportunityController::class, 'index']);
-        Route::post('/opportunities', [CompanyOpportunityController::class, 'store']);
+        // Dashboard
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+        // Opportunities
+        Route::apiResource('opportunities', OpportunityController::class)->only(['index', 'store', 'show']);
+
+        // Applications (Student Requests)
+        Route::apiResource('requests', ApplicationController::class)->parameters(['requests' => 'application'])->only(['index', 'show']);
+        Route::put('/requests/{application}/status', [ApplicationController::class, 'updateStatus']);
+
+        // Internships (Active Students)
+        Route::apiResource('internships', InternshipController::class)->only(['index', 'show']);
+
+        // Evaluations
+        Route::post('/evaluations', [EvaluationController::class, 'store']);
     });
 });
 

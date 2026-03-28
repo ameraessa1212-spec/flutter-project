@@ -7,8 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="company_evaluation.css">
+    <script src="config.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body>
+<body x-data="evaluationForm()">
     <div class="glass-background">
         <div class="glow-sphere s1"></div>
         <div class="glow-sphere s2"></div>
@@ -31,12 +33,20 @@
             </header>
 
             <div class="student-meta-grid animate-fade delay-1">
-                <div class="meta-item"><strong>اسم الطالب:</strong> <input type="text" placeholder="اسم الطالب بالكامل" id="stName"></div>
-                <div class="meta-item"><strong>رقم القيد:</strong> <input type="text" placeholder="000000" id="stID"></div>
-                <div class="meta-item"><strong>جهة التدريب:</strong> <input type="text" placeholder="اسم الشركة" id="stCompany"></div>
-                <div class="meta-item"><strong>المشرف:</strong> <input type="text" placeholder="اسم المشرف المباشر"></div>
-                <div class="meta-item date-box"><strong>تاريخ بداية التدريب:</strong> <input type="date" id="startDate"></div>
-                <div class="meta-item date-box"><strong>تاريخ نهاية التدريب:</strong> <input type="date" id="endDate"></div>
+                <div class="meta-item">
+                    <strong>اسم الطالب:</strong> 
+                    <select id="stName" x-model="selectedInternship" style="border: 1px solid #ccc; padding: 5px; border-radius: 5px; width: 150px; background: transparent;">
+                        <option value="">-- اختر الطالب --</option>
+                        <template x-for="intern in internships" :key="intern.id">
+                            <option :value="intern.id" x-text="intern.student?.name || ('طالب ' + intern.id)"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="meta-item"><strong>رقم القيد:</strong> <input type="text" placeholder="000000" id="stID" disabled :value="selectedInternData?.student?.student_id || ''"></div>
+                <div class="meta-item"><strong>جهة التدريب:</strong> <input type="text" placeholder="اسم الشركة" id="stCompany" disabled :value="companyProfile?.name || ''"></div>
+                <div class="meta-item"><strong>المشرف:</strong> <input type="text" placeholder="اسم المشرف المباشر" disabled :value="userProfile?.name || ''"></div>
+                <div class="meta-item date-box"><strong>تاريخ بداية التدريب:</strong> <input type="date" id="startDate" disabled :value="selectedInternData?.start_date || ''"></div>
+                <div class="meta-item date-box"><strong>تاريخ نهاية التدريب:</strong> <input type="date" id="endDate" disabled :value="selectedInternData?.end_date || ''"></div>
             </div>
 
             <div class="full-table-wrapper">
@@ -148,12 +158,84 @@
                 </div>
                 <div class="action-buttons">
                     <button class="btn-print" onclick="window.print()"><i class="ri-printer-line"></i> حفظ PDF</button>
-                    <button class="btn-send" onclick="submitEvaluation()"><i class="ri-checkbox-circle-line"></i> اعتماد وإرسال التقييم</button>
+                    <button class="btn-send" @click="submitEvaluation()"><i class="ri-checkbox-circle-line"></i> اعتماد وإرسال التقييم</button>
                 </div>
             </footer>
         </div>
     </div>
 
     <script src="company_evaluation.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('evaluationForm', () => ({
+                internships: [],
+                selectedInternship: '',
+                companyProfile: null,
+                userProfile: null,
+
+                async init() {
+                    try {
+                        const prof = localStorage.getItem('company_profile');
+                        const usr = localStorage.getItem('company_user');
+                        if (prof) this.companyProfile = JSON.parse(prof);
+                        if (usr) this.userProfile = JSON.parse(usr);
+                        
+                        const response = await apiFetch('/company/internships?status=active');
+                        if (response.ok) {
+                            this.internships = await response.json();
+                        }
+                    } catch(e) { console.error('Failed to load internships', e); }
+                },
+
+                get selectedInternData() {
+                    if (!this.selectedInternship) return null;
+                    return this.internships.find(i => i.id == this.selectedInternship) || null;
+                },
+
+                async submitEvaluation() {
+                    if (!this.selectedInternship) {
+                        alert("الرجاء اختيار الطالب من القائمة");
+                        return;
+                    }
+
+                    // Gather detailed scores using existing DOM logic
+                    const inputs = document.querySelectorAll('.grade-input');
+                    let detailedScores = [];
+                    let totalScore = 0;
+                    
+                    inputs.forEach((input, index) => {
+                        let val = parseFloat(input.value) || 0;
+                        detailedScores.push(val);
+                        totalScore += val;
+                    });
+
+                    const notes = document.getElementById('supervisorNotes').value;
+
+                    if (confirm(`هل أنت متأكد من اعتماد التقييم بمجموع ${totalScore}؟`)) {
+                        try {
+                            const response = await apiFetch('/company/evaluations', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    internship_id: this.selectedInternship,
+                                    detailed_scores: detailedScores,
+                                    total_score: totalScore,
+                                    comments: notes
+                                })
+                            });
+
+                            if (response.ok) {
+                                alert("تم إرسال التقييم بنجاح.");
+                                window.location.href = 'dashboard.html';
+                            } else {
+                                alert("حدث خطأ أثناء الإرسال.");
+                            }
+                        } catch(e) {
+                            alert("خطأ في الاتصال بالخادم.");
+                        }
+                    }
+                }
+            }));
+        });
+    </script>
 </body>
 </html>
