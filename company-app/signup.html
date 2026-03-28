@@ -7,10 +7,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="signup.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        .error-message { color: #e74c3c; font-size: 0.85rem; margin-top: 5px; }
+        .success-message { color: #2ecc71; font-size: 0.95rem; text-align: center; margin-bottom: 15px; }
+        .rotate { animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-left: 8px; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
-    <div class="signup-wrapper">
+    <div class="signup-wrapper" x-data="signupForm()">
         <div class="signup-card fade-up">
             <div class="signup-header">
                 <div class="logo">WASLAT TADREIB<span>.</span></div>
@@ -18,12 +25,15 @@
                 <p>انضم إلينا وساهم في بناء مستقبل الكفاءات الشابة</p>
             </div>
 
-            <form id="signupForm" class="grid-form">
+            <div x-show="success" class="success-message" x-text="successMessage"></div>
+            <div x-show="generalError" class="error-message" style="text-align:center; font-size: 1rem; margin-bottom:15px;" x-text="generalError"></div>
+
+            <form @submit.prevent="submit" class="grid-form" x-show="!success">
                 <div class="form-group">
                     <label>اسم الشركة</label>
                     <div class="input-box">
                         <i class="ri-building-line"></i>
-                        <input type="text" placeholder="مثلاً: شركة تكنو كود" required>
+                        <input type="text" x-model="formData.name" placeholder="مثلاً: شركة تكنو كود" required>
                     </div>
                 </div>
 
@@ -31,47 +41,50 @@
                     <label>البريد الإلكتروني</label>
                     <div class="input-box">
                         <i class="ri-mail-line"></i>
-                        <input type="email" placeholder="hr@company.ly" required>
+                        <input type="email" x-model="formData.email" placeholder="hr@company.ly" required>
+                    </div>
+                    <span class="error-message" x-show="errors.email" x-text="errors.email"></span>
+                </div>
+
+                <!-- مضاف حديثاً لكلمة المرور -->
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <div class="input-box">
+                        <i class="ri-lock-password-line"></i>
+                        <input type="password" x-model="formData.password" placeholder="••••••••" required>
+                    </div>
+                    <span class="error-message" x-show="errors.password" x-text="errors.password"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>تأكيد كلمة المرور</label>
+                    <div class="input-box">
+                        <i class="ri-lock-password-line"></i>
+                        <input type="password" x-model="formData.password_confirmation" placeholder="••••••••" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>الموقع الجغرافي</label>
+                    <label>الموقع الجغرافي (المدينة)</label>
                     <div class="input-box">
                         <i class="ri-map-pin-line"></i>
-                        <input type="text" placeholder="المدينة - الحي">
+                        <input type="text" x-model="formData.city" placeholder="مدينة طرابلس">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>المجال التدريبي المطلوب</label>
+                    <label>العنوان بالتفصيل</label>
                     <div class="input-box">
-                        <i class="ri-code-s-slash-line"></i>
-                        <input type="text" placeholder="مثلاً: حاسب آلي (تطوير ويب)">
+                        <i class="ri-map-pin-2-line"></i>
+                        <input type="text" x-model="formData.address" placeholder="مثلاً: حي الأندلس">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>عدد المتدربين</label>
+                    <label>رقم الهاتف</label>
                     <div class="input-box">
-                        <i class="ri-group-line"></i>
-                        <input type="number" placeholder="مثلاً: 5">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>مدة التدريب</label>
-                    <div class="input-box">
-                        <i class="ri-time-line"></i>
-                        <input type="text" placeholder="مثلاً: شهرين">
-                    </div>
-                </div>
-
-                <div class="form-group full-width">
-                    <label>رابط حساب التواصل الاجتماعي (LinkedIn/Facebook)</label>
-                    <div class="input-box">
-                        <i class="ri-global-line"></i>
-                        <input type="url" placeholder="https://linkedin.com/company/...">
+                        <i class="ri-phone-line"></i>
+                        <input type="text" x-model="formData.phone" placeholder="09X XXX XXXX">
                     </div>
                 </div>
 
@@ -79,11 +92,14 @@
                     <label>نبذة تعريفية عن الشركة</label>
                     <div class="input-box">
                         <i class="ri-information-line"></i>
-                        <textarea placeholder="تخصص الشركة وأهدافها التدريبية..." rows="3"></textarea>
+                        <textarea x-model="formData.description" placeholder="تخصص الشركة وأهدافها التدريبية..." rows="3"></textarea>
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn">إرسال طلب الانضمام</button>
+                <button type="submit" class="submit-btn" :disabled="loading">
+                    <span x-show="!loading">إرسال طلب الانضمام</span>
+                    <span x-show="loading"><i class="ri-loader-4-line rotate"></i> جاري الإرسال...</span>
+                </button>
             </form>
 
             <div class="signup-footer">
@@ -93,6 +109,66 @@
         </div>
     </div>
 
-    <script src="signup.js"></script>
+    <script>
+        function signupForm() {
+            return {
+                formData: {
+                    name: '',
+                    email: '',
+                    password: '',
+                    password_confirmation: '',
+                    city: '',
+                    address: '',
+                    phone: '',
+                    description: ''
+                },
+                errors: {},
+                generalError: null,
+                success: false,
+                successMessage: '',
+                loading: false,
+
+                async submit() {
+                    this.loading = true;
+                    this.errors = {};
+                    this.generalError = null;
+
+                    try {
+                        const response = await fetch('http://127.0.0.1:8000/api/company/register', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(this.formData)
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            if (response.status === 422) {
+                                // Validation errors
+                                for (let key in data.errors) {
+                                    this.errors[key] = data.errors[key][0];
+                                }
+                            } else {
+                                this.generalError = data.message || 'حدث خطأ غير متوقع';
+                            }
+                        } else {
+                            this.success = true;
+                            this.successMessage = data.message || 'تم تسجيل الحساب بنجاح. يرجى انتظار موافقة الإدارة.';
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 3000);
+                        }
+                    } catch (error) {
+                        this.generalError = 'غير قادر على الاتصال بالخادم. يرجى المحاولة لاحقاً.';
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>

@@ -68,4 +68,14 @@ class Internship extends Model
     {
         return $this->hasMany(Report::class);
     }
+
+    public function examinerDiscussions(): HasMany
+    {
+        return $this->hasMany(ExaminerDiscussion::class);
+    }
+
+    public function discussionEvaluations(): HasMany
+    {
+        return $this->hasMany(DiscussionEvaluation::class);
+    }
 }

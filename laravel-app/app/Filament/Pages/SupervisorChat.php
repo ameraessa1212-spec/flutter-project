@@ -17,7 +17,7 @@ class SupervisorChat extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()->hasAnyRole(['super_admin', 'supervisor']);
+        return auth()->user()->hasAnyRole(['super_admin', 'supervisor', 'examiner']);
     }
 }
 

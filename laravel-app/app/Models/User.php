@@ -74,6 +74,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Supervisor::class);
     }
 
+    public function company(): HasOne
+    {
+        return $this->hasOne(Company::class);
+    }
+
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class, 'student_id');
@@ -99,6 +104,21 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Report::class, 'student_id');
     }
 
+    public function examinerDiscussions(): HasMany
+    {
+        return $this->hasMany(ExaminerDiscussion::class, 'examiner_id');
+    }
+
+    public function studentDiscussions(): HasMany
+    {
+        return $this->hasMany(ExaminerDiscussion::class, 'student_id');
+    }
+
+    public function discussionEvaluations(): HasMany
+    {
+        return $this->hasMany(DiscussionEvaluation::class, 'examiner_id');
+    }
+
     public function settings(): HasOne
     {
         return $this->hasOne(UserSetting::class);
@@ -115,6 +135,6 @@ class User extends Authenticatable implements FilamentUser
             return false;
         }
 
-        return $this->hasAnyRole(['super_admin', 'operations', 'supervisor', 'content_manager', 'support', 'company']);
+        return $this->hasAnyRole(['super_admin', 'operations', 'supervisor', 'examiner', 'content_manager', 'support', 'company']);
     }
 }
