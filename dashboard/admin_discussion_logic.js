@@ -1,19 +1,19 @@
-let selectedFile = null;
-let selectedTargets = []; 
+let selectedFileObj = null;
+let selectedTargets = [];
 let currentDept = 'all';
 
 function previewImage(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    selectedFileObj = file;
     const reader = new FileReader();
     reader.onload = function() {
         const output = document.getElementById('imagePreview');
         const text = document.getElementById('uploadText');
         output.src = reader.result;
         output.style.display = 'block';
-        text.innerText = "تم اختيار الصورة بنجاح ✅";
-        selectedFile = reader.result;
+        text.innerText = 'تم اختيار الصورة بنجاح';
     };
     reader.readAsDataURL(file);
 }
@@ -35,33 +35,31 @@ function filterDept(dept, element) {
     element.classList.add('active');
 }
 
-function sendToSelected() {
-    if (!selectedFile) {
-        alert("من فضلك قم برفع صورة الجدول أولاً");
+async function sendToSelected() {
+    if (!selectedFileObj) {
+        alert('من فضلك قم برفع صورة الجدول أولاً');
         return;
     }
 
     if (selectedTargets.length === 0) {
-        alert("من فضلك حدد المستلمين (الممتحنين أو الطلاب أو كلاهما)");
+        alert('من فضلك حدد المستلمين (الممتحنين أو الطلاب أو كلاهما)');
         return;
     }
 
-    // الحصول على نص التعليق/الرسالة
     const userMessage = document.getElementById('messageInput').value;
 
-    const targetNames = selectedTargets.map(t => (t === 'examiners' ? "الممتحنين" : "الطلاب")).join(" و ");
-    
-    const deptName = {
-        'all': 'جميع التخصصات',
-        'computer': 'حاسب آلي',
-        'control': 'تحكم',
-        'telecom': 'اتصالات'
-    }[currentDept];
+    const formData = new FormData();
+    formData.append('image', selectedFileObj);
+    selectedTargets.forEach(t => formData.append('targets[]', t));
+    formData.append('specialization_filter', currentDept);
+    if (userMessage) formData.append('message', userMessage);
 
-    // عرض الرسالة في التنبيه (سيتم إرسالها للباك إند لاحقاً)
-    alert(`جاري الإرسال...
-جهة الإرسال: ${targetNames}
-التخصص: ${deptName}
-الرسالة المرفقة: ${userMessage || "لا يوجد تعليق"}
-تم إرفاق ملف الجدول بنجاح.`);
+    try {
+        const result = await apiPost('/discussion-schedules', formData);
+        if (result) {
+            alert(result.message || 'تم الإرسال بنجاح');
+        }
+    } catch (e) {
+        alert('حدث خطأ في الإرسال');
+    }
 }

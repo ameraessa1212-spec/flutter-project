@@ -1,6 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
-    initChart();
+    loadDashboardStats();
+    loadChartData();
+    loadAlerts();
 });
+
+async function loadDashboardStats() {
+    try {
+        const result = await apiGet('/dashboard/stats');
+        if (result && result.data) {
+            document.getElementById('stat-students').textContent = result.data.total_students;
+            document.getElementById('stat-trainees').textContent = result.data.active_trainees;
+            document.getElementById('stat-companies').textContent = result.data.total_companies;
+            document.getElementById('stat-pending').textContent = String(result.data.pending_requests).padStart(2, '0');
+        }
+    } catch (e) {
+        console.error('Failed to load stats:', e);
+    }
+}
+
+async function loadChartData() {
+    try {
+        const result = await apiGet('/dashboard/chart-data');
+        if (result && result.data) {
+            initChart(result.data.labels, result.data.values);
+        } else {
+            initChart([], []);
+        }
+    } catch (e) {
+        console.error('Failed to load chart:', e);
+        initChart([], []);
+    }
+}
+
+async function loadAlerts() {
+    try {
+        const result = await apiGet('/dashboard/alerts');
+        const container = document.getElementById('alerts-container');
+        if (result && result.data && result.data.length > 0) {
+            container.innerHTML = result.data.map(alert => {
+                const icon = alert.type === 'danger' ? 'ri-error-warning-line' : 'ri-mail-line';
+                return `<div class="alert-item ${alert.type}">
+                    <i class="${icon}"></i>
+                    <div><strong>${alert.title}</strong><small>${alert.message}</small></div>
+                </div>`;
+            }).join('');
+        } else {
+            container.innerHTML = '<p style="color:#aaa; text-align:center;">لا توجد تنبيهات حالياً</p>';
+        }
+    } catch (e) {
+        console.error('Failed to load alerts:', e);
+    }
+}
 
 // دالة تفعيل العناصر في القائمة
 function setActive(element) {
@@ -86,17 +136,18 @@ function loadRequestsPage(event) {
 }
 
 // دالة تشغيل الرسم البياني
-function initChart() {
+function initChart(labels = [], data = []) {
     const canvas = document.getElementById('mainChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (window.myChart) window.myChart.destroy();
     window.myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['شركة A', 'شركة B', 'شركة C', 'شركة D'],
+            labels: labels,
             datasets: [{
                 label: 'عدد الطلاب',
-                data: [15, 22, 10, 18],
+                data: data,
                 backgroundColor: '#6A5AE0',
                 borderRadius: 10,
                 barThickness: 45
@@ -206,6 +257,15 @@ function loadReceiveResultsPage(event) {
             <iframe src="receive_results.html" style="width: 100%; height: 100%; border: none; background: #fbfcff; border-radius: 40px;"></iframe>
         </div>`;
 }
+// Logout
+async function handleLogout() {
+    try {
+        await apiPost('/logout', {});
+    } catch (e) { /* ignore */ }
+    clearAuth();
+    window.location.href = 'index.html';
+}
+
 // دالة تحميل صفحة جدول المناقشة (الإدارة)
 function loadDiscussionSchedulePage(element) {
     // تحديث الحالة النشطة في القائمة الجانبية

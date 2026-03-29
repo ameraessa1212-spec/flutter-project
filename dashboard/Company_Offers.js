@@ -1,78 +1,65 @@
-const companyForms = {
-    'techno': {
-        name: 'شركة تكنو كود',
-        bio: 'متخصصون في تطوير الحلول البرمجية المتكاملة والتحول الرقمي.',
-        email: 'hr@techno.ly',
-        location: 'طرابلس - حي الأندلس',
-        students: '5 طلاب',
-        major: 'حاسب آلي (تطوير ويب)',
-        duration: 'شهرين',
-        social: 'https://facebook.com/technocode'
-    },
-    'libya_control': {
-        name: 'ليبيا للتحكم',
-        bio: 'شركة رائدة في مجال التحكم الصناعي والأنظمة الكهربائية الحديثة.',
-        email: 'info@lcontrol.ly',
-        location: 'بنغازي - منطقة القوارشة',
-        students: '3 طلاب',
-        major: 'هندسة تحكم',
-        duration: '3 أشهر',
-        social: 'https://linkedin.com/company/libya-control'
+let offersData = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadOffers();
+});
+
+async function loadOffers() {
+    try {
+        const result = await apiGet('/company-offers');
+        if (result && result.data) {
+            offersData = result.data;
+            renderOffers(offersData);
+        }
+    } catch (e) {
+        console.error('Failed to load offers:', e);
     }
-};
+}
 
-function openDetails(id) {
-    const data = companyForms[id];
+function renderOffers(data) {
+    const grid = document.getElementById('offersGrid');
+    if (!grid) return;
+
+    if (data.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#aaa; padding:40px;">لا توجد عروض معلقة حالياً</p>';
+        return;
+    }
+
+    grid.innerHTML = data.map(offer => `
+        <div class="modern-card" id="offer-${offer.id}">
+            <div class="card-header">
+                <div class="company-name">${offer.company?.name || '--'}</div>
+                <span class="card-status status-pending">${offer.status === 'pending' ? 'قيد المراجعة' : offer.status}</span>
+            </div>
+            <div class="card-body">
+                <div class="info-row"><i class="ri-map-pin-line"></i> ${offer.city || offer.location_text || '--'}</div>
+                <div class="info-row"><i class="ri-briefcase-line"></i> ${offer.specialization || '--'}</div>
+                <div class="info-row"><i class="ri-group-line"></i> ${offer.seats_count || 0} طلاب</div>
+                <div class="info-row"><i class="ri-time-line"></i> ${offer.duration_text || offer.duration_days + ' يوم'}</div>
+            </div>
+            <div class="card-actions">
+                <button class="btn-view" onclick="openDetails(${offer.id})"><i class="ri-eye-line"></i> عرض</button>
+                <button class="btn-approve" onclick="approveRequest(this, ${offer.id})"><i class="ri-check-line"></i> قبول</button>
+                <button class="btn-reject" onclick="rejectRequest(this, ${offer.id})"><i class="ri-close-line"></i> رفض</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openDetails(offerId) {
+    const offer = offersData.find(o => o.id === offerId);
+    if (!offer) return;
+
     const content = document.getElementById('modalContent');
-    
     content.innerHTML = `
-        <div class="data-row">
-            <span class="data-label">اسم الشركة</span>
-            <span class="data-value">${data.name}</span>
-        </div>
-        
-        <div class="data-row-vertical">
-            <span class="data-label">نبذة تعريفية</span>
-            <span class="data-value" style="font-weight:400; line-height:1.6; text-align:right;">${data.bio}</span>
-        </div>
-        
-        <div class="data-row">
-            <span class="data-label">الموقع الجغرافي</span>
-            <span class="data-value">${data.location}</span>
-        </div>
-        
-        <div class="data-row">
-            <span class="data-label">البريد الإلكتروني</span>
-            <span class="data-value" style="font-size:13px;">${data.email}</span>
-        </div>
-        
-        <div class="data-row">
-            <span class="data-label">رابط التواصل</span>
-            <span class="data-value">
-                <a href="${data.social}" target="_blank" class="social-link">
-                    <i class="ri-links-line"></i> زيارة الرابط
-                </a>
-            </span>
-        </div>
-
-        <div class="data-row">
-            <span class="data-label">المجال المطلوب</span>
-            <span class="data-value" style="color:#6A5AE0;">${data.major}</span>
-        </div>
-
-        <div class="data-row">
-            <span class="data-label">العدد المطلوب</span>
-            <span class="data-value">${data.students}</span>
-        </div>
-
-        <div class="data-row" style="border:none;">
-            <span class="data-label">مدة التدريب</span>
-            <span class="data-value">${data.duration}</span>
-        </div>
-        
-        <div style="height:10px;"></div>
+        <div class="data-row"><span class="data-label">اسم الشركة</span><span class="data-value">${offer.company?.name || '--'}</span></div>
+        <div class="data-row-vertical"><span class="data-label">نبذة تعريفية</span><span class="data-value" style="font-weight:400; line-height:1.6; text-align:right;">${offer.company?.description || '--'}</span></div>
+        <div class="data-row"><span class="data-label">الموقع الجغرافي</span><span class="data-value">${offer.city || '--'}</span></div>
+        <div class="data-row"><span class="data-label">البريد الإلكتروني</span><span class="data-value" style="font-size:13px;">${offer.company?.email || '--'}</span></div>
+        <div class="data-row"><span class="data-label">المجال المطلوب</span><span class="data-value" style="color:#6A5AE0;">${offer.specialization || '--'}</span></div>
+        <div class="data-row"><span class="data-label">العدد المطلوب</span><span class="data-value">${offer.seats_count || 0} طلاب</span></div>
+        <div class="data-row" style="border:none;"><span class="data-label">مدة التدريب</span><span class="data-value">${offer.duration_text || '--'}</span></div>
     `;
-    
     document.getElementById('formModal').style.display = 'flex';
 }
 
@@ -80,33 +67,44 @@ function closeModal() {
     document.getElementById('formModal').style.display = 'none';
 }
 
-function approveRequest(btn, id) {
-    const data = companyForms[id];
-    if(confirm(`تأكيد قبول شركة [${data.name}]؟\nسيتم إرسال كلمة المرور إلى: ${data.email}`)) {
-        const pass = "PW-" + Math.floor(1000 + Math.random() * 9000);
-        const card = btn.closest('.modern-card');
+async function approveRequest(btn, offerId) {
+    if (!confirm('تأكيد قبول هذا العرض؟')) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
+
+    try {
+        await apiPut(`/company-offers/${offerId}/approve`, {});
+        const card = document.getElementById(`offer-${offerId}`);
         card.querySelector('.card-status').innerText = 'تم القبول';
         card.querySelector('.card-status').className = 'card-status status-approved';
         btn.innerHTML = 'تم القبول ✓';
-        btn.disabled = true;
         btn.style.background = '#33D69F';
         btn.parentElement.querySelector('.btn-reject').style.display = 'none';
-        alert(`✅ تم الاعتماد بنجاح!\n📧 تم إرسال البريد إلى: ${data.email}\n🔑 كلمة المرور الجديدة هي: ${pass}`);
+    } catch (e) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-check-line"></i> قبول';
+        alert('حدث خطأ');
     }
 }
 
-function rejectRequest(cardId, name) {
-    if(confirm(`هل أنتِ متأكدة من رفض طلب شركة ${name}؟`)) {
-        const card = document.getElementById(cardId);
+async function rejectRequest(btn, offerId) {
+    const offer = offersData.find(o => o.id === offerId);
+    if (!confirm(`هل أنت متأكد من رفض هذا العرض؟`)) return;
+
+    try {
+        await apiPut(`/company-offers/${offerId}/reject`, {});
+        const card = document.getElementById(`offer-${offerId}`);
         card.querySelector('.card-status').innerText = 'تم الرفض';
         card.querySelector('.card-status').className = 'card-status status-rejected';
         card.style.opacity = '0.6';
         card.querySelector('.card-actions').innerHTML = '<span style="color:#FF5B5B; font-weight:bold; width:100%; text-align:center">تم الرفض بنجاح</span>';
+    } catch (e) {
+        alert('حدث خطأ');
     }
 }
 
-// إغلاق المودال عند الضغط خارج الصندوق
 window.onclick = function(event) {
     const modal = document.getElementById('formModal');
-    if (event.target == modal) { closeModal(); }
-}
+    if (event.target == modal) closeModal();
+};

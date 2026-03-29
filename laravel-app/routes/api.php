@@ -42,3 +42,5 @@ Route::prefix('company')->name('company.')->group(function () {
 });
 
 Route::prefix('mobile')->name('mobile.')->group(base_path('routes/mobile.php'));
+
+Route::prefix('admin')->name('admin.')->group(base_path('routes/admin.php'));

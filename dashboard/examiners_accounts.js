@@ -1,45 +1,64 @@
-// وظيفة التبديل بين نشط ومعطل
-function toggleAccount(btn) {
-    const row = btn.closest('tr');
-    const statusLabel = row.querySelector('.status-badge');
-    const examinerName = row.querySelector('.user-cell').innerText;
+let examinersData = [];
 
-    if (statusLabel.classList.contains('active')) {
-        // حالة التغيير إلى معطل
-        if (confirm(`هل أنت متأكد من تعطيل حساب (${examinerName})؟ لن يتمكن من تسجيل الدخول.`)) {
-            statusLabel.innerText = "معطل";
-            statusLabel.className = "status-badge inactive";
-            btn.innerText = "تفعيل";
-            btn.classList.add('activate');
-            
-            // إضافة تأثير حركي بسيط
-            row.style.backgroundColor = "#fffafa";
-            setTimeout(() => row.style.backgroundColor = "transparent", 500);
+document.addEventListener('DOMContentLoaded', () => {
+    loadExaminers();
+    document.getElementById('examinerSearch').addEventListener('input', filterExaminers);
+});
+
+async function loadExaminers() {
+    try {
+        const result = await apiGet('/examiners');
+        if (result && result.data) {
+            examinersData = result.data;
+            renderExaminers(examinersData);
         }
-    } else {
-        // حالة التغيير إلى نشط
-        statusLabel.innerText = "نشط";
-        statusLabel.className = "status-badge active";
-        btn.innerText = "تعطيل";
-        btn.classList.remove('activate');
-        
-        row.style.backgroundColor = "#f0fff4";
-        setTimeout(() => row.style.backgroundColor = "transparent", 500);
+    } catch (e) {
+        console.error('Failed to load examiners:', e);
     }
 }
 
-// وظيفة البحث الذكي
-document.getElementById('examinerSearch').addEventListener('input', function() {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll('#examinersTable tr');
-    
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        if (text.includes(filter)) {
-            row.style.display = "";
-            row.style.animation = "slideUp 0.3s ease-out";
-        } else {
-            row.style.display = "none";
+function renderExaminers(data) {
+    const tbody = document.getElementById('examinersTable');
+    tbody.innerHTML = data.map(ex => `
+        <tr>
+            <td class="user-cell">${ex.name}</td>
+            <td>${ex.email || '--'}</td>
+            <td>${ex.phone || '--'}</td>
+            <td>
+                <span class="status-badge ${ex.status === 'active' ? 'active' : 'inactive'}">
+                    ${ex.status === 'active' ? 'نشط' : 'معطل'}
+                </span>
+            </td>
+            <td>
+                <button class="toggle-btn ${ex.status === 'active' ? '' : 'activate'}" onclick="toggleAccount(${ex.id})">
+                    ${ex.status === 'active' ? 'تعطيل' : 'تفعيل'}
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function toggleAccount(examinerId) {
+    const examiner = examinersData.find(e => e.id === examinerId);
+    if (examiner && examiner.status === 'active') {
+        if (!confirm(`هل أنت متأكد من تعطيل حساب (${examiner.name})؟`)) return;
+    }
+
+    try {
+        const result = await apiPut(`/examiners/${examinerId}/toggle-status`, {});
+        if (result) {
+            loadExaminers();
         }
-    });
-});
+    } catch (e) {
+        alert('حدث خطأ');
+    }
+}
+
+function filterExaminers() {
+    const filter = document.getElementById('examinerSearch').value.toLowerCase();
+    const filtered = examinersData.filter(ex =>
+        (ex.name || '').toLowerCase().includes(filter) ||
+        (ex.email || '').toLowerCase().includes(filter)
+    );
+    renderExaminers(filtered);
+}
