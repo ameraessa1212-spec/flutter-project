@@ -27,3 +27,7 @@ style.innerHTML = `
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 `;
 document.head.appendChild(style);
+// أي كود إضافي للتحسينات البصرية فقط
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Signup page ready");
+});
