@@ -139,13 +139,15 @@ class _ReportsPageState extends State<ReportsPage> {
     try {
       final repo = context.read<ReportRepository>();
       for (final file in selectedFiles) {
-        if (file.path == null && file.bytes == null) continue;
+        final filePath = kIsWeb ? null : file.path;
+        final fileBytes = file.bytes;
+        if (filePath == null && fileBytes == null) continue;
         await repo.submitReport(
           internshipId: widget.internshipId!,
           title: _reportTypeLabels[_selectedReportType] ?? file.name,
           reportType: _selectedReportType,
-          filePath: file.path,
-          fileBytes: file.bytes,
+          filePath: filePath,
+          fileBytes: fileBytes,
           fileName: file.name,
         );
       }
@@ -381,21 +383,21 @@ class _ReportsPageState extends State<ReportsPage> {
                         size: 20,
                       ),
                       const SizedBox(width: 10),
-                      Text(
-                        entry.value,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSubmitted ? Colors.grey : Colors.black,
+                      Expanded(
+                        child: Text(
+                          entry.value,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSubmitted ? Colors.grey : Colors.black,
+                          ),
                         ),
                       ),
-                      if (isSubmitted) ...[
-                        const Spacer(),
-                        const Text(
+                      if (isSubmitted)
+                        Text(
                           'تم الرفع',
-                          style: TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold),
                         ),
-                      ],
                     ],
                   ),
                 ),
