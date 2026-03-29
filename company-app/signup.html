@@ -101,6 +101,22 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>الموقع الإلكتروني</label>
+                    <div class="input-box">
+                        <i class="ri-global-line"></i>
+                        <input type="url" x-model="formData.website_url" placeholder="https://company.ly">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>رابط الموقع على الخريطة</label>
+                    <div class="input-box">
+                        <i class="ri-map-2-line"></i>
+                        <input type="url" x-model="formData.map_url" placeholder="https://maps.google.com/...">
+                    </div>
+                </div>
+
                 <button type="submit" class="submit-btn" :disabled="loading">
                     <span x-show="!loading">إرسال طلب الانضمام</span>
                     <span x-show="loading"><i class="ri-loader-4-line rotate"></i> جاري المعالجة...</span>
@@ -119,7 +135,8 @@
             return {
                 formData: {
                     name: '', email: '', password: '', password_confirmation: '',
-                    city: '', phone: '', description: '', logo: null
+                    city: '', phone: '', description: '', logo: null,
+                    website_url: '', map_url: ''
                 },
                 logoPreview: null,
                 errors: {},

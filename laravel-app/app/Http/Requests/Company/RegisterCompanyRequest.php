@@ -30,6 +30,9 @@ class RegisterCompanyRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'description' => ['nullable', 'string'],
+            'website_url' => ['nullable', 'url', 'max:500'],
+            'map_url' => ['nullable', 'url', 'max:500'],
+            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
         ];
     }
 }

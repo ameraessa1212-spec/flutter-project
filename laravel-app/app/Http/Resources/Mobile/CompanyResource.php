@@ -4,6 +4,7 @@ namespace App\Http\Resources\Mobile;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyResource extends JsonResource
 {
@@ -14,7 +15,7 @@ class CompanyResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'logo_path' => $this->logo_path,
+            'logo_path' => $this->logo_path ? url(Storage::disk('public')->url($this->logo_path)) : null,
             'website_url' => $this->website_url,
             'map_url' => $this->map_url,
             'city' => $this->city,

@@ -170,7 +170,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        opportunity.isAvailable ? 'متاح الآن' : 'مغلق حالياً',
+                        opportunity.isAvailable ? 'متاح الآن' : 'غير متاحة في النظام',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -436,7 +436,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                     : Text(
                         opportunity.isAvailable
                             ? 'طلب تدريب'
-                            : 'التدريب غير متاح حالياً',
+                            : 'غير متاحة في النظام',
                         style: const TextStyle(color: Colors.white, fontSize: 17),
                       ),
               ),

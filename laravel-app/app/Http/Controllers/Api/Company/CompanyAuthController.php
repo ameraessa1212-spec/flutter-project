@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class CompanyAuthController extends Controller
@@ -26,7 +27,13 @@ class CompanyAuthController extends Controller
             'status' => 'inactive',
         ]);
 
-        // 2. Create the Company profile linked to the User
+        // 2. Handle logo file upload
+        $logoPath = null;
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('company-logos', 'public');
+        }
+
+        // 3. Create the Company profile linked to the User
         $company = Company::create([
             'user_id' => $user->id,
             'name' => $validated['name'],
@@ -36,6 +43,9 @@ class CompanyAuthController extends Controller
             'address' => $validated['address'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'description' => $validated['description'] ?? null,
+            'logo_path' => $logoPath,
+            'website_url' => $validated['website_url'] ?? null,
+            'map_url' => $validated['map_url'] ?? null,
             'is_active' => false,
             'status' => 'pending',
         ]);

@@ -77,6 +77,18 @@ class ApplicationController extends Controller
                      'status' => 'active'
                  ]);
             }
+
+            // Auto-close opportunity when all seats are filled
+            $opportunity = $application->opportunity;
+            if ($opportunity && $opportunity->seats_count) {
+                $activeCount = \App\Models\Internship::where('opportunity_id', $opportunity->id)
+                    ->where('status', 'active')
+                    ->count();
+
+                if ($activeCount >= $opportunity->seats_count) {
+                    $opportunity->update(['is_available' => false]);
+                }
+            }
         }
 
         return response()->json([

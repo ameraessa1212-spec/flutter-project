@@ -4,6 +4,7 @@ namespace App\Http\Resources\Mobile;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class InternshipOpportunityResource extends JsonResource
 {
@@ -23,7 +24,7 @@ class InternshipOpportunityResource extends JsonResource
             'start_date' => optional($this->start_date)?->toDateString(),
             'end_date' => optional($this->end_date)?->toDateString(),
             'application_deadline' => optional($this->application_deadline)?->toDateString(),
-            'image_path' => $this->image_path,
+            'image_path' => $this->image_path ? url(Storage::disk('public')->url($this->image_path)) : null,
             'company' => new CompanyResource($this->whenLoaded('company')),
             'specialization' => new SpecializationResource($this->whenLoaded('specialization')),
         ];
