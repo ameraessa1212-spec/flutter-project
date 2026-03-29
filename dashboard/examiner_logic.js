@@ -1,4 +1,5 @@
 window.onload = () => {
+    if (!requireAuth()) return;
     const homeMenu = document.querySelector('.menu-item');
     loadExaminerContent('home', homeMenu);
 };

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Waslaa/const/color.dart';
@@ -21,6 +22,12 @@ class _ReportsPageState extends State<ReportsPage> {
   List<Report> _submittedReports = [];
   bool _isLoading = false;
   bool _isSubmitting = false;
+  String _selectedReportType = 'field_report';
+
+  static const Map<String, String> _reportTypeLabels = {
+    'field_report': 'التقرير الميداني',
+    'research_paper': 'البحث العلمي',
+  };
 
   @override
   void initState() {
@@ -74,6 +81,7 @@ class _ReportsPageState extends State<ReportsPage> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'doc', 'docx'],
+      withData: kIsWeb,
     );
 
     if (result != null) {
@@ -87,6 +95,16 @@ class _ReportsPageState extends State<ReportsPage> {
     setState(() {
       selectedFiles.clear();
     });
+  }
+
+  Set<String> get _submittedReportTypes {
+    return _submittedReports.map((r) => r.reportType).toSet();
+  }
+
+  List<String> get _availableReportTypes {
+    return _reportTypeLabels.keys
+        .where((type) => !_submittedReportTypes.contains(type))
+        .toList();
   }
 
   Future<void> _submitFiles() async {
@@ -107,23 +125,34 @@ class _ReportsPageState extends State<ReportsPage> {
       return;
     }
 
+    if (_submittedReportTypes.contains(_selectedReportType)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('لقد تم رفع هذا النوع من التقارير مسبقاً.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     try {
       final repo = context.read<ReportRepository>();
       for (final file in selectedFiles) {
-        if (file.path == null) continue;
+        if (file.path == null && file.bytes == null) continue;
         await repo.submitReport(
           internshipId: widget.internshipId!,
-          title: file.name,
-          reportType: 'weekly',
-          filePath: file.path!,
+          title: _reportTypeLabels[_selectedReportType] ?? file.name,
+          reportType: _selectedReportType,
+          filePath: file.path,
+          fileBytes: file.bytes,
           fileName: file.name,
         );
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم إرسال التقارير بنجاح'),
+          content: Text('تم إرسال التقرير بنجاح'),
           backgroundColor: Colors.green,
         ),
       );
@@ -131,9 +160,12 @@ class _ReportsPageState extends State<ReportsPage> {
       _loadReports();
     } on DioException catch (e) {
       if (!mounted) return;
+      final errorMsg = e.response?.data is Map
+          ? (e.response!.data as Map)['message'] as String?
+          : null;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.message ?? 'حدث خطأ أثناء الإرسال'),
+          content: Text(errorMsg ?? e.message ?? 'حدث خطأ أثناء الإرسال'),
           backgroundColor: Colors.red,
         ),
       );
@@ -164,6 +196,8 @@ class _ReportsPageState extends State<ReportsPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildHeaderCard(),
+              const SizedBox(height: 18),
+              _buildReportTypeSelector(),
               const SizedBox(height: 18),
               _buildUploadSection(),
               const SizedBox(height: 18),
@@ -252,6 +286,122 @@ class _ReportsPageState extends State<ReportsPage> {
             "يمكنك من هنا رفع التقرير الميداني والبحث العلمي بصيغة PDF أو Word، ثم إرسالها للمراجعة.",
             style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.7),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportTypeSelector() {
+    final available = _availableReportTypes;
+    if (available.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.orange.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.20)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.orange, size: 22),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'تم رفع جميع أنواع التقارير المطلوبة.',
+                style: TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Auto-select first available type if current selection is already submitted
+    if (_submittedReportTypes.contains(_selectedReportType) && available.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _selectedReportType = available.first);
+      });
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'نوع التقرير',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          const SizedBox(height: 12),
+          ..._reportTypeLabels.entries.map((entry) {
+            final isSubmitted = _submittedReportTypes.contains(entry.key);
+            final isSelected = _selectedReportType == entry.key;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: InkWell(
+                onTap: isSubmitted ? null : () => setState(() => _selectedReportType = entry.key),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSubmitted
+                        ? Colors.grey.withValues(alpha: 0.08)
+                        : isSelected
+                            ? primaryColor.withValues(alpha: 0.10)
+                            : Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSubmitted
+                          ? Colors.grey.withValues(alpha: 0.20)
+                          : isSelected
+                              ? primaryColor.withValues(alpha: 0.40)
+                              : primaryColor.withValues(alpha: 0.12),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isSubmitted
+                            ? Icons.check_circle_rounded
+                            : isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                        color: isSubmitted ? Colors.green : isSelected ? primaryColor : Colors.grey,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        entry.value,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSubmitted ? Colors.grey : Colors.black,
+                        ),
+                      ),
+                      if (isSubmitted) ...[
+                        const Spacer(),
+                        const Text(
+                          'تم الرفع',
+                          style: TextStyle(fontSize: 11, color: Colors.green, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -483,6 +633,8 @@ class _ReportsPageState extends State<ReportsPage> {
             ? Colors.green
             : report.status == 'rejected'
             ? Colors.red
+            : report.status == 'submitted'
+            ? Colors.blue
             : Colors.orange;
     return Container(
       padding: const EdgeInsets.all(14),
@@ -570,6 +722,12 @@ class _ReportsPageState extends State<ReportsPage> {
         return 'مرفوض';
       case 'pending':
         return 'قيد المراجعة';
+      case 'submitted':
+        return 'تم الإرسال';
+      case 'reviewed':
+        return 'تمت المراجعة';
+      case 'draft':
+        return 'مسودة';
       default:
         return status;
     }

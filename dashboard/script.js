@@ -1,3 +1,16 @@
+// Auto-redirect if already logged in
+document.addEventListener('DOMContentLoaded', () => {
+    const token = getToken();
+    const user = getUser();
+    if (token && user) {
+        if (user.role === 'examiner') {
+            window.location.href = 'examiner_dashboard.html';
+        } else {
+            window.location.href = 'homescreen.html';
+        }
+    }
+});
+
 async function handleLogin(event) {
     event.preventDefault();
 
@@ -27,7 +40,14 @@ async function handleLogin(event) {
             } else {
                 window.location.href = 'homescreen.html';
             }
+            return;
         }
+
+        // API returned null (server down)
+        alert('لا يمكن الاتصال بالخادم. تأكد من تشغيل السيرفر.');
+        btn.innerHTML = originalContent;
+        btn.style.pointerEvents = '';
+        btn.style.opacity = '';
     } catch (error) {
         const msg = error.data?.message || error.data?.errors?.login?.[0] || 'حدث خطأ في تسجيل الدخول';
         alert(msg);
@@ -39,23 +59,16 @@ async function handleLogin(event) {
 
 async function handleSignup(event) {
     event.preventDefault();
-
     const btn = event.target.querySelector('.submit-btn');
     btn.innerHTML = '<i class="ri-loader-4-line rotate"></i> جاري الإرسال...';
     btn.style.pointerEvents = 'none';
-
-    setTimeout(() => {
-        window.location.href = 'verify_email.html';
-    }, 1500);
+    setTimeout(() => { window.location.href = 'verify_email.html'; }, 1500);
 }
 
 // Loading spinner animation
 if (!document.getElementById('rotate-style')) {
     const style = document.createElement('style');
     style.id = 'rotate-style';
-    style.innerHTML = `
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .rotate { display: inline-block; animation: rotate 1s infinite linear; }
-    `;
+    style.innerHTML = `@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .rotate { display: inline-block; animation: rotate 1s infinite linear; }`;
     document.head.appendChild(style);
 }

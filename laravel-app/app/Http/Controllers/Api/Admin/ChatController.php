@@ -13,19 +13,25 @@ class ChatController extends Controller
 {
     public function contacts(Request $request): JsonResponse
     {
-        $users = User::whereIn('role', ['student', 'supervisor', 'examiner'])
+        $search = $request->input('search');
+
+        $query = User::whereIn('role', ['student', 'supervisor', 'examiner'])
             ->where('status', 'active')
-            ->select('id', 'name', 'role', 'status')
-            ->limit(50)
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'role' => $user->role,
-                    'initials' => mb_substr($user->name, 0, 1),
-                ];
-            });
+            ->with('studentProfile.specialization');
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $users = $query->orderBy('name')->limit(50)->get()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role,
+                'initials' => mb_substr($user->name, 0, 1),
+                'specialization' => $user->studentProfile?->specialization?->name,
+            ];
+        });
 
         return response()->json(['data' => $users]);
     }
@@ -36,18 +42,10 @@ class ChatController extends Controller
             'user_id' => ['required', 'exists:users,id'],
         ]);
 
-        $userId = $request->input('user_id');
+        $userId = (int) $request->input('user_id');
         $currentUserId = $request->user()->id;
 
-        $thread = ChatThread::where(function ($q) use ($currentUserId, $userId) {
-            $q->where('student_id', $userId)->whereHas('supervisor', function ($q) use ($currentUserId) {
-                $q->where('user_id', $currentUserId);
-            });
-        })->orWhere(function ($q) use ($currentUserId, $userId) {
-            $q->where('student_id', $currentUserId)->whereHas('supervisor', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            });
-        })->first();
+        $thread = ChatThread::where('student_id', $userId)->first();
 
         if (! $thread) {
             return response()->json(['data' => []]);
@@ -62,9 +60,16 @@ class ChatController extends Controller
                     'body' => $msg->body,
                     'type' => $msg->message_type,
                     'is_mine' => $msg->sender_id === $currentUserId,
+                    'sender_name' => $msg->sender?->name,
                     'sent_at' => $msg->sent_at?->toISOString(),
+                    'time' => $msg->sent_at?->format('h:i A'),
                 ];
             });
+
+        Message::where('thread_id', $thread->id)
+            ->where('sender_id', $userId)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         return response()->json(['data' => $messages]);
     }
@@ -77,7 +82,6 @@ class ChatController extends Controller
             'type' => ['nullable', 'string', 'in:text,voice,file'],
         ]);
 
-        // Find or create thread
         $thread = ChatThread::firstOrCreate(
             ['student_id' => $validated['user_id']],
             ['status' => 'active', 'last_message_at' => now()]
@@ -101,6 +105,7 @@ class ChatController extends Controller
                 'type' => $message->message_type,
                 'is_mine' => true,
                 'sent_at' => $message->sent_at->toISOString(),
+                'time' => $message->sent_at->format('h:i A'),
             ],
         ]);
     }

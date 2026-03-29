@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    if (!requireAuth()) return;
     loadDashboardStats();
     loadChartData();
     loadAlerts();

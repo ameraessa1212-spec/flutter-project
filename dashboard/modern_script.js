@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function loadEvaluationResults() {
-    const container = document.getElementById('studentsContainer');
+    const container = document.getElementById('studentsGrid');
     if (!container) return;
 
     try {

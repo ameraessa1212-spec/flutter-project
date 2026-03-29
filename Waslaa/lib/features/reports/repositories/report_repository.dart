@@ -20,16 +20,24 @@ class ReportRepository {
     required int internshipId,
     required String title,
     required String reportType,
-    required String filePath,
+    String? filePath,
+    List<int>? fileBytes,
     String? fileName,
   }) async {
+    MultipartFile? file;
+    if (fileBytes != null && fileName != null) {
+      file = MultipartFile.fromBytes(fileBytes, filename: fileName);
+    } else if (filePath != null) {
+      file = await MultipartFile.fromFile(
+        filePath,
+        filename: fileName ?? filePath.split('/').last,
+      );
+    }
+
     final formData = FormData.fromMap({
       'title': title,
       'report_type': reportType,
-      'file': await MultipartFile.fromFile(
-        filePath,
-        filename: fileName ?? filePath.split('/').last,
-      ),
+      if (file != null) 'file': file,
     });
 
     final response = await _apiClient.post(

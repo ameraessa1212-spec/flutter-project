@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Mobile\StoreApplicationRequest;
 use App\Http\Resources\Mobile\ApplicationResource;
 use App\Models\Application;
+use App\Models\Internship;
 use App\Models\InternshipOpportunity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -34,10 +35,63 @@ class ApplicationController extends Controller
         ]);
     }
 
+    public function canApply(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $hasActiveInternship = Internship::where('student_id', $user->id)
+            ->where('status', 'active')
+            ->exists();
+
+        if ($hasActiveInternship) {
+            return response()->json([
+                'can_apply' => false,
+                'reason' => 'لديك تدريب نشط بالفعل. لا يمكنك التقديم حتى ينتهي تدريبك الحالي.',
+            ]);
+        }
+
+        $hasActiveApplication = Application::where('student_id', $user->id)
+            ->whereNotIn('status', ['rejected', 'withdrawn'])
+            ->exists();
+
+        if ($hasActiveApplication) {
+            return response()->json([
+                'can_apply' => false,
+                'reason' => 'لديك طلب تدريب نشط بالفعل. لا يمكنك التقديم على فرصة أخرى حتى يتم رفض طلبك الحالي أو سحبه.',
+            ]);
+        }
+
+        return response()->json([
+            'can_apply' => true,
+            'reason' => null,
+        ]);
+    }
+
     public function store(StoreApplicationRequest $request, InternshipOpportunity $opportunity): JsonResponse
     {
         $validated = $request->validated();
         $user = $request->user();
+
+        $hasActiveInternship = Internship::where('student_id', $user->id)
+            ->where('status', 'active')
+            ->exists();
+
+        if ($hasActiveInternship) {
+            return response()->json([
+                'message' => 'لديك تدريب نشط بالفعل. لا يمكنك التقديم حتى ينتهي تدريبك الحالي.',
+            ], 422);
+        }
+
+        $hasActiveApplication = Application::where('student_id', $user->id)
+            ->whereNotIn('status', ['rejected', 'withdrawn'])
+            ->exists();
+
+        if ($hasActiveApplication) {
+            return response()->json([
+                'message' => 'لديك طلب تدريب نشط بالفعل. لا يمكنك التقديم على فرصة أخرى حتى يتم رفض طلبك الحالي أو سحبه.',
+            ], 422);
+        }
+
         $studentProfile = $user->studentProfile;
 
         $cvPath = null;

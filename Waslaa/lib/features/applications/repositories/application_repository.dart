@@ -8,6 +8,15 @@ class ApplicationRepository {
 
   final ApiClient _apiClient;
 
+  Future<({bool canApply, String? reason})> canApplyCheck() async {
+    final response = await _apiClient.get('/applications/can-apply');
+    final data = response.data as Map<String, dynamic>;
+    return (
+      canApply: data['can_apply'] as bool,
+      reason: data['reason'] as String?,
+    );
+  }
+
   Future<List<Application>> getApplications({
     int page = 1,
     int perPage = 15,

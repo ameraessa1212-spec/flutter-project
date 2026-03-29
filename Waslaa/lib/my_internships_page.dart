@@ -746,11 +746,15 @@ class _ApplicationStatusCard extends StatelessWidget {
   Color _statusColor(String status) {
     switch (status) {
       case 'accepted':
+      case 'approved':
         return Colors.green;
       case 'rejected':
         return Colors.red;
       case 'pending':
+      case 'under_review':
         return Colors.orange;
+      case 'withdrawn':
+        return Colors.grey;
       default:
         return Colors.grey;
     }
@@ -760,10 +764,16 @@ class _ApplicationStatusCard extends StatelessWidget {
     switch (status) {
       case 'accepted':
         return 'مقبول';
+      case 'approved':
+        return 'تمت الموافقة';
       case 'rejected':
         return 'مرفوض';
       case 'pending':
+        return 'قيد الانتظار';
+      case 'under_review':
         return 'قيد المراجعة';
+      case 'withdrawn':
+        return 'تم السحب';
       default:
         return status;
     }

@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/apply_internship_page.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/applications/repositories/application_repository.dart';
 import 'package:Waslaa/features/opportunities/models/opportunity.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CompanyDetailsPage extends StatelessWidget {
+class CompanyDetailsPage extends StatefulWidget {
   final Opportunity opportunity;
 
   const CompanyDetailsPage({super.key, required this.opportunity});
 
   static const Color textDark = Color(0xFF1F2937);
   static const Color textMuted = Color(0xFF6B7280);
+
+  @override
+  State<CompanyDetailsPage> createState() => _CompanyDetailsPageState();
+}
+
+class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
+  bool _isCheckingEligibility = false;
 
   Future<void> _launchURL(String urlString) async {
     final Uri url = Uri.parse(urlString);
@@ -20,8 +29,52 @@ class CompanyDetailsPage extends StatelessWidget {
     }
   }
 
+  Future<void> _handleApply() async {
+    setState(() => _isCheckingEligibility = true);
+    try {
+      final repo = context.read<ApplicationRepository>();
+      final result = await repo.canApplyCheck();
+
+      if (!mounted) return;
+      if (!result.canApply) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('لا يمكن التقديم', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Text(result.reason ?? 'لا يمكنك التقديم حالياً.', textAlign: TextAlign.center),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('حسناً')),
+            ],
+          ),
+        );
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ApplyInternshipPage(opportunity: widget.opportunity),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      // If check fails, allow navigation anyway — server will validate on submit
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ApplyInternshipPage(opportunity: widget.opportunity),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isCheckingEligibility = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final opportunity = widget.opportunity;
     final company = opportunity.company;
     final companyName = company?.name ?? '';
     final imagePath = opportunity.imagePath;
@@ -299,7 +352,7 @@ class CompanyDetailsPage extends StatelessWidget {
                         textAlign: TextAlign.right,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: textMuted,
+                          color: CompanyDetailsPage.textMuted,
                           height: 1.8,
                         ),
                       ),
@@ -339,7 +392,7 @@ class CompanyDetailsPage extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: textDark,
+                              color: CompanyDetailsPage.textDark,
                             ),
                           ),
                         ],
@@ -350,7 +403,7 @@ class CompanyDetailsPage extends StatelessWidget {
                             ? companyDescription
                             : '$companyName توفر فرص تدريب للطلاب في عدد من التخصصات، وتهدف إلى منحهم تجربة عملية حقيقية داخل بيئة العمل.',
                         textAlign: TextAlign.right,
-                        style: const TextStyle(fontSize: 14, color: textMuted),
+                        style: const TextStyle(fontSize: 14, color: CompanyDetailsPage.textMuted),
                       ),
                     ],
                   ),
@@ -362,18 +415,8 @@ class CompanyDetailsPage extends StatelessWidget {
               // زر التقديم
               ElevatedButton(
                 onPressed:
-                    opportunity.isAvailable
-                        ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => ApplyInternshipPage(
-                                    opportunity: opportunity,
-                                  ),
-                            ),
-                          );
-                        }
+                    opportunity.isAvailable && !_isCheckingEligibility
+                        ? _handleApply
                         : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primarycolor,
@@ -384,12 +427,18 @@ class CompanyDetailsPage extends StatelessWidget {
                   ),
                   minimumSize: Size(AppDimensions.screenWidth * 0.8, 54),
                 ),
-                child: Text(
-                  opportunity.isAvailable
-                      ? 'طلب تدريب'
-                      : 'التدريب غير متاح حالياً',
-                  style: const TextStyle(color: Colors.white, fontSize: 17),
-                ),
+                child: _isCheckingEligibility
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2.3, color: Colors.white),
+                      )
+                    : Text(
+                        opportunity.isAvailable
+                            ? 'طلب تدريب'
+                            : 'التدريب غير متاح حالياً',
+                        style: const TextStyle(color: Colors.white, fontSize: 17),
+                      ),
               ),
 
               const SizedBox(height: 20),

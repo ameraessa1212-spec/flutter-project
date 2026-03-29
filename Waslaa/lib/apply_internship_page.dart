@@ -96,9 +96,12 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
       Navigator.pop(context);
     } on DioException catch (e) {
       if (!mounted) return;
+      final errorMsg = e.response?.data is Map
+          ? (e.response!.data as Map)['message'] as String?
+          : null;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.message ?? 'حدث خطأ أثناء إرسال الطلب'),
+          content: Text(errorMsg ?? e.message ?? 'حدث خطأ أثناء إرسال الطلب'),
           backgroundColor: Colors.red,
         ),
       );

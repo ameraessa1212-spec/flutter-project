@@ -34,11 +34,11 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
 
     // Students
     Route::get('/students', [StudentController::class, 'index']);
+    Route::post('/students/upload', [StudentController::class, 'upload']);
     Route::get('/students/{user}', [StudentController::class, 'show']);
     Route::put('/students/{user}', [StudentController::class, 'update']);
     Route::put('/students/{user}/password', [StudentController::class, 'updatePassword']);
     Route::put('/students/{user}/toggle-status', [StudentController::class, 'toggleStatus']);
-    Route::post('/students/upload', [StudentController::class, 'upload']);
 
     // Student Requests (Applications)
     Route::get('/student-requests', [StudentRequestController::class, 'index']);
@@ -93,4 +93,11 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
 
     // Examiner Dashboard
     Route::get('/examiner/dashboard', [ExaminerDashboardController::class, 'index']);
+
+    // Specializations (shared lookup)
+    Route::get('/specializations', function () {
+        return response()->json([
+            'data' => \App\Models\Specialization::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
+        ]);
+    });
 });

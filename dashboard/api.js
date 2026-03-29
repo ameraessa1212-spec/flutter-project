@@ -1,5 +1,7 @@
 const API_BASE = 'http://localhost:8000/api/admin';
 
+let _isRedirecting = false;
+
 function getToken() {
     return localStorage.getItem('admin_token');
 }
@@ -23,8 +25,25 @@ function clearAuth() {
 }
 
 function redirectToLogin() {
+    if (_isRedirecting) return;
+
+    // Never redirect if already on the login page
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/')) {
+        return;
+    }
+
+    _isRedirecting = true;
     clearAuth();
     window.location.href = 'index.html';
+}
+
+// Auth guard — call on protected pages to check token before doing anything
+function requireAuth() {
+    if (!getToken()) {
+        redirectToLogin();
+        return false;
+    }
+    return true;
 }
 
 async function apiRequest(endpoint, options = {}) {
@@ -73,8 +92,11 @@ async function apiRequest(endpoint, options = {}) {
 
         return await response.json();
     } catch (error) {
-        if (error.status) throw error;
-        console.error('API Error:', error);
+        // Network error (server not running) — don't redirect, just fail gracefully
+        if (!error.status) {
+            console.error('Network error:', error);
+            return null;
+        }
         throw error;
     }
 }

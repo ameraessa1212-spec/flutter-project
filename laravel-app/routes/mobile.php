@@ -72,6 +72,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         });
 
         Route::prefix('applications')->name('applications.')->group(function () {
+            Route::get('can-apply', [ApplicationController::class, 'canApply'])->name('can-apply');
             Route::get('/', [ApplicationController::class, 'index'])->name('index');
             Route::get('{application}', [ApplicationController::class, 'show'])->name('show');
             Route::delete('{application}', [ApplicationController::class, 'destroy'])->name('destroy');
