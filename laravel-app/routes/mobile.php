@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\Mobile\SpecializationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('v1.')->group(function () {
+    Route::get('specializations', [SpecializationController::class, 'index'])->name('specializations.index');
+
     Route::prefix('auth')->name('auth.')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->name('register');
         Route::post('verify-otp', [AuthController::class, 'verifyOtp'])->name('verify-otp');
@@ -38,6 +40,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::get('about-us', [ContentController::class, 'aboutUs'])->name('about-us');
     });
 
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('auth')->name('auth.')->group(function () {
             Route::get('me', [AuthController::class, 'me'])->name('me');
@@ -53,8 +56,6 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::post('avatar', [ProfileController::class, 'uploadAvatar'])->name('avatar.upload');
             Route::post('cv', [ProfileController::class, 'uploadCv'])->name('cv.upload');
         });
-
-        Route::get('specializations', [SpecializationController::class, 'index'])->name('specializations.index');
 
         Route::prefix('dashboard')->name('dashboard.')->group(function () {
             Route::get('home', [DashboardController::class, 'home'])->name('home');
