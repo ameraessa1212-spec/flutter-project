@@ -17,7 +17,7 @@ body {
 .navbar {
     display: flex; justify-content: space-between; align-items: center;
     padding: 25px 5%; background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px); sticky: top; z-index: 100;
+    backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100;
 }
 
 .logo { font-size: 30px; font-weight: 900; }

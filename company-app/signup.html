@@ -150,7 +150,7 @@
                     });
 
                     try {
-                        const response = await fetch(CONFIG.API_URL + '/company/register', {
+                        const response = await fetch(CONFIG.API_BASE_URL + '/company/register', {
                             method: 'POST',
                             body: formPayload
                             // ملاحظة: لا نضع Content-Type عند إرسال FormData

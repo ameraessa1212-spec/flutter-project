@@ -72,7 +72,7 @@
                 </div>
             </header>
             
-            <iframe x-show="activeTab !== 'home'" :src="iframeSrc" style="display: none; border: none; width: 100%; height: calc(100vh - 120px);"></iframe>
+            <iframe x-show="activeTab !== 'home'" :src="iframeSrc" style="border: none; width: 100%; height: calc(100vh - 120px); overflow: auto;"></iframe>
 
             <div x-show="activeTab === 'home'">
                 <section class="stats-grid">
