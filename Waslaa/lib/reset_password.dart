@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 import 'sign_in.dart';
 
@@ -24,6 +25,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   @override
   void dispose() {
@@ -81,10 +84,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     required TextEditingController controller,
     required String hint,
     required String? Function(String?) validator,
+    required bool obscure,
+    required VoidCallback onToggleObscure,
   }) {
     return TextFormField(
       controller: controller,
-      obscureText: true,
+      obscureText: obscure,
       validator: validator,
       textDirection: TextDirection.rtl,
       decoration: InputDecoration(
@@ -102,6 +107,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           vertical: 18,
         ),
         errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey,
+          ),
+          onPressed: onToggleObscure,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -112,7 +124,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF6A5AE0), width: 1),
+          borderSide: BorderSide(color: primarycolor, width: 1),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -142,13 +154,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-              const Text(
+              Text(
                 'تعيين كلمة مرور جديدة',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF6A5AE0),
+                  color: primarycolor,
                 ),
               ),
               const SizedBox(height: 12),
@@ -166,6 +178,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               _buildPasswordField(
                 controller: _passwordController,
                 hint: 'كلمة المرور الجديدة',
+                obscure: _obscurePassword,
+                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'يرجى إدخال كلمة المرور';
                   if (v.length < 8)
@@ -178,6 +192,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               _buildPasswordField(
                 controller: _confirmController,
                 hint: 'تأكيد كلمة المرور',
+                obscure: _obscureConfirm,
+                onToggleObscure: () => setState(() => _obscureConfirm = !_obscureConfirm),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'يرجى تأكيد كلمة المرور';
                   if (v != _passwordController.text)
@@ -193,9 +209,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A5AE0),
+                    backgroundColor: primarycolor,
                     elevation: 5,
-                    shadowColor: const Color(0xFF6A5AE0).withOpacity(0.4),
+                    shadowColor: primarycolor.withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

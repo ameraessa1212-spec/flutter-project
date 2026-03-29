@@ -244,7 +244,7 @@ class _CompanyPageState extends State<CompanyPage> {
                 crossAxisCount: 2,
                 childAspectRatio: 0.74,
                 crossAxisSpacing: 14,
-                mainAxisSpacing: 16,
+                mainAxisSpacing: 14,
               ),
               itemCount: _opportunities.length,
               itemBuilder: (context, index) {
@@ -351,7 +351,7 @@ class _CompanyPageState extends State<CompanyPage> {
                       color: Colors.grey,
                     ),
                     border: InputBorder.none,
-                    suffixIcon: Icon(Icons.search_rounded, color: primarycolor),
+                    prefixIcon: Icon(Icons.search_rounded, color: primarycolor),
                     contentPadding: const EdgeInsets.symmetric(
                       vertical: 12,
                       horizontal: 15,

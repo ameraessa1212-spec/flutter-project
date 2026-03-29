@@ -20,6 +20,8 @@ class _SignInPageState extends State<SignInPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool _obscurePassword = true;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -111,6 +113,7 @@ class _SignInPageState extends State<SignInPage> {
               _buildTextField(
                 controller: _emailController,
                 hint: 'البريد الالكتروني او اسم المستخدم',
+                isEmail: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'يرجى إدخال البريد الإلكتروني';
@@ -143,7 +146,7 @@ class _SignInPageState extends State<SignInPage> {
               const SizedBox(height: 10),
 
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -249,16 +252,18 @@ class _SignInPageState extends State<SignInPage> {
     required TextEditingController controller,
     required String hint,
     bool isPassword = false,
+    bool isEmail = false,
     String? Function(String?)? validator, // إضافة ميزة الـ validator
   }) {
     return TextFormField(
       // تغيير من TextField إلى TextFormField
       controller: controller,
       validator: validator,
-      textDirection:
-          _isArabic(controller.text) ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: isEmail
+          ? TextDirection.ltr
+          : (_isArabic(controller.text) ? TextDirection.rtl : TextDirection.ltr),
       textAlign: TextAlign.start,
-      obscureText: isPassword,
+      obscureText: isPassword ? _obscurePassword : false,
       onChanged: (value) {
         setState(() {});
       },
@@ -276,6 +281,21 @@ class _SignInPageState extends State<SignInPage> {
           horizontal: 20,
           vertical: 18,
         ),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              )
+            : null,
         // تحسين مظهر الخطأ (Error Style)
         errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
         border: OutlineInputBorder(

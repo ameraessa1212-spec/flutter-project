@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 import 'package:Waslaa/features/profile/models/user_profile.dart';
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/settings/repositories/settings_repository.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -28,8 +29,6 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _loadingSettings = true;
   bool _isUpdatingProfile = false;
   bool _isUpdatingPassword = false;
-
-  static const Color primary = Color(0xFF6A5AE0);
 
   @override
   void initState() {
@@ -141,7 +140,7 @@ class _SettingsPageState extends State<SettingsPage> {
           textAlign: TextAlign.right,
           style: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
         ),
-        backgroundColor: isError ? Colors.red : primary,
+        backgroundColor: isError ? Colors.red : primarycolor,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -174,7 +173,7 @@ class _SettingsPageState extends State<SettingsPage> {
           fontSize: 12,
           color: Colors.grey,
         ),
-        prefixIcon: Icon(icon, color: primary, size: 18),
+        prefixIcon: Icon(icon, color: primarycolor, size: 18),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 15,
           vertical: 12,
@@ -185,7 +184,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primary, width: 1.5),
+          borderSide: BorderSide(color: primarycolor, width: 1.5),
         ),
         errorStyle: const TextStyle(
           fontFamily: 'Cairo',
@@ -215,7 +214,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
+          backgroundColor: primarycolor,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -253,13 +252,13 @@ class _SettingsPageState extends State<SettingsPage> {
         elevation: 0,
         centerTitle: true,
         toolbarHeight: 70,
-        title: const Padding(
-          padding: EdgeInsets.only(top: 20.0),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 20.0),
           child: Text(
             'الإعدادات',
             style: TextStyle(
               fontFamily: 'Cairo',
-              color: primary,
+              color: primarycolor,
               fontWeight: FontWeight.bold,
               fontSize: 15,
             ),
@@ -268,7 +267,7 @@ class _SettingsPageState extends State<SettingsPage> {
         leading: Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: primary, size: 18),
+            icon: Icon(Icons.arrow_back_ios, color: primarycolor, size: 18),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -289,12 +288,12 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
+                  Text(
                     'المعلومات الشخصية',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 13,
-                      color: primary,
+                      color: primarycolor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -331,12 +330,12 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
+                  Text(
                     'تغيير كلمة المرور',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 13,
-                      color: primary,
+                      color: primarycolor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -398,12 +397,12 @@ class _SettingsPageState extends State<SettingsPage> {
             // إعدادات الإشعارات
             if (!_loadingSettings && _settings != null) ...[
               const SizedBox(height: 35),
-              const Text(
+              Text(
                 'إعدادات الإشعارات',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 13,
-                  color: primary,
+                  color: primarycolor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -446,7 +445,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Switch(value: value, onChanged: onChanged, activeColor: primary),
+          Switch(value: value, onChanged: onChanged, activeColor: primarycolor),
           Text(
             title,
             style: const TextStyle(fontFamily: 'Cairo', fontSize: 13),

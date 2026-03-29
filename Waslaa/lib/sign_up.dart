@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/auth/models/specialization.dart';
 import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 import 'otp_screen.dart';
@@ -56,8 +57,13 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
+  bool _specializationsLoadFailed = false;
+
   Future<void> _loadSpecializations() async {
-    setState(() => _isLoadingSpecializations = true);
+    setState(() {
+      _isLoadingSpecializations = true;
+      _specializationsLoadFailed = false;
+    });
     try {
       final repo = context.read<AuthRepository>();
       final specs = await repo.getSpecializations();
@@ -66,12 +72,14 @@ class _SignUpPageState extends State<SignUpPage> {
       }
     } on DioException {
       if (mounted) {
+        setState(() => _specializationsLoadFailed = true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'تعذر تحميل التخصصات. يمكنك المتابعة بدون اختيار تخصص.',
+              'تعذر تحميل التخصصات. اضغط على إعادة المحاولة.',
               textAlign: TextAlign.center,
             ),
+            backgroundColor: Colors.redAccent,
           ),
         );
       }
@@ -97,6 +105,16 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedSpecializationId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى اختيار التخصص', textAlign: TextAlign.center),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -185,13 +203,13 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'إنشاء حساب جديد',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF6A5AE0),
+                  color: primarycolor,
                 ),
               ),
               const SizedBox(height: 8),
@@ -326,9 +344,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A5AE0),
+                    backgroundColor: primarycolor,
                     elevation: 5,
-                    shadowColor: const Color(0xFF6A5AE0).withOpacity(0.4),
+                    shadowColor: primarycolor.withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -384,8 +402,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF6A5AE0),
+                  decoration: BoxDecoration(
+                    color: primarycolor,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
@@ -408,62 +426,76 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Widget _buildSpecializationDropdown() {
+    if (_isLoadingSpecializations) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F0F9),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            SizedBox(width: 12),
+            Text('جارٍ تحميل التخصصات...', style: TextStyle(fontFamily: 'Cairo', color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    if (_specializationsLoadFailed && _specializations.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F0F9),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'تعذر تحميل التخصصات',
+                style: TextStyle(fontFamily: 'Cairo', color: Colors.redAccent, fontSize: 13),
+              ),
+            ),
+            TextButton(
+              onPressed: _loadSpecializations,
+              child: Text(
+                'إعادة المحاولة',
+                style: TextStyle(fontFamily: 'Cairo', color: primarycolor, fontSize: 13, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F0F9),
         borderRadius: BorderRadius.circular(12),
       ),
-      child:
-          _isLoadingSpecializations
-              ? const Padding(
-                padding: EdgeInsets.symmetric(vertical: 18),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    SizedBox(width: 12),
-                    Text(
-                      'جارٍ تحميل التخصصات...',
-                      style: TextStyle(fontFamily: 'Cairo', color: Colors.grey),
-                    ),
-                  ],
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          isExpanded: true,
+          hint: const Text(
+            'التخصص *',
+            style: TextStyle(fontFamily: 'Cairo', color: Colors.grey, fontSize: 14),
+          ),
+          value: _selectedSpecializationId,
+          items: _specializations
+              .map(
+                (s) => DropdownMenuItem<int>(
+                  value: s.id,
+                  child: Text(s.name, style: const TextStyle(fontFamily: 'Cairo', fontSize: 14)),
                 ),
               )
-              : DropdownButtonHideUnderline(
-                child: DropdownButton<int>(
-                  isExpanded: true,
-                  hint: const Text(
-                    'التخصص (اختياري)',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
-                  ),
-                  value: _selectedSpecializationId,
-                  items:
-                      _specializations
-                          .map(
-                            (s) => DropdownMenuItem<int>(
-                              value: s.id,
-                              child: Text(
-                                s.name,
-                                style: const TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                  onChanged:
-                      (val) => setState(() => _selectedSpecializationId = val),
-                ),
-              ),
+              .toList(),
+          onChanged: (val) => setState(() => _selectedSpecializationId = val),
+        ),
+      ),
     );
   }
 
@@ -505,7 +537,7 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF6A5AE0), width: 1),
+          borderSide: BorderSide(color: primarycolor, width: 1),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

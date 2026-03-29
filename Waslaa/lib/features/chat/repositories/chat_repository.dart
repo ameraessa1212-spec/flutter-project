@@ -77,6 +77,13 @@ class ChatRepository {
 
   // --- Chatify Bridge Methods ---
 
+  Future<List<Map<String, dynamic>>> getChatifyContacts() async {
+    final response = await _apiClient.get('/chat/contacts');
+    final data =
+        (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
+    return data.cast<Map<String, dynamic>>();
+  }
+
   Future<List<ChatMessage>> getChatifyMessages(int receiverId) async {
     final response = await _apiClient.get(
       '/chat/messages',

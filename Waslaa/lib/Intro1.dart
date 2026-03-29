@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/core/session/app_session_controller.dart';
 import 'Intro2.dart';
 import 'welcome_screen.dart'; // استيراد شاشة الترحيب لتفعيل زر التخطي
@@ -23,27 +24,23 @@ class Intro1 extends StatelessWidget {
               const SizedBox(height: 40),
 
               // الصورة العلوية مع تحسين العرض
-              Hero(
-                tag:
-                    'intro_image', // لإضافة تأثير انتقال سلس إذا استخدمت الصور في الصفحات التالية
-                child: Image.asset(
-                  'assets/images/intro1.png',
-                  height: size.height * 0.35,
-                  fit: BoxFit.contain,
-                ),
+              Image.asset(
+                'assets/images/intro1.png',
+                height: size.height * 0.35,
+                fit: BoxFit.contain,
               ),
 
               const SizedBox(height: 40),
 
               // النص الترحيبي الكبير
-              const Text(
+              Text(
                 'مرحباً بك!\nفي وصلة التدريب',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF4A47D1),
+                  color: primarycolor,
                   height: 1.3,
                 ),
               ),
@@ -73,7 +70,7 @@ class Intro1 extends StatelessWidget {
                     width: 20, // عرض أكبر للنقطة النشطة
                     height: 8,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF635BFF),
+                      color: primarycolor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -81,8 +78,8 @@ class Intro1 extends StatelessWidget {
                   Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFD1D5DB),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -121,11 +118,11 @@ class Intro1 extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'تخطي',
                       style: TextStyle(
                         fontFamily: 'Cairo',
-                        color: Color(0xFF4A47D1),
+                        color: primarycolor,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -141,7 +138,7 @@ class Intro1 extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF635BFF),
+                      backgroundColor: primarycolor,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 45,

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/notifications/models/notification_model.dart';
 import 'package:Waslaa/features/notifications/repositories/notification_repository.dart';
 
@@ -15,8 +16,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   List<AppNotification> _notifications = [];
   bool _isLoading = true;
   String? _error;
-
-  static const Color primary = Color(0xFF6A5AE0);
 
   @override
   void initState() {
@@ -87,24 +86,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: 0,
         centerTitle: true,
         toolbarHeight: 80,
-        title: const Padding(
-          padding: EdgeInsets.only(top: 20),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 20),
           child: Text(
             'الإشعارات',
             style: TextStyle(
               fontFamily: 'Cairo',
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: primary,
+              color: primarycolor,
             ),
           ),
         ),
         leading: Padding(
           padding: const EdgeInsets.only(top: 20),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios_new,
-              color: primary,
+              color: primarycolor,
               size: 18,
             ),
             onPressed: () => Navigator.pop(context),
@@ -116,12 +115,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               padding: const EdgeInsets.only(top: 20, right: 8),
               child: TextButton(
                 onPressed: _markAllRead,
-                child: const Text(
+                child: Text(
                   'قراءة الكل',
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     fontSize: 12,
-                    color: primary,
+                    color: primarycolor,
                   ),
                 ),
               ),
@@ -209,7 +208,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       itemCount: _notifications.length,
       separatorBuilder:
           (_, __) => Divider(
-            color: primary.withOpacity(0.1),
+            color: primarycolor.withValues(alpha: 0.1),
             thickness: 1,
             height: 30,
           ),
@@ -272,12 +271,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: primary.withOpacity(0.08),
+                            color: primarycolor.withValues(alpha: 0.08),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.mail_outline,
-                            color: primary,
+                            color: primarycolor,
                             size: 16,
                           ),
                         ),

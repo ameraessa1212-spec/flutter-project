@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Waslaa/features/discussion_schedules/models/discussion_schedule.dart';
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/discussion_schedules/repositories/discussion_schedule_repository.dart';
 
 class DiscussionSchedulePage extends StatefulWidget {
@@ -15,8 +16,6 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
   List<DiscussionSchedule> _schedules = [];
   bool _isLoading = true;
   String? _error;
-
-  static const Color primary = Color(0xFF6A5AE0);
 
   @override
   void initState() {
@@ -55,13 +54,13 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
         elevation: 0,
         centerTitle: true,
         toolbarHeight: 70,
-        title: const Padding(
-          padding: EdgeInsets.only(top: 20.0),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 20.0),
           child: Text(
             'جدول مواعيد المناقشات',
             style: TextStyle(
               fontFamily: 'Cairo',
-              color: primary,
+              color: primarycolor,
               fontWeight: FontWeight.bold,
               fontSize: 15,
             ),
@@ -70,7 +69,7 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
         leading: Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: primary, size: 18),
+            icon: Icon(Icons.arrow_back_ios, color: primarycolor, size: 18),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -142,7 +141,7 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
         border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -162,15 +161,15 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: primary.withOpacity(0.1),
+                    color: primarycolor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     schedule.academicTerm!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
                       fontSize: 10,
-                      color: primary,
+                      color: primarycolor,
                     ),
                   ),
                 ),
@@ -242,7 +241,7 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
       decoration: BoxDecoration(
         color: const Color(0xFFF0EFFF),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: primary.withOpacity(0.1)),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -250,12 +249,12 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
           Icon(
             Icons.image_search_outlined,
             size: 50,
-            color: primary.withOpacity(0.4),
+            color: primarycolor.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'سيتم عرض صورة الجدول هنا عند توفرها',
-            style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: primary),
+            style: TextStyle(fontFamily: 'Cairo', fontSize: 11, color: primarycolor),
           ),
         ],
       ),

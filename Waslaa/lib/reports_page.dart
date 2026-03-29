@@ -444,13 +444,13 @@ class _ReportsPageState extends State<ReportsPage> {
                           width: 72,
                           height: 72,
                           decoration: BoxDecoration(
-                            color: Colors.blue.withValues(alpha: 0.08),
+                            color: primaryColor.withValues(alpha: 0.08),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.cloud_upload_outlined,
                             size: 40,
-                            color: Colors.blue.shade400,
+                            color: primaryColor,
                           ),
                         ),
                         const SizedBox(height: 18),
@@ -505,9 +505,11 @@ class _ReportsPageState extends State<ReportsPage> {
                     ),
           ),
           const SizedBox(height: 18),
-          SizedBox(
-            width: 190,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: SizedBox(
             height: 48,
+            width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _pickFiles,
               style: ElevatedButton.styleFrom(
@@ -527,6 +529,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 ),
               ),
             ),
+          ),
           ),
         ],
       ),

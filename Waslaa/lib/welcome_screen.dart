@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:Waslaa/const/color.dart';
 import 'sign_in.dart'; // للانتقال لصفحة تسجيل الدخول
 import 'sign_up.dart'; // للانتقال لصفحة إنشاء حساب
 
@@ -24,14 +25,14 @@ class WelcomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               // العنوان بخط Cairo كما في التصميم
-              const Text(
+              Text(
                 'انطلق نحو مستقبلك مع\nوصلة تدريب .. جسرك للنجاح',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 24, // مقاس متناسق مع طول الجملة
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF5E5CE6),
+                  color: primarycolor,
                   height: 1.4, // مساحة إضافية لجمالية الخط العربي
                 ),
               ),
@@ -51,7 +52,7 @@ class WelcomeScreen extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF5E5CE6),
+                        backgroundColor: primarycolor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -88,12 +89,12 @@ class WelcomeScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'سجل الآن',
                         style: TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 18,
-                          color: Color(0xFF5E5CE6),
+                          color: primarycolor,
                         ),
                       ),
                     ),

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 import 'otp_screen.dart';
 
@@ -79,13 +80,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-              const Text(
+              Text(
                 'نسيت كلمة المرور؟',
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF6A5AE0),
+                  color: primarycolor,
                 ),
               ),
               const SizedBox(height: 12),
@@ -139,8 +140,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF6A5AE0),
+                    borderSide: BorderSide(
+                      color: primarycolor,
                       width: 1,
                     ),
                   ),
@@ -159,9 +160,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A5AE0),
+                    backgroundColor: primarycolor,
                     elevation: 5,
-                    shadowColor: const Color(0xFF6A5AE0).withOpacity(0.4),
+                    shadowColor: primarycolor.withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

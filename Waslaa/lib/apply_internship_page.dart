@@ -120,11 +120,11 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: primarycolor.withOpacity(0.15)),
+        borderSide: BorderSide(color: primarycolor.withValues(alpha: 0.15)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: primarycolor.withOpacity(0.15)),
+        borderSide: BorderSide(color: primarycolor.withValues(alpha: 0.15)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -144,7 +144,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: primarycolor.withOpacity(0.10)),
+          border: Border.all(color: primarycolor.withValues(alpha: 0.10)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +155,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
               title,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.black.withOpacity(0.50),
+                color: Colors.black.withValues(alpha: 0.50),
               ),
             ),
             const SizedBox(height: 4),
@@ -204,14 +204,14 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [primarycolor, primarycolor.withOpacity(0.82)],
+                      colors: [primarycolor, primarycolor.withValues(alpha: 0.82)],
                       begin: Alignment.topRight,
                       end: Alignment.bottomLeft,
                     ),
                     borderRadius: BorderRadius.circular(22),
                     boxShadow: [
                       BoxShadow(
-                        color: primarycolor.withOpacity(0.20),
+                        color: primarycolor.withValues(alpha: 0.20),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                       ),
@@ -285,7 +285,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: primarycolor.withOpacity(0.12)),
+                      border: Border.all(color: primarycolor.withValues(alpha: 0.12)),
                     ),
                     child: Row(
                       children: [
@@ -298,7 +298,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                             style: TextStyle(
                               color:
                                   _selectedCvName == null
-                                      ? Colors.black.withOpacity(0.55)
+                                      ? Colors.black.withValues(alpha: 0.55)
                                       : Colors.black,
                               fontSize: 13,
                               fontWeight:

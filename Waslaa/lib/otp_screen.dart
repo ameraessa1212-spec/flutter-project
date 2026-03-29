@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 import 'sign_in.dart';
 import 'reset_password.dart';
@@ -142,11 +143,11 @@ class _OtpScreenState extends State<OtpScreen> {
             const SizedBox(height: 30),
             Text(
               isRegistration ? 'التحقق من الحساب' : 'التحقق من الهوية',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Cairo',
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF6A5AE0),
+                color: primarycolor,
               ),
             ),
             const SizedBox(height: 12),
@@ -178,10 +179,10 @@ class _OtpScreenState extends State<OtpScreen> {
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       onChanged: (value) => _onOtpDigitChanged(value, index),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF6A5AE0),
+                        color: primarycolor,
                       ),
                       decoration: InputDecoration(
                         counterText: '',
@@ -193,8 +194,8 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF6A5AE0),
+                          borderSide: BorderSide(
+                            color: primarycolor,
                             width: 1.5,
                           ),
                         ),
@@ -213,9 +214,9 @@ class _OtpScreenState extends State<OtpScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A5AE0),
+                  backgroundColor: primarycolor,
                   elevation: 5,
-                  shadowColor: const Color(0xFF6A5AE0).withOpacity(0.4),
+                  shadowColor: primarycolor.withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

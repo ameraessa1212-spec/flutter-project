@@ -116,7 +116,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                     height: AppDimensions.screenHeight * 0.30,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
-                      color: primarycolor.withOpacity(0.1),
+                      color: primarycolor.withValues(alpha: 0.1),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
@@ -148,7 +148,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withOpacity(0.82),
+                          Colors.black.withValues(alpha: 0.82),
                           Colors.transparent,
                         ],
                       ),
@@ -165,8 +165,8 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                       decoration: BoxDecoration(
                         color:
                             opportunity.isAvailable
-                                ? Colors.green.withOpacity(0.85)
-                                : Colors.red.withOpacity(0.85),
+                                ? Colors.green.withValues(alpha: 0.85)
+                                : Colors.red.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -218,7 +218,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                   borderRadius: BorderRadius.circular(22),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -281,7 +281,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                     borderRadius: BorderRadius.circular(22),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -323,7 +323,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                     borderRadius: BorderRadius.circular(22),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -370,7 +370,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                     borderRadius: BorderRadius.circular(22),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -471,7 +471,7 @@ class _MiniInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF8F8FC),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: primarycolor.withOpacity(0.10)),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.10)),
       ),
       child: Row(
         children: [
@@ -484,7 +484,7 @@ class _MiniInfoCard extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: Colors.black.withOpacity(0.45),
+                    color: Colors.black.withValues(alpha: 0.45),
                     fontSize: 11.5,
                   ),
                 ),
@@ -526,7 +526,7 @@ class _ActionInfoCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFF8F8FC),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: primarycolor.withOpacity(0.10)),
+          border: Border.all(color: primarycolor.withValues(alpha: 0.10)),
         ),
         child: Column(
           children: [

@@ -46,14 +46,14 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    _initChat();
-
-    // Start polling for new messages if in support chat mode
-    if (widget.receiverId != null) {
-      _pollTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-        _pollChatifyMessages();
-      });
-    }
+    _initChat().then((_) {
+      // Start polling for Chatify messages after init
+      if (_chatifyReceiverId != null || widget.receiverId != null) {
+        _pollTimer ??= Timer.periodic(const Duration(seconds: 5), (_) {
+          _pollChatifyMessages();
+        });
+      }
+    });
   }
 
   @override
@@ -67,28 +67,22 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
+  // Track if we are in Chatify (direct message) mode
+  int? _chatifyReceiverId;
+
   Future<void> _initChat() async {
     try {
       _currentUserId = context.read<AppSessionController>().currentUser?.id;
       final repo = context.read<ChatRepository>();
 
-      // If receiverId is explicitly provided (Support Chat)
+      // If receiverId is explicitly provided → use Chatify direct messaging
       if (widget.receiverId != null) {
-        _activeThreadId = null; // We are in Chatify mode
-        final msgs = await repo.getChatifyMessages(widget.receiverId!);
-        if (mounted) {
-          setState(() {
-            _messages
-              ..clear()
-              ..addAll(msgs);
-            _isLoading = false;
-          });
-          _scrollToBottom();
-        }
+        _chatifyReceiverId = widget.receiverId;
+        await _loadChatifyMessages();
         return;
       }
 
-      // Legacy/Thread-based logic (can still map to Chatify if we want)
+      // Try thread-based chat first
       final explicitThreadId = widget.threadId;
       final explicitInternshipId = widget.internshipId;
       if (explicitThreadId != null) {
@@ -126,10 +120,7 @@ class _ChatPageState extends State<ChatPage> {
         _scrollToBottom();
         await repo.markRead(_activeThreadId!);
 
-        // Ensure Pusher is initialized before subscribing
         await PusherService().initPusher();
-
-        // Subscribe to Pusher channel
         PusherService().subscribeToChat(_activeThreadId!, (messageData) {
           final newMessage = ChatMessage.fromJson(messageData);
           if (mounted && newMessage.senderId != _currentUserId) {
@@ -139,10 +130,58 @@ class _ChatPageState extends State<ChatPage> {
             _scrollToBottom();
           }
         });
-      } else if (mounted) {
+      } else {
+        // No thread found — fallback to Chatify with supervisor if available
+        if (widget.internshipId != null) {
+          // Try to get contacts and find the supervisor
+          try {
+            final contacts = await repo.getChatifyContacts();
+            if (contacts.isNotEmpty) {
+              // Prefer supervisor over support
+              final supervisor = contacts.firstWhere(
+                (c) => c['type'] == 'supervisor',
+                orElse: () => contacts.first,
+              );
+              _chatifyReceiverId = supervisor['id'] as int;
+              await _loadChatifyMessages();
+              // Start polling for this contact
+              _pollTimer?.cancel();
+              _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+                _pollChatifyMessages();
+              });
+              return;
+            }
+          } catch (_) {
+            // Contacts endpoint failed, show empty state
+          }
+        }
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    } on DioException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.message ?? 'تعذر تحميل المحادثة';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadChatifyMessages() async {
+    if (_chatifyReceiverId == null) return;
+    try {
+      final repo = context.read<ChatRepository>();
+      final msgs = await repo.getChatifyMessages(_chatifyReceiverId!);
+      if (mounted) {
         setState(() {
+          _messages
+            ..clear()
+            ..addAll(msgs);
           _isLoading = false;
         });
+        _scrollToBottom();
       }
     } on DioException catch (error) {
       if (!mounted) return;
@@ -154,13 +193,13 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _pollChatifyMessages() async {
-    if (widget.receiverId == null || _isSending) return;
+    final receiverId = _chatifyReceiverId ?? widget.receiverId;
+    if (receiverId == null || _isSending) return;
 
     try {
       final repo = context.read<ChatRepository>();
-      final msgs = await repo.getChatifyMessages(widget.receiverId!);
+      final msgs = await repo.getChatifyMessages(receiverId);
 
-      // Only update if there are new messages or anything changed
       if (mounted && msgs.length != _messages.length) {
         setState(() {
           _messages
@@ -238,7 +277,14 @@ class _ChatPageState extends State<ChatPage> {
     String messageType = 'file',
   }) async {
     final threadId = _activeThreadId;
-    if (threadId == null || _isSending) return;
+    if (threadId == null || _isSending) {
+      if (threadId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('إرسال المرفقات غير متاح في هذه المحادثة حالياً')),
+        );
+      }
+      return;
+    }
 
     setState(() => _isSending = true);
     try {
@@ -266,22 +312,20 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _sendMessage() async {
     final threadId = _activeThreadId;
-    final receiverId = widget.receiverId;
+    final receiverId = _chatifyReceiverId ?? widget.receiverId;
     final text = _messageController.text.trim();
     if (text.isEmpty || _isSending) return;
     if (threadId == null && receiverId == null) return;
 
-    setState(() {
-      _isSending = true;
-    });
+    setState(() => _isSending = true);
     _messageController.clear();
 
     try {
       final repo = context.read<ChatRepository>();
       ChatMessage message;
-      if (receiverId != null) {
-        message = await repo.sendChatifyMessage(receiverId, text);
-        // For UI feedback, set current user as sender
+      if (receiverId != null && threadId == null) {
+        // Chatify direct messaging mode
+        await repo.sendChatifyMessage(receiverId, text);
         message = ChatMessage(
           id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
           senderId: _currentUserId ?? 0,
@@ -290,6 +334,7 @@ class _ChatPageState extends State<ChatPage> {
           createdAt: DateTime.now().toIso8601String(),
         );
       } else {
+        // Thread-based messaging
         message = await repo.sendMessage(threadId!, body: text);
       }
 
@@ -300,8 +345,11 @@ class _ChatPageState extends State<ChatPage> {
       _scrollToBottom();
     } on DioException catch (error) {
       if (!mounted) return;
+      final errorMsg = error.response?.data is Map
+          ? (error.response!.data as Map)['message'] as String?
+          : null;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message ?? 'تعذر إرسال الرسالة')),
+        SnackBar(content: Text(errorMsg ?? error.message ?? 'تعذر إرسال الرسالة')),
       );
     }
 
@@ -452,7 +500,7 @@ class _ChatPageState extends State<ChatPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isMe ? Colors.white24 : primarycolor.withOpacity(0.1),
+                  color: isMe ? Colors.white24 : primarycolor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -504,7 +552,7 @@ class _ChatPageState extends State<ChatPage> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment:
-            isMe ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment:
@@ -532,9 +580,10 @@ class _ChatPageState extends State<ChatPage> {
                     bottomLeft: Radius.circular(isMe ? 20 : 4),
                     bottomRight: Radius.circular(isMe ? 4 : 20),
                   ),
+                  border: isMe ? null : Border.all(color: primarycolor.withValues(alpha: 0.10)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -562,7 +611,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildInputArea() {
     final isEnabled =
-        (_activeThreadId != null || widget.receiverId != null) && !_isLoading;
+        (_activeThreadId != null || _chatifyReceiverId != null || widget.receiverId != null) && !_isLoading;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 5, 12, 5),
@@ -716,7 +765,7 @@ class _ChatPageState extends State<ChatPage> {
           const SizedBox(width: 10),
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_forward_rounded, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.black),
           ),
         ],
       ),
@@ -758,14 +807,14 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                         ),
                       )
-                      : (_activeThreadId == null && widget.receiverId == null)
+                      : (_activeThreadId == null && _chatifyReceiverId == null && widget.receiverId == null)
                       ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(24),
                           child: Text(
-                            'لا توجد محادثات متاحة حالياً لهذا التدريب.',
+                            'لا توجد محادثات متاحة حالياً.\nيرجى التواصل مع الدعم الفني من صفحة حسابي.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                            style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.6),
                           ),
                         ),
                       )

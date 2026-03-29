@@ -4,6 +4,8 @@ import 'package:Waslaa/about_app_page.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/core/session/app_session_controller.dart';
+import 'package:Waslaa/features/applications/repositories/application_repository.dart';
+import 'package:Waslaa/features/dashboard/repositories/dashboard_repository.dart';
 import 'package:Waslaa/features/profile/models/user_profile.dart';
 import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 import 'package:Waslaa/terms_and_conditions_page.dart';
@@ -24,11 +26,15 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   UserProfile? _profile;
   bool _loadingProfile = true;
+  int _applicationsCount = 0;
+  int _unreadMessagesCount = 0;
+  int _reportsCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadStats();
   }
 
   Future<void> _loadProfile() async {
@@ -42,6 +48,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     } catch (_) {
       if (mounted) setState(() => _loadingProfile = false);
+    }
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final dashboardRepo = context.read<DashboardRepository>();
+      final dashboard = await dashboardRepo.getHomeDashboard();
+      if (!mounted) return;
+      setState(() {
+        _applicationsCount = dashboard.applicationsCount;
+        _unreadMessagesCount = dashboard.unreadMessagesCount;
+      });
+    } catch (_) {
+      // Stats are non-critical, silently fail
     }
   }
 
@@ -205,28 +225,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 18),
 
               /// Quick info cards
-              const Row(
+              Row(
                 children: [
                   Expanded(
                     child: _ProfileMiniCard(
-                      title: "الطلب",
-                      value: "1",
+                      title: "الطلبات",
+                      value: _applicationsCount.toString(),
                       icon: Icons.description_outlined,
                     ),
                   ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: _ProfileMiniCard(
-                      title: "التقارير",
-                      value: "1",
-                      icon: Icons.upload_file_outlined,
-                    ),
-                  ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _ProfileMiniCard(
                       title: "الرسائل",
-                      value: "2",
+                      value: _unreadMessagesCount.toString(),
                       icon: Icons.chat_bubble_outline_rounded,
                     ),
                   ),
@@ -412,10 +424,10 @@ class _ProfileMiniCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: primarycolor.withOpacity(0.08)),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -441,7 +453,7 @@ class _ProfileMiniCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.65),
+              color: Colors.black.withValues(alpha: 0.65),
               fontSize: 12,
             ),
           ),
