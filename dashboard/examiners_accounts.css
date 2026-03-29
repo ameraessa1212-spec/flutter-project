@@ -1,0 +1,122 @@
+:root {
+    --primary: #6A5AE0;
+    --success: #38B2AC;
+    --danger: #E53E3E;
+    --bg-page: #F8F9FE;
+    --white: #ffffff;
+    --text-dark: #2D3748;
+    --text-gray: #718096;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--bg-page);
+    margin: 0;
+    padding: 20px;
+    direction: rtl;
+    color: var(--text-dark);
+}
+
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: slideUp 0.6s ease-out;
+}
+
+/* الهيدر */
+.page-header { margin-bottom: 30px; }
+.page-header h1 { font-size: 26px; color: var(--primary); margin-bottom: 5px; }
+.page-header p { color: var(--text-gray); font-size: 15px; }
+
+/* البحث */
+.toolbar { margin-bottom: 25px; }
+.search-box {
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 8px;
+    font-family: 'Cairo';
+    font-size: 15px;
+}
+.search-box i { color: var(--primary); font-size: 22px; }
+
+/* الجدول */
+.table-card {
+    background: var(--white);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+}
+.modern-table { width: 100%; border-collapse: collapse; }
+.modern-table th { background: #F7FAFC; padding: 20px; text-align: right; color: var(--text-gray); font-weight: 600; }
+.modern-table td { padding: 20px; border-bottom: 1px solid #EDF2F7; }
+
+/* التخصصات */
+.tag { padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+.tag.cs { background: #EBF4FF; color: #3182CE; }
+.tag.comms { background: #E6FFFA; color: #319795; }
+
+/* كلمات المرور */
+code { background: #F1F5F9; padding: 4px 10px; border-radius: 6px; font-family: monospace; color: #4A5568; }
+
+/* --- تصميم الحالة الجديد (نشط / معطل) --- */
+.status-badge {
+      padding: 5px 15px; border-radius: 20px; font-weight: 800; font-size: 12px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* نشط */
+.status-badge.active {
+    background-color: rgba(56, 178, 172, 0.12);
+    color: #234E52;
+    border: 1px solid rgba(56, 178, 172, 0.3);
+}
+.status-badge.active::before {
+    content: ''; width: 8px; height: 8px; background: var(--success);
+    border-radius: 50%; box-shadow: 0 0 10px var(--success);
+}
+
+/* معطل */
+.status-badge.inactive {
+    background-color: rgba(229, 62, 62, 0.08);
+    color: #742A2A;
+    border: 1px solid rgba(229, 62, 62, 0.2);
+}
+.status-badge.inactive::before {
+    content: ''; width: 8px; height: 8px; background: var(--danger);
+    border-radius: 50%;
+}
+
+/* أزرار الإجراءات */
+.action-btn {
+    padding: 8px 20px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: 'Cairo';
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.toggle-status { background: #FFF5F5; color: var(--danger); border-color: #FED7D7; }
+.toggle-status:hover { background: var(--danger); color: white; transform: translateY(-2px); }
+
+.toggle-status.activate { background: #F0FFF4; color: var(--success); border-color: #C6F6D5; }
+.toggle-status.activate:hover { background: var(--success); color: white; transform: translateY(-2px); }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

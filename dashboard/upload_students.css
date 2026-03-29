@@ -1,0 +1,182 @@
+:root {
+    --primary-v: #6A5AE0;
+    --light-v: #F4F3FF;
+    --border-v: #E0DBFF;
+    --cancel-red: #FF5B5B;
+}
+
+body {
+    margin: 0;
+    font-family: 'Cairo', sans-serif;
+    background-color: #FBFAFF;
+    color: #444;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* تم التغيير من hidden إلى auto للسماح بالسكرول عند الحاجة */
+    overflow-y: auto; 
+}
+
+/* --- إضافة تنسيق السكرول بار الاحترافي --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #E0DBFF; /* لون فاتح متناسق */
+    border-radius: 20px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-v); /* يتحول للبنفسجي عند التمرير */
+}
+
+.light-blobs { position: fixed; width: 100%; height: 100%; z-index: -1; }
+.blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.25; }
+.b1 { width: 450px; height: 450px; background: var(--primary-v); top: -10%; left: -10%; }
+.b2 { width: 350px; height: 350px; background: #A294FF; bottom: -5%; right: -5%; }
+
+.main-wrapper { width: 90%; max-width: 1050px; display: flex; flex-direction: column; gap: 35px; z-index: 10; }
+
+.page-header h1 { font-weight: 600; font-size: 30px; margin: 0; color: #1a1a1a; }
+.page-header .bold-text { color: var(--primary-v); font-weight: 600; }
+.page-header p { font-weight: 300; color: #888; font-size: 14px; margin-top: 5px; }
+
+.content-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 25px; height: 420px; }
+
+/* منطقة الرفع */
+.upload-zone {
+    background: white;
+    border-radius: 40px;
+    border: 1px solid var(--border-v);
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.4s ease;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(106, 90, 224, 0.04);
+}
+
+.upload-zone:hover { transform: translateY(-5px); border-color: var(--primary-v); }
+
+.scan-bar {
+    position: absolute; width: 100%; height: 2px;
+    background: linear-gradient(to right, transparent, var(--primary-v), transparent);
+    top: 0; left: 0; animation: scanAnim 4s infinite linear;
+}
+@keyframes scanAnim { 0% { top: 0; } 100% { top: 100%; } }
+
+.orbit-box { position: relative; width: 100px; height: 100px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; }
+.main-cloud { font-size: 55px; color: var(--primary-v); }
+.orbit-pdf, .orbit-excel {
+    position: absolute; font-size: 24px; color: var(--primary-v); opacity: 0.5;
+    animation: rotateOrbit 7s infinite linear;
+}
+.orbit-excel { animation-delay: -3.5s; }
+@keyframes rotateOrbit {
+    from { transform: rotate(0deg) translateX(70px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(70px) rotate(-360deg); }
+}
+
+.zone-core h3 { font-weight: 600; color: var(--primary-v); margin: 0; font-size: 18px; }
+.zone-core p { font-weight: 300; color: #999; font-size: 13px; margin: 5px 0; }
+
+.formats-tags { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
+.tag { font-size: 10px; background: var(--light-v); color: var(--primary-v); padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border-v); font-weight: 400; }
+
+/* لوحة البيانات المستخرجة */
+.data-panel {
+    background: white; border-radius: 40px; padding: 25px;
+    border: 1px solid var(--border-v);
+    opacity: 0.4; transition: 0.5s;
+    display: flex; flex-direction: column;
+    pointer-events: none;
+    overflow: hidden; /* لضمان عدم خروج المحتوى عن الكرت */
+}
+
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.panel-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
+.panel-actions { display: flex; gap: 10px; }
+
+.btn-approve { background: var(--primary-v); color: white; border: none; padding: 8px 18px; border-radius: 12px; font-family: 'Cairo'; font-weight: 400; cursor: pointer; transition: 0.3s; }
+.btn-cancel { background: #FFF0F0; color: var(--cancel-red); border: 1px solid #FFDADA; padding: 8px 15px; border-radius: 12px; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 13px; }
+
+
+/* --- تأثير الـ Hover لزر تأكيد الحفظ --- */
+.btn-approve:hover {
+    background-color: #5649c0; /* لون أغمق قليلاً من البنفسجي الأساسي */
+    transform: translateY(-2px); /* رفعة بسيطة للأعلى */
+    box-shadow: 0 5px 15px rgba(106, 90, 224, 0.3); /* ظل خفيف */
+}
+
+.btn-approve:active {
+    transform: translateY(0); /* يعود لمكانه عند الضغط */
+}
+
+/* --- تأثير الـ Hover لزر إلغاء --- */
+.btn-cancel:hover {
+    background-color: var(--cancel-red); /* يتحول الخلفية للون الأحمر */
+    color: white; /* يتحول النص للأبيض */
+    border-color: var(--cancel-red);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 91, 91, 0.2);
+}
+
+.btn-cancel:hover i {
+    color: white; /* تغيير لون الأيقونة أيضاً للأبيض عند التحويم */
+}
+
+.btn-cancel:active {
+    transform: translateY(0);
+}
+
+/* --- إضافة انسيابية (Transition) للأزرار الأصلية --- */
+/* تأكدي أن الأزرار الأصلية في الكود عندك تحتوي على transition ليكون التأثير ناعم */
+.btn-approve, .btn-cancel {
+    transition: all 0.3s ease-in-out;
+}
+/* تنسيق قائمة الأسماء مع السكرول الداخلي */
+.stream-list { 
+    flex: 1; 
+    overflow-y: auto; /* تفعيل السكرول للقائمة */
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    padding-left: 5px; /* مساحة صغيرة للسكرول بار */
+}
+
+/* تخصيص السكرول بار الخاص بالقائمة الداخلية فقط */
+.stream-list::-webkit-scrollbar {
+    width: 5px;
+}
+.stream-list::-webkit-scrollbar-thumb {
+    background: var(--border-v);
+    border-radius: 10px;
+}
+.stream-list:hover::-webkit-scrollbar-thumb {
+    background: var(--primary-v);
+}
+
+.name-card {
+    background: var(--light-v);
+    padding: 12px 18px;
+    border-radius: 15px;
+    border-right: 4px solid var(--primary-v);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: slideRight 0.4s ease forwards;
+}
+
+.student-name { font-weight: 600; color: #1a1a1a; font-size: 14px; }
+.student-id { 
+    font-size: 11px; 
+    color: var(--primary-v); 
+    background: rgba(106, 90, 224, 0.1); 
+    padding: 2px 8px; 
+    border-radius: 4px; 
+    width: fit-content;
+} 
+
+@keyframes slideRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }

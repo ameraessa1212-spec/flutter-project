@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة النتائج النهائية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="student_evaluation.css">
+</head>
+<body>
+    <div class="list-container">
+        <header class="list-header">
+            <div class="title-section">
+                <h1><i class="ri-medal-2-line"></i> لوحة النتائج النهائية</h1>
+                <p>استعراض نتائج التدريب الميداني لجميع الطلاب</p>
+            </div>
+            <div class="header-actions">
+                <div class="search-wrapper">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="studentSearch" placeholder="ابحث باسم الطالب أو الشركة...">
+                </div>
+                <button class="export-btn"><i class="ri-file-excel-2-line"></i> تصدير الكل</button>
+            </div>
+        </header>
+
+        <div class="results-grid" id="resultsGrid">
+            
+            <div class="student-card animate-in">
+                <div class="card-main">
+                    <div class="student-info">
+                        <div class="avatar">م</div>
+                        <div>
+                            <h3>محمد علي الهاشمي</h3>
+                            <span>رقم القيد: 21918234</span>
+                        </div>
+                    </div>
+                    <div class="company-info">
+                        <i class="ri-building-line"></i>
+                        <span>شركة ليبيانا للهاتف المحمول</span>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <div class="stat-item">
+                        <small>الشركة (30%)</small>
+                        <div class="progress-bar"><div class="fill orange" style="width: 95%;"></div></div>
+                        <strong>28.5</strong>
+                    </div>
+                    <div class="stat-item">
+                        <small>الممتحن (70%)</small>
+                        <div class="progress-bar"><div class="fill green" style="width: 92%;"></div></div>
+                        <strong>64.4</strong>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="final-score">
+                        <span class="label">المعدل النهائي</span>
+                        <span class="value">93%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="student-card animate-in" style="animation-delay: 0.1s;">
+                <div class="card-main">
+                    <div class="student-info">
+                        <div class="avatar orange-bg">س</div>
+                        <div>
+                            <h3>سارة أحمد الفيتوري</h3>
+                            <span>رقم القيد: 22015432</span>
+                        </div>
+                    </div>
+                    <div class="company-info">
+                        <i class="ri-building-line"></i>
+                        <span>مصرف ليبيا المركزي</span>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <div class="stat-item">
+                        <small>الشركة (30%)</small>
+                        <div class="progress-bar"><div class="fill orange" style="width: 86%;"></div></div>
+                        <strong>26.0</strong>
+                    </div>
+                    <div class="stat-item">
+                        <small>الممتحن (70%)</small>
+                        <div class="progress-bar"><div class="fill green" style="width: 88%;"></div></div>
+                        <strong>61.5</strong>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="final-score">
+                        <span class="label">المعدل النهائي</span>
+                        <span class="value">88%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="student-card animate-in" style="animation-delay: 0.2s;">
+                <div class="card-main">
+                    <div class="student-info">
+                        <div class="avatar" style="background: #2D3748;">أ</div>
+                        <div>
+                            <h3>أحمد محمود الورفلي</h3>
+                            <span>رقم القيد: 21814009</span>
+                        </div>
+                    </div>
+                    <div class="company-info">
+                        <i class="ri-building-line"></i>
+                        <span>شركة المدار الجديد</span>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <div class="stat-item">
+                        <small>الشركة (30%)</small>
+                        <div class="progress-bar"><div class="fill orange" style="width: 90%;"></div></div>
+                        <strong>27.0</strong>
+                    </div>
+                    <div class="stat-item">
+                        <small>الممتحن (70%)</small>
+                        <div class="progress-bar"><div class="fill green" style="width: 80%;"></div></div>
+                        <strong>56.0</strong>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="final-score">
+                        <span class="label">المعدل النهائي</span>
+                        <span class="value">83%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="student-card animate-in" style="animation-delay: 0.3s;">
+                <div class="card-main">
+                    <div class="student-info">
+                        <div class="avatar orange-bg">ف</div>
+                        <div>
+                            <h3>فاطمة عمر القماطي</h3>
+                            <span>رقم القيد: 22119055</span>
+                        </div>
+                    </div>
+                    <div class="company-info">
+                        <i class="ri-building-line"></i>
+                        <span>الشركة العامة للكهرباء</span>
+                    </div>
+                </div>
+                <div class="card-stats">
+                    <div class="stat-item">
+                        <small>الشركة (30%)</small>
+                        <div class="progress-bar"><div class="fill orange" style="width: 98%;"></div></div>
+                        <strong>29.4</strong>
+                    </div>
+                    <div class="stat-item">
+                        <small>الممتحن (70%)</small>
+                        <div class="progress-bar"><div class="fill green" style="width: 95%;"></div></div>
+                        <strong>66.5</strong>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="final-score">
+                        <span class="label">المعدل النهائي</span>
+                        <span class="value">96%</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="student_evaluation.js"></script>
+</body>
+</html>

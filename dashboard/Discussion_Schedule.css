@@ -1,0 +1,149 @@
+:root {
+    --primary: #6A5AE0;
+    --secondary: #A294FF;
+    --bg-light: #FBFAFF;
+    --white: #ffffff;
+    --text-main: #2D2D2D;
+}
+
+body {
+    margin: 0;
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--bg-light);
+    direction: rtl;
+    color: var(--text-main);
+}
+
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+/* الرأس وتنسيق القسم */
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 20px 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.purple-grad {
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    margin: 0;
+}
+
+/* شريط الأزرار */
+.action-bar { display: flex; gap: 12px; }
+
+.tool-btn {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Cairo';
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.tool-btn.share { background: #E0F2FE; color: #0369A1; }
+.tool-btn.print { background: #F0FDF4; color: #15803D; }
+.tool-btn.download { background: var(--primary); color: white; }
+
+.tool-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+/* حاوية عرض الملف */
+.pdf-viewer-container {
+    background: white;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(106, 90, 224, 0.1);
+    border: 1px solid #eee;
+}
+
+.pdf-toolbar {
+    background: #f8f9ff;
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+/* تنسيق النافذة المنبثقة */
+.full-modal {
+    display: none; /* مخفية افتراضياً */
+    position: fixed;
+    z-index: 9999; /* تظهر فوق كل شيء */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9); /* خلفية سوداء شفافة */
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.full-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    animation: zoomIn 0.3s ease;
+}
+
+.close-full {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    color: white;
+    font-size: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-full:hover { color: #6A5AE0; }
+
+@keyframes zoomIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.pdf-toolbar span { font-weight: 700; color: #555; display: flex; align-items: center; gap: 8px; }
+
+.full-view-btn {
+    background: transparent;
+    border: 1px solid var(--secondary);
+    color: var(--primary);
+    padding: 6px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Cairo';
+    font-weight: 600;
+}
+
+.pdf-frame {
+    height: 700px; /* ارتفاع العرض */
+    width: 100%;
+    background: #525659; /* لون خلفية القارئ */
+}
+
+#pdfFrame { width: 100%; height: 100%; }
+
+/* تأثيرات الزجاج الخلفية */
+.glass-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+.glow-sphere { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; }
+.s1 { width: 400px; height: 400px; background: var(--secondary); top: -100px; left: -100px; }
+.s2 { width: 300px; height: 300px; background: #60EFFF; bottom: -50px; right: -50px; }

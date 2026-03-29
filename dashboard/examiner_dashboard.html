@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الممتحن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="examiner_style.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2 class="sidebar-logo">بوابة الممتحن</h2>
+        <ul class="menu">
+            <li class="menu-item active" onclick="loadExaminerContent('home', this)">
+                <i class="ri-dashboard-line"></i> <span>الرئيسية</span>
+            </li>
+            <li class="menu-item" onclick="loadExaminerContent('reports', this)">
+                <i class="ri-file-text-line"></i> <span>تقارير الطلاب</span>
+            </li>
+            <li class="menu-item" onclick="loadExaminerContent('grades', this)">
+                <i class="ri-medal-line"></i> <span>نتائج التقييم</span>
+            </li>
+            <li class="menu-item" onclick="loadExaminerContent('schedule', this)">
+                <i class="ri-calendar-event-line"></i> <span>جدول المناقشة</span>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="window.location.href='index.html'">
+                <i class="ri-logout-box-r-line"></i> تسجيل الخروج
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainArea">
+        </div>
+
+    <script src="examiner_logic.js"></script>
+</body>
+</html>

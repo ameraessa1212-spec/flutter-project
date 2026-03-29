@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة حسابات الشركات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="Company_Accounts.css">
+</head>
+<body>
+    <div class="glass-background">
+        <div class="glow-sphere s1"></div>
+        <div class="glow-sphere s2"></div>
+    </div>
+
+    <div class="view-container active">
+        <header class="list-header">
+            <div class="header-title">
+                <h2>إدارة صلاحيات الشركات 🔐</h2>
+                <p>التحكم في وصول الشركات المعتمدة للنظام</p>
+            </div>
+            <div class="search-wrapper">
+                <i class="ri-search-line"></i>
+                <input type="text" id="companySearch" placeholder="بحث عن شركة..." onkeyup="filterCompanies()">
+            </div>
+        </header>
+
+        <div class="accounts-card-container animate-fade">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>الشركة</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>تاريخ الانضمام</th>
+                        <th>الحالة</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="companyTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="Company_Accounts.js"></script>
+</body>
+</html>

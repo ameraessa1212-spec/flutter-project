@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مركز تقارير النظام | 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="system_reports.css">
+</head>
+<body>
+
+<div class="reports-wrapper">
+    <header class="page-header">
+        <h1>مركز تقارير النظام 📊</h1>
+        <p>استخراج بيانات التدريب الميداني والشركات المعتمدة بصيغ رسمية قابلة للطباعة.</p>
+    </header>
+
+    <div class="toolbar no-print">
+        <div class="filter-group">
+            <label>نوع التقرير</label>
+            <select id="reportType">
+                <option value="students">قائمة طلاب الميداني</option>
+                <option value="companies">إحصائيات الشركات</option>
+                <option value="examiners"> الممتحنين</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>التخصص</label>
+            <select id="deptFilter">
+                <option value="all">كل التخصصات</option>
+                <option value="حاسب آلي">حاسب آلي</option>
+                <option value="اتصالات">اتصالات</option>
+                <option value="تحكم آلي">تحكم آلي</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>الفصل الدراسي</label>
+            <select id="semester">
+                <option>خريف 2026</option>
+                <option>ربيع 2026</option>
+            </select>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-view" onclick="generateData()">
+                <i class="ri-refresh-line"></i> عرض البيانات
+            </button>
+            <button class="btn btn-print" onclick="window.print()">
+                <i class="ri-printer-line"></i> طباعة التقرير
+            </button>
+        </div>
+    </div>
+
+    <div class="report-card" id="printArea">
+        <div class="report-print-header">
+            <h2 style="margin:0; color:#6A5AE0;">كلية التقنية الإلكترونية طرابلس - قسم التدريب الميداني</h2>
+            <p>تقرير رسمي مستخرج بتاريخ: 22 فبراير 2026</p>
+            <h3 id="reportTitle">يرجى اختيار التقرير واضغط عرض البيانات</h3>
+            <div class="divider"></div>
+        </div>
+
+        <table class="modern-table">
+            <thead>
+                <tr id="tableHead">
+                    <th>رقم القيد</th>
+                    <th>اسم الطالب</th>
+                    <th>التخصص</th>
+                    <th>جهة التدريب</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:80px; color:#aaa;">
+                        <i class="ri-file-search-line" style="font-size: 40px; display: block; margin-bottom: 10px;"></i>
+                        يرجى اختيار الفلاتر والضغط على "عرض البيانات"
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="signature-section">
+            <div class="sig-box">
+                <p>اعتماد رئيس القسم</p>
+                <div class="sig-line"></div>
+            </div>
+            <div class="sig-box">
+                <p>ختم الكلية الرسمي</p>
+                <div class="sig-line"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="system_reports.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الحسابات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="accounts.css">
+</head>
+<body>
+
+    <div class="container">
+        <header class="page-header">
+            <div class="header-info">
+                <h1>إدارة الحسابات</h1>
+                <p>التحكم في بيانات الطلاب وصلاحيات الدخول</p>
+            </div>
+            <button class="add-account-btn" id="btnAddAccount">
+                <i class="ri-user-add-fill"></i> إضافة حساب جديد
+            </button>
+        </header>
+
+        <div class="students-list">
+            
+            <div class="student-card" onclick="toggleRow(this)">
+                <div class="card-main">
+                    <div class="student-profile">
+                        <div class="avatar-box">م</div>
+                        <div class="details">
+                            <h3 class="student-name">محمد الهاشمي</h3>
+                            <span class="student-meta">رقم القيد: 218055 • هندسة البرمجيات</span>
+                        </div>
+                    </div>
+                    <div class="status-badge active">نشط الآن</div>
+                </div>
+                
+                <div class="expandable-actions">
+                    <div class="actions-wrapper">
+                        <button class="btn-action edit" onclick="handleEdit(event, 'محمد')">
+                            <i class="ri-edit-2-line"></i> تعديل
+                        </button>
+                        <button class="btn-action pass" onclick="handlePassword(event, 'محمد')">
+                            <i class="ri-lock-unlock-line"></i> كلمة السر
+                        </button>
+                        <button class="btn-action stop" onclick="handleDelete(event, 'محمد')">
+                            <i class="ri-forbid-3-line"></i> إيقاف
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="student-card" onclick="toggleRow(this)">
+                <div class="card-main">
+                    <div class="student-profile">
+                        <div class="avatar-box orange-grad">س</div>
+                        <div class="details">
+                            <h3 class="student-name">سارة الفيتوري</h3>
+                            <span class="student-meta">رقم القيد: 219011 • تقنية المعلومات</span>
+                        </div>
+                    </div>
+                    <div class="status-badge offline">موقف مؤقتاً</div>
+                </div>
+                
+                <div class="expandable-actions">
+                    <div class="actions-wrapper">
+                        <button class="btn-action edit" onclick="handleEdit(event, 'سارة')">تعديل</button>
+                        <button class="btn-action activate" onclick="handleActivate(event, 'سارة')">تفعيل الحساب</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="accounts.js"></script>
+</body>
+</html>

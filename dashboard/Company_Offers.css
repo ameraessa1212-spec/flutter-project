@@ -1,0 +1,144 @@
+:root {
+    --primary: #6A5AE0;
+    --danger: #FF5B5B;
+    --success: #33D69F;
+    --text-main: #1A1D1F;
+    --text-sub: #6F767E;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background: transparent;
+    margin: 0; padding: 20px;
+    direction: rtl;
+    animation: fadeInSlide 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes fadeInSlide {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.page-header { margin-bottom: 35px; }
+h1 { font-size: 26px; font-weight: 800; color: var(--text-main); margin: 0; }
+.badge-count { font-size: 14px; background: var(--primary); color: white; padding: 4px 14px; border-radius: 50px; margin-right: 10px; }
+p { color: var(--text-sub); margin-top: 8px; }
+
+.offers-container {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 25px;
+}
+
+.modern-card {
+    background: white; border-radius: 28px; padding: 26px;
+    display: flex; flex-direction: column;
+    border: 1px solid #F1F1F1; transition: 0.3s;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+}
+
+.card-status {
+    align-self: flex-start; font-size: 11px; font-weight: 700;
+    padding: 6px 14px; border-radius: 12px; margin-bottom: 20px;
+}
+.status-pending { background: #FFF9E5; color: #D4A701; }
+.status-approved { background: #E6FFF6; color: var(--success); }
+.status-rejected { background: #FFF0F0; color: var(--danger); }
+
+.company-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+.logo-box { width: 55px; height: 55px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 20px; }
+.blue { background: linear-gradient(135deg, #6A5AE0, #8A7CF0); }
+.purple { background: linear-gradient(135deg, #FF6FD8, #A033FF); }
+
+.brand-details h3 { margin: 0; font-size: 18px; color: var(--text-main); }
+.location { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 5px; margin-top: 4px; }
+
+.quick-tags { display: flex; gap: 12px; margin-bottom: 30px; }
+.tag { background: #F8F9FB; color: var(--text-sub); padding: 8px 14px; border-radius: 12px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+
+.card-actions {
+    display: flex; gap: 10px; margin-top: auto;
+    padding-top: 20px; border-top: 1px solid #FAFAFA;
+}
+
+.btn-view { background: #F4F7FE; color: var(--primary); border: none; padding: 12px 18px; border-radius: 14px; cursor: pointer; font-weight: 700; font-family: 'Cairo'; transition: 0.2s; }
+.btn-reject { background: #FFF0F0; color: var(--danger); border: none; padding: 12px; border-radius: 14px; cursor: pointer; font-weight: 700; font-family: 'Cairo'; flex: 1; }
+.btn-primary { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 14px; cursor: pointer; font-weight: 700; font-family: 'Cairo'; flex: 1.8; }
+
+/* Modal Styles - التوسيط الكامل ومنع التداخل */
+.modal-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.5); 
+    backdrop-filter: blur(8px); 
+    display: none; 
+    align-items: center;    /* توسيط عمودي */
+    justify-content: center;
+    padding-top: 100px; /* توسيط أفقي */
+    z-index: 2000; 
+}
+
+.modal-box { 
+    background: white; 
+    width: 420px;           /* حجم أصغر وأنيق */
+    max-height: 80vh;       /* تحديد الارتفاع لتفعيل السكرول */
+    border-radius: 25px; 
+    padding: 25px; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2); 
+    display: flex;
+    flex-direction: column; /* ترتيب عمودي للمكونات */
+    position: relative;
+}
+
+.modal-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
+    border-bottom: 1px solid #f0f0f0; 
+    padding-bottom: 15px;
+    flex-shrink: 0;         /* الحفاظ على الهيدر ثابتاً */
+}
+
+/* حاوية المحتوى التي سيظهر فيها السكرول */
+.modal-body {
+    overflow-y: auto;       /* تفعيل التمرير العمودي */
+    padding-left: 5px;      /* مساحة لجمالية السكرول */
+}
+
+/* تنسيق السطر الواحد (اسم الشركة، الموقع، الخ) */
+.data-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 12px 0; 
+    border-bottom: 1px solid #F8F8F8;
+}
+
+/* تنسيق خاص للنبذة التعريفية لأنها نص طويل */
+.data-row-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid #F8F8F8;
+}
+
+.data-label { color: var(--text-sub); font-size: 13px; font-weight: 600; }
+.data-value { font-weight: 700; font-size: 14px; color: var(--text-main); text-align: left; }
+
+/* تخصيص شكل شريط التمرير */
+.modal-body::-webkit-scrollbar { width: 5px; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+/* تنسيق رابط التواصل الاجتماعي الجديد */
+.social-link {
+    color: var(--primary);
+    text-decoration: none;
+    background: #F4F7FE;
+    padding: 4px 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.3s;
+}
+.social-link:hover { background: var(--primary); color: white; }

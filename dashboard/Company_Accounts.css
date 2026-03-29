@@ -1,0 +1,86 @@
+:root {
+    --primary: #6A5AE0;
+    --danger: #e74c3c;
+    --success: #2ecc71;
+    --glass: rgba(255, 255, 255, 0.8);
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background: #f8f9fd;
+    margin: 0;
+    padding: 20px;
+    direction: rtl;
+    
+}
+
+/* الخلفية الملونة */
+.glass-background {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; background: #f0eeff;
+    overflow: hidden;
+}
+
+.glow-sphere {
+    position: absolute; width: 400px; height: 400px;
+    border-radius: 50%; filter: blur(80px); opacity: 0.4;
+}
+.s1 { background: #6A5AE0; top: -100px; left: -100px; }
+.s2 { background: #45b7d1; bottom: -100px; right: -100px; }
+
+/* الحاوية الرئيسية */
+.view-container { max-width: 1100px; margin: 0 auto; }
+
+.list-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 30px;
+}
+
+/* مربع البحث */
+.search-wrapper {
+    position: relative; background: white;
+    border-radius: 15px; padding: 10px 15px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.search-wrapper input {
+    border: none; outline: none; font-family: 'Cairo'; font-size: 14px;
+}
+
+/* الجدول */
+.accounts-card-container {
+    background: var(--glass); backdrop-filter: blur(10px);
+    border-radius: 30px; padding: 20px;
+    border: 1px solid white; box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+}
+
+.styled-table {
+    width: 100%; border-collapse: collapse; text-align: right;
+}
+
+.styled-table th {
+    padding: 15px; color: #777; border-bottom: 2px solid #f0eeff;
+}
+
+.styled-table td { padding: 15px; border-bottom: 1px solid #f9f9f9; }
+
+/* أزرار الحالة */
+.status-pill {
+    padding: 5px 15px; border-radius: 20px; font-weight: 800; font-size: 12px;
+}
+
+.status-pill.active { background: #e8f7f0; color: var(--success); }
+.status-pill.inactive { background: #ffeaea; color: var(--danger); }
+
+.action-btn {
+    padding: 8px 15px; border-radius: 12px; border: none;
+    font-family: 'Cairo'; font-weight: 700; cursor: pointer; transition: 0.3s;
+}
+
+.btn-off { background: #ffeaea; color: var(--danger); }
+.btn-on { background: #e8f7f0; color: var(--success); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade { animation: fadeIn 0.5s ease; }

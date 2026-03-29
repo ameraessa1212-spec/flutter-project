@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الشركات المسجلة | لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="Registered_Companies.css">
+</head>
+<body>
+
+    <div class="page-header">
+        <div class="header-info">
+            <h1>الشركات الشريكة <span class="count-badge" id="companyCount">2</span></h1>
+            <p>قائمة الشركات المعتمدة في نظام التدريب الميداني</p>
+        </div>
+        
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterCompanies('all', this)">الكل</button>
+            <button class="filter-btn" onclick="filterCompanies('حاسب آلي', this)">حاسب آلي</button>
+            <button class="filter-btn" onclick="filterCompanies('اتصالات', this)">اتصالات</button>
+            <button class="filter-btn" onclick="filterCompanies('تحكم', this)">تحكم</button>
+        </div>
+    </div>
+
+    <div class="companies-grid" id="companiesGrid">
+        </div>
+
+    <script src="Registered_Companies.js"></script>
+</body>
+</html>

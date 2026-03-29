@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طلبات الانضمام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="Company_Offers.css">
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <header class="page-header">
+            <div class="header-text">
+                <h1>طلبات التدريب <span class="badge-count">2 طلب جديد</span></h1>
+                <p>مراجعة بيانات النماذج واتخاذ قرار القبول أو الرفض</p>
+            </div>
+        </header>
+
+        <main class="offers-container">
+            <div class="modern-card" id="card-techno">
+                <div class="card-status status-pending">قيد الانتظار</div>
+                <div class="card-content">
+                    <div class="company-header">
+                        <div class="logo-box blue">TC</div>
+                        <div class="brand-details">
+                            <h3>شركة تكنو كود</h3>
+                            <span class="location"><i class="ri-map-pin-2-line"></i> طرابلس - حي الأندلس</span>
+                        </div>
+                    </div>
+                    <div class="quick-tags">
+                        <span class="tag"><i class="ri-computer-line"></i> حاسب آلي</span>
+                        <span class="tag"><i class="ri-group-line"></i> 5 طلاب</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-view" onclick="openDetails('techno')">عرض</button>
+                    <button class="btn-reject" onclick="rejectRequest('card-techno', 'تكنو كود')">رفض</button>
+                    <button class="btn-primary" onclick="approveRequest(this, 'techno')">قبول</button>
+                </div>
+            </div>
+
+            <div class="modern-card" id="card-libya">
+                <div class="card-status status-pending">قيد الانتظار</div>
+                <div class="card-content">
+                    <div class="company-header">
+                        <div class="logo-box purple">LC</div>
+                        <div class="brand-details">
+                            <h3>ليبيا للتحكم</h3>
+                            <span class="location"><i class="ri-map-pin-2-line"></i> بنغازي - القوارشة</span>
+                        </div>
+                    </div>
+                    <div class="quick-tags">
+                        <span class="tag"><i class="ri-settings-4-line"></i> هندسة تحكم</span>
+                        <span class="tag"><i class="ri-group-line"></i> 3 طلاب</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-view" onclick="openDetails('libya_control')">عرض</button>
+                    <button class="btn-reject" onclick="rejectRequest('card-libya', 'ليبيا للتحكم')">رفض</button>
+                    <button class="btn-primary" onclick="approveRequest(this, 'libya_control')">قبول</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<div id="formModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 style="font-size: 18px; margin: 0;">تفاصيل طلب التدريب</h2>
+            <button class="close-btn" onclick="closeModal()"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="modalContent" class="modal-body">
+            </div>
+    </div>
+</div>
+
+    <script src="Company_Offers.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+:root { --main: #6A5AE0; --bg: #F8F9FD; --border: #edf2f7; --online: #2ecc71; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+body { background: var(--bg); height: 100vh; overflow: hidden; }
+
+.chat-main-container { display: flex; height: 100vh; background: #fff; }
+
+/* القائمة الجانبية والنقطة الخضراء */
+.sidebar-users { width: 320px; border-left: 1px solid var(--border); background: #fbfbfb; display: flex; flex-direction: column; }
+.search-section { padding: 20px; }
+.search-wrapper { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 8px 15px; display: flex; align-items: center; gap: 10px; }
+.search-wrapper input { border: none; outline: none; width: 100%; font-size: 14px; }
+
+.user-item { display: flex; align-items: center; gap: 15px; padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #f9f9f9; transition: 0.3s; }
+.user-item:hover { background: #fff; transform: translateX(-5px); box-shadow: 10px 0 20px rgba(0,0,0,0.02); }
+.user-item.active { background: #eeebff; border-right: 4px solid var(--main); }
+
+/* تنسيق صف الاسم والحالة */
+.name-status-row { display: flex; align-items: center; gap: 8px; }
+.status-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.status-dot.online { background: var(--online); box-shadow: 0 0 8px var(--online); }
+.status-dot.offline { background: #cbd5e0; }
+
+.avatar-box { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; flex-shrink: 0; }
+.primary { background: var(--main); }
+.orange { background: #FF9F43; }
+.green { background: #2ecc71; }
+
+/* منطقة الدردشة والهيدر */
+.chat-area { flex: 1; display: flex; flex-direction: column; position: relative; }
+.chat-header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.header-user { display: flex; align-items: center; gap: 12px; }
+.user-meta h4 { font-size: 16px; margin: 0; }
+.user-meta .status-text { color: #888; font-size: 12px; }
+
+.tool-btn { width: 38px; height: 38px; border: none; background: #f5f6fa; color: #666; border-radius: 10px; cursor: pointer; transition: 0.3s; margin: 0 2px; font-size: 18px; }
+.tool-btn:hover { background: var(--main); color: #fff; transform: translateY(-2px); }
+
+/* منطقة الرسائل */
+.messages-viewport { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+.msg-bubble { max-width: 70%; padding: 12px 18px; border-radius: 15px; font-size: 14px; }
+.in { align-self: flex-start; background: #f1f2f6; border-bottom-right-radius: 2px; }
+.out { align-self: flex-end; background: var(--main); color: #fff; border-bottom-left-radius: 2px; }
+
+/* فوتر الإدخال */
+.chat-footer { padding: 15px 25px 25px; position: relative; }
+.input-container { background: #f1f2f6; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 10px; }
+.input-container input { flex: 1; border: none; background: transparent; outline: none; padding: 10px; font-size: 14px; }
+.icon-btn { background: none; border: none; font-size: 22px; color: #888; cursor: pointer; transition: 0.3s; }
+.send-btn { background: var(--main); color: white; border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; }
+
+/* شاشة الاتصال وتسجيل الصوت */
+.call-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; }
+.call-card { background: white; padding: 40px; border-radius: 35px; text-align: center; width: 320px; }
+.call-avatar { width: 90px; height: 90px; border-radius: 30px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 32px; font-weight: bold; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(106, 90, 224, 0.4); } 70% { box-shadow: 0 0 0 20px rgba(106, 90, 224, 0); } }
+.call-btn-circle { width: 55px; height: 55px; border-radius: 50%; border: none; color: white; cursor: pointer; font-size: 24px; margin: 0 10px; }
+.hangup { background: #ff4757; transform: rotate(135deg); }
+.accept { background: #2ecc71; }
+
+.voice-overlay { display: none; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); background: white; padding: 10px 25px; border-radius: 25px; align-items: center; gap: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+.stop-btn { background: #ff4757; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; }

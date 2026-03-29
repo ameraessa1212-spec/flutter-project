@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مركز التواصل الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+    <div class="chat-main-container">
+        <aside class="sidebar-users">
+            <div class="search-section">
+                <div class="search-wrapper">
+                    <i class="ri-search-line"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث عن طالب..." onkeyup="filterContacts()">
+                </div>
+            </div>
+            <div class="users-list" id="contactsList">
+                <div class="user-item active">
+                    <div class="avatar-box primary">م</div>
+                    <div class="user-info">
+                        <div class="name-status-row">
+                            <strong>محمد الهاشمي</strong>
+                            <span class="status-dot online"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-item">
+                    <div class="avatar-box orange">س</div>
+                    <div class="user-info">
+                        <div class="name-status-row">
+                            <strong>سارة أحمد</strong>
+                            <span class="status-dot online"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="chat-area">
+            <header class="chat-header">
+                <div class="header-user">
+                    <div class="avatar-box primary" id="targetAvatar">م</div>
+                    <div class="user-meta">
+                        <div class="name-status-row">
+                            <h4 id="targetName">محمد الهاشمي</h4>
+                            <span class="status-dot online"></span>
+                        </div>
+                        <small class="status-text">متصل الآن</small>
+                    </div>
+                </div>
+                <div class="header-tools">
+                    <button class="tool-btn call" onclick="startCall('صوتية')"><i class="ri-phone-line"></i></button>
+                    <button class="tool-btn video" onclick="startCall('مرئية')"><i class="ri-vidicon-line"></i></button>
+                </div>
+            </header>
+
+            <div class="messages-viewport" id="chatWindow">
+                <div class="msg-bubble in">مرحباً دكتور، أرسلت لك ملف التدريب الميداني.</div>
+            </div>
+
+            <footer class="chat-footer">
+                <div id="voiceOverlay" class="voice-overlay">
+                    <div class="wave-container"><span></span><span></span><span></span><span></span></div>
+                    <span id="timer">00:05</span>
+                    <button onclick="stopRecording()" class="stop-btn"><i class="ri-stop-fill"></i></button>
+                </div>
+                <div class="input-container">
+                    <label class="icon-btn">
+                        <i class="ri-attachment-2"></i>
+                        <input type="file" id="fileIn" style="display:none" onchange="handleFile(this)">
+                    </label>
+                    <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا..." onkeypress="checkEnter(event)">
+                    <button class="icon-btn mic" id="micBtn" onclick="startRecording()"><i class="ri-mic-line"></i></button>
+                    <button class="send-btn" onclick="sendMsg()"><i class="ri-send-plane-2-fill"></i></button>
+                </div>
+            </footer>
+        </section>
+    </div>
+
+    <div id="callOverlay" class="call-overlay">
+        <div class="call-card">
+            <div class="call-avatar" id="callAvatar">م</div>
+            <h3 id="callName">محمد الهاشمي</h3>
+            <p id="callStatus">جاري الاتصال...</p>
+            <div class="call-actions">
+                <button class="call-btn-circle hangup" onclick="endCall()"><i class="ri-phone-fill"></i></button>
+                <button class="call-btn-circle accept" id="acceptBtn"><i class="ri-mic-fill"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="chat.js"></script>
+</body>
+</html>
