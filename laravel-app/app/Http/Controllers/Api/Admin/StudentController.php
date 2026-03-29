@@ -110,23 +110,12 @@ class StudentController extends Controller
     public function upload(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:5120'],
+            'students' => ['required', 'array', 'min:1'],
+            'students.*.student_number' => ['required', 'string'],
+            'students.*.name' => ['required', 'string'],
         ]);
 
-        $file = $request->file('file');
-        $extension = $file->getClientOriginalExtension();
-
-        $rows = [];
-        if (in_array($extension, ['csv', 'txt'])) {
-            $handle = fopen($file->getRealPath(), 'r');
-            $header = fgetcsv($handle);
-            while (($row = fgetcsv($handle)) !== false) {
-                if (count($row) >= 2) {
-                    $rows[] = ['student_number' => trim($row[0]), 'name' => trim($row[1])];
-                }
-            }
-            fclose($handle);
-        }
+        $rows = $request->input('students');
 
         $created = 0;
         $skipped = 0;
