@@ -63,22 +63,28 @@ class AuthRepository {
     required String passwordConfirmation,
     String? studentNumber,
     int? specializationId,
+    String? profileImagePath,
   }) async {
-    await _apiClient.post(
-      '/auth/register',
-      data: {
-        'first_name': firstName,
-        'last_name': lastName,
-        'username': username,
-        'email': email,
-        'phone': phone,
-        'password': password,
-        'password_confirmation': passwordConfirmation,
-        if (studentNumber != null && studentNumber.isNotEmpty)
-          'student_number': studentNumber,
-        if (specializationId != null) 'specialization_id': specializationId,
-      },
-    );
+    MultipartFile? profileImage;
+    if (profileImagePath != null) {
+      profileImage = await MultipartFile.fromFile(profileImagePath);
+    }
+
+    final formData = FormData.fromMap({
+      'first_name': firstName,
+      'last_name': lastName,
+      'username': username,
+      'email': email,
+      'phone': phone,
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+      if (studentNumber != null && studentNumber.isNotEmpty)
+        'student_number': studentNumber,
+      if (specializationId != null) 'specialization_id': specializationId,
+      if (profileImage != null) 'profile_image': profileImage,
+    });
+
+    await _apiClient.post('/auth/register', data: formData);
   }
 
   Future<void> verifyRegistrationOtp({

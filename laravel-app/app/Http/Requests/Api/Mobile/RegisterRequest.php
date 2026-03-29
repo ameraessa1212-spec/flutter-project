@@ -22,6 +22,7 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'string', 'min:6', 'confirmed'],
             'student_number' => ['required', 'string', 'max:50', 'unique:student_profiles,student_number', 'exists:eligible_students,student_number'],
             'specialization_id' => ['nullable', 'integer', 'exists:specializations,id'],
+            'profile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
     }
 

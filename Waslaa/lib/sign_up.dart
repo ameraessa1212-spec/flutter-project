@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:Waslaa/features/auth/models/specialization.dart';
@@ -29,6 +33,9 @@ class _SignUpPageState extends State<SignUpPage> {
   int? _selectedSpecializationId;
   bool _isLoading = false;
   bool _isLoadingSpecializations = false;
+
+  File? _profileImage;
+  XFile? _profileImageXFile;
 
   @override
   void initState() {
@@ -75,6 +82,19 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+  Future<void> _pickProfileImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 800, imageQuality: 80);
+    if (picked != null) {
+      setState(() {
+        _profileImageXFile = picked;
+        if (!kIsWeb) {
+          _profileImage = File(picked.path);
+        }
+      });
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -92,6 +112,7 @@ class _SignUpPageState extends State<SignUpPage> {
         passwordConfirmation: _passwordConfirmController.text,
         studentNumber: _studentNumberController.text.trim(),
         specializationId: _selectedSpecializationId,
+        profileImagePath: _profileImageXFile?.path,
       );
 
       if (!mounted) return;
@@ -183,7 +204,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   color: Colors.black54,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
+
+              // الصورة الشخصية
+              _buildProfileImagePicker(),
+              const SizedBox(height: 20),
 
               // الاسم الأول
               _buildTextField(
@@ -336,6 +361,49 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileImagePicker() {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _pickProfileImage,
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: const Color(0xFFF1F0F9),
+                backgroundImage: _profileImage != null ? FileImage(_profileImage!) : null,
+                child: _profileImage == null
+                    ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                    : null,
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF6A5AE0),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _profileImage != null ? 'اضغط لتغيير الصورة' : 'إضافة صورة شخصية (اختياري)',
+          style: const TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 13,
+            color: Colors.grey,
+          ),
+        ),
+      ],
     );
   }
 
