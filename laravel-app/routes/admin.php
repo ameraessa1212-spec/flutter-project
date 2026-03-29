@@ -64,6 +64,8 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
     // Company Accounts
     Route::get('/company-accounts', [CompanyAccountController::class, 'index']);
     Route::put('/company-accounts/{company}/toggle-status', [CompanyAccountController::class, 'toggleStatus']);
+    Route::put('/company-accounts/{company}/approve', [CompanyAccountController::class, 'approve']);
+    Route::put('/company-accounts/{company}/reject', [CompanyAccountController::class, 'reject']);
 
     // Examiners
     Route::get('/examiners', [ExaminerController::class, 'index']);
