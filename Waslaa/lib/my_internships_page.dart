@@ -141,33 +141,6 @@ class _MyInternshipsPageState extends State<MyInternshipsPage> {
           ),
           const SizedBox(height: 18),
 
-          const _SectionTitle(title: 'التدريب الحالي'),
-          const SizedBox(height: 10),
-
-          if (internship != null)
-            _CurrentInternshipCard(internship: internship)
-          else
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text(
-                  'لا يوجد تدريب نشط حالياً',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-              ),
-            ),
-
           const SizedBox(height: 22),
           const _SectionTitle(title: 'إجراءات سريعة'),
           const SizedBox(height: 10),
@@ -384,7 +357,7 @@ class _SummaryMiniBox extends StatelessWidget {
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),

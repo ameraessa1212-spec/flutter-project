@@ -266,8 +266,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     _ProfileMenuTile(
-                      title: "الدعم الفني",
-                      subtitle: "تواصل مع إدارة النظام للاستفسارات التقنية",
+                      title: "التواصل مع المشرف",
+                      subtitle: "تواصل مع إدارة القسم للاستفسارات ",
                       icon: Icons.support_agent_rounded,
                       onTap: () {
                         Navigator.push(
@@ -276,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             builder:
                                 (context) => const ChatPage(
                                   receiverId: 1,
-                                  receiverName: 'إدارة النظام (الدعم الفني)',
+                                  receiverName: 'التواصل مع المشرف',
                                 ),
                           ),
                         );
@@ -369,7 +369,87 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       subtitle: "الخروج من الحساب الحالي",
                       icon: Icons.logout_outlined,
                       color: Colors.red,
-                      onTap: () => _showLogoutConfirmation(context),
+                      onTap: () {
+                        // إظهار نافذة التأكيد قبل تسجيل الخروج
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              title: const Text(
+                                "تأكيد الخروج",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              content: const Text(
+                                "هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              actions: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    // زر إلغاء العملية
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text(
+                                        "إلغاء",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    // زر تأكيد الخروج
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        // 1. إغلاق نافذة التنبيه
+                                        Navigator.pop(context);
+
+                                        // 2. الانتقال لصفحة تسجيل الدخول وحذف كل الصفحات السابقة من الـ Stack
+                                        // تأكدي من أن اسم الصفحة عندك هو SignInPage أو استبدليه بالاسم الصحيح
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => const SignInPage(),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      },
+                                      child: const Text(
+                                        "تسجيل خروج",
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),

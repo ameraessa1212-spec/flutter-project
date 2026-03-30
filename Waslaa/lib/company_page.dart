@@ -84,6 +84,7 @@ class _CompanyPageState extends State<CompanyPage> {
       if (reset) {
         _isLoading = true;
         _error = null;
+        _currentPage = 1; // مهم جداً لإعادة تصفير الصفحات عند الفلترة
       } else {
         _isLoadingMore = true;
       }
@@ -229,7 +230,9 @@ class _CompanyPageState extends State<CompanyPage> {
     if (_opportunities.isEmpty) {
       return _EmptyState(
         hasFilters:
-            _searchQuery.isNotEmpty || _selectedSpecializationId != null,
+            _searchQuery.isNotEmpty ||
+            _selectedSpecializationId != null ||
+            _selectedAvailability != null,
       );
     }
     return Column(
@@ -257,78 +260,71 @@ class _CompanyPageState extends State<CompanyPage> {
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: CircularProgressIndicator(),
-          )
-        else if (_currentPage < _lastPage)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: OutlinedButton(
-              onPressed: () => _loadOpportunities(reset: false),
-              child: Text(
-                'تحميل المزيد',
-                style: TextStyle(color: primarycolor),
-              ),
-            ),
           ),
       ],
     );
   }
 
   Widget _buildSearchAndFilterRow() {
-    return Row(
+    return Column(
       children: [
-        Container(
-          height: 48,
-          width: 48,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: PopupMenuButton<int?>(
-            borderRadius: BorderRadius.circular(16),
-            icon: Icon(
-              Icons.filter_list_rounded,
-              color: primarycolor,
-              size: 24,
-            ),
-            enabled: !_isLoadingFilters,
-            onSelected: (value) {
-              setState(() {
-                _selectedSpecializationId = value;
-              });
-              _reloadOpportunities();
-            },
-            itemBuilder:
-                (context) => [
-                  const PopupMenuItem<int?>(
-                    value: null,
-                    child: Text('كل التخصصات', textAlign: TextAlign.right),
-                  ),
-                  ..._specializations.map(
-                    (spec) => PopupMenuItem<int?>(
-                      value: spec.id,
-                      child: Text(spec.name, textAlign: TextAlign.right),
-                    ),
+        Row(
+          crossAxisAlignment:
+              CrossAxisAlignment.center, // يجعل العناصر بمحاذاة واحدة
+          children: [
+            // زر الفلترة - أصبح الآن أول عنصر في الـ Row ليكون بجانب البحث
+            Container(
+              height: 48,
+              width: 48,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
                   ),
                 ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            children: [
-              Container(
+              ),
+              child: PopupMenuButton<int?>(
+                borderRadius: BorderRadius.circular(16),
+                icon: Icon(
+                  Icons.filter_list_rounded,
+                  color: primarycolor,
+                  size: 24,
+                ),
+                enabled: !_isLoadingFilters,
+                onSelected: (value) {
+                  setState(() {
+                    _selectedSpecializationId = value;
+                  });
+                  _reloadOpportunities();
+                },
+                itemBuilder:
+                    (context) => [
+                      const PopupMenuItem<int?>(
+                        value: null,
+                        child: Text('كل التخصصات', textAlign: TextAlign.right),
+                      ),
+                      ..._specializations.map(
+                        (spec) => PopupMenuItem<int?>(
+                          value: spec.id,
+                          child: Text(spec.name, textAlign: TextAlign.right),
+                        ),
+                      ),
+                    ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // حقل البحث
+            Expanded(
+              child: Container(
                 height: 48,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: primarycolor.withValues(alpha: 0.18),
                   ),
@@ -359,47 +355,54 @@ class _CompanyPageState extends State<CompanyPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.end,
-                  children: [
-                    Text(
-                      _selectedSpecializationLabel,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: Colors.black.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    _AvailabilityChip(
-                      label: 'الكل',
-                      selected: _selectedAvailability == null,
-                      onTap: () {
-                        setState(() => _selectedAvailability = null);
-                        _reloadOpportunities();
-                      },
-                    ),
-                    _AvailabilityChip(
-                      label: 'المتاحة',
-                      selected: _selectedAvailability == true,
-                      onTap: () {
-                        setState(() => _selectedAvailability = true);
-                        _reloadOpportunities();
-                      },
-                    ),
-                    _AvailabilityChip(
-                      label: 'المغلقة',
-                      selected: _selectedAvailability == false,
-                      onTap: () {
-                        setState(() => _selectedAvailability = false);
-                        _reloadOpportunities();
-                      },
-                    ),
-                  ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // سطر الحالة والتخصص المختار تحتهم
+        Align(
+          alignment: Alignment.centerRight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  _selectedSpecializationLabel,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.black.withValues(alpha: 0.5),
+                  ),
                 ),
+              ),
+              Row(
+                children: [
+                  _AvailabilityChip(
+                    label: 'الكل',
+                    selected: _selectedAvailability == null,
+                    onTap: () {
+                      setState(() => _selectedAvailability = null);
+                      _reloadOpportunities();
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  _AvailabilityChip(
+                    label: 'المتاحة',
+                    selected: _selectedAvailability == true,
+                    onTap: () {
+                      setState(() => _selectedAvailability = true);
+                      _reloadOpportunities();
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  _AvailabilityChip(
+                    label: 'المغلقة',
+                    selected: _selectedAvailability == false,
+                    onTap: () {
+                      setState(() => _selectedAvailability = false);
+                      _reloadOpportunities();
+                    },
+                  ),
+                ],
               ),
             ],
           ),

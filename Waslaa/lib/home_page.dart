@@ -320,16 +320,6 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: _ActionCard(
-                  title: 'التواصل مع المشرف',
-                  subtitle: _chatSubtitle(),
-                  icon: Icons.chat_bubble_outline_rounded,
-                  badgeCount: _dashboard?.unreadMessagesCount ?? 0,
-                  onTap: _openChat,
-                ),
-              ),
-
               const SizedBox(width: 12),
               Expanded(
                 child: _ActionCard(
