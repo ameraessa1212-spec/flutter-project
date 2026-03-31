@@ -4,56 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>وصلة تدريب | المنصة الذكية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+      body { direction: rtl; }
+    </style>
 </head>
 <body>
-
-    <nav class="navbar">
-        <div class="logo">WASLAT TADREIB<span>.</span></div>
-        <div class="nav-auth">
-            <a href="login.html" class="btn-glass">تسجيل الدخول</a>
-            <a href="signup.html" class="btn-purple">سجل شركتك الآن</a>
-        </div>
-    </nav>
-
-    <main class="hero-grid">
-        <div class="hero-card info-card fade-up">
-            <span class="status-tag"><span class="dot"></span> نظام مباشر الآن</span>
-            <h1>اربط شركتك <br> بـ <span>مستقبل التدريب</span></h1>
-            <p>منصة "وصلةتدريب" توفر لك لوحة تحكم ذكية لمتابعة نمو الكفاءات وتدريب الطلاب  بأحدث الوسائل التقنية.</p>
-            
-            <div class="stats-row">
-                <div class="stat-item">
-                    <h4>+50</h4>
-                    <p>متدرب</p>
-                </div>
-                <div class="stat-item">
-                    <h4>+85</h4>
-                    <p>شركة ليبية</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="hero-card chart-card fade-up" style="animation-delay: 0.2s;">
-            <div class="chart-header">
-                <h4>مؤشر نمو التدريب 2026</h4>
-                <div class="chart-legend">حيوية النظام</div>
-            </div>
-            <canvas id="growthChart"></canvas>
-        </div>
-
-        <div class="hero-card partners-card fade-up" style="animation-delay: 0.4s;">
-            <p>تثق بنا كبرى المؤسسات</p>
-            <div class="partners-logos">
-                <div class="logo-placeholder">LIBYANA </div>
-                <div class="logo-placeholder">AL MADAR</div>
-                <div class="logo-placeholder">LTT</div>
-            </div>
-        </div>
-    </main>
-
-    <script src="script.js"></script>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>
