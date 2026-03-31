@@ -25,3 +25,30 @@ async function apiFetch(endpoint, options = {}) {
 
     return fetch(`${CONFIG.API_BASE_URL}${endpoint}`, config);
 }
+
+function requestCompanyDashboardRefresh(detail = {}) {
+    if (!window.parent || window.parent === window) {
+        return false;
+    }
+
+    try {
+        if (typeof window.parent.refreshCompanyDashboard === 'function') {
+            window.parent.refreshCompanyDashboard(detail);
+            return true;
+        }
+    } catch (error) {
+        // Fall back to postMessage when direct access is unavailable.
+    }
+
+    try {
+        window.parent.postMessage({
+            type: 'company-dashboard-refresh',
+            detail
+        }, '*');
+        return true;
+    } catch (error) {
+        console.warn('Unable to request dashboard refresh:', error);
+    }
+
+    return false;
+}

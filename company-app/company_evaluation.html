@@ -173,17 +173,21 @@
                 companyProfile: null,
                 userProfile: null,
 
+                async loadInternships() {
+                    const response = await apiFetch('/company/internships?status=active');
+                    if (response.ok) {
+                        this.internships = await response.json();
+                    }
+                },
+
                 async init() {
                     try {
                         const prof = localStorage.getItem('company_profile');
                         const usr = localStorage.getItem('company_user');
                         if (prof) this.companyProfile = JSON.parse(prof);
                         if (usr) this.userProfile = JSON.parse(usr);
-                        
-                        const response = await apiFetch('/company/internships?status=active');
-                        if (response.ok) {
-                            this.internships = await response.json();
-                        }
+
+                        await this.loadInternships();
                     } catch(e) { console.error('Failed to load internships', e); }
                 },
 
@@ -225,7 +229,9 @@
 
                             if (response.ok) {
                                 alert("تم إرسال التقييم بنجاح.");
-                                window.parent.location.reload();
+                                await this.loadInternships();
+                                this.selectedInternship = '';
+                                requestCompanyDashboardRefresh({ tab: 'eval' });
                             } else {
                                 const errData = await response.json().catch(() => ({}));
                                 alert("خطأ: " + (errData.message || 'حدث خطأ أثناء الإرسال.'));

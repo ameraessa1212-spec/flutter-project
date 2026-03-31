@@ -192,6 +192,43 @@
                     }
                 },
 
+                async refreshDashboard(detail = {}) {
+                    const requestedTab = detail.tab;
+
+                    if (requestedTab && this.pagesInfo[requestedTab]) {
+                        const currentHash = window.location.hash.replace('#', '') || 'home';
+                        if (currentHash !== requestedTab) {
+                            window.location.hash = requestedTab;
+                        }
+                    }
+
+                    await Promise.all([
+                        this.fetchDashboardData(),
+                        this.fetchStats()
+                    ]);
+
+                    if (this.activeTab === 'home') {
+                        this.updateGreeting();
+                    }
+                },
+
+                registerRefreshBridge() {
+                    window.refreshCompanyDashboard = (detail = {}) => this.refreshDashboard(detail);
+
+                    window.addEventListener('message', (event) => {
+                        const isFilePreview = window.location.origin === 'null' || event.origin === 'null';
+                        if (!isFilePreview && event.origin !== window.location.origin) {
+                            return;
+                        }
+
+                        if (event.data?.type !== 'company-dashboard-refresh') {
+                            return;
+                        }
+
+                        this.refreshDashboard(event.data.detail || {});
+                    });
+                },
+
 
                 init() {
                     const profile = localStorage.getItem('company_profile');
@@ -209,9 +246,10 @@
                         } catch(e){}
                     }
 
-                    this.handleRoute(); window.addEventListener("hashchange", () => this.handleRoute());
-                    this.fetchDashboardData();
-                    this.fetchStats();
+                    this.registerRefreshBridge();
+                    this.handleRoute();
+                    window.addEventListener("hashchange", () => this.handleRoute());
+                    this.refreshDashboard();
                 },
 
                 async fetchStats() {
@@ -258,16 +296,25 @@
                 },
 
                 showHome() {
-                    this.activeTab = 'home';
-                    this.iframeSrc = '';
-                    this.updateGreeting();
+                    if (window.location.hash === '#home' || window.location.hash === '') {
+                        this.handleRoute();
+                        return;
+                    }
+
+                    window.location.hash = 'home';
                 },
 
                 loadSubPage(tab, url, title, sub) {
-                    this.activeTab = tab;
-                    this.iframeSrc = url;
-                    this.headerTitle = title;
-                    this.headerSubtitle = sub;
+                    if (!this.pagesInfo[tab]) {
+                        return;
+                    }
+
+                    if (window.location.hash === `#${tab}`) {
+                        this.handleRoute();
+                        return;
+                    }
+
+                    window.location.hash = tab;
                 },
 
                 logout() {
