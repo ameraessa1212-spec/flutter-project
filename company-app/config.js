@@ -1,7 +1,7 @@
 // Global API Configuration
 const CONFIG = {
 
-    API_BASE_URL: 'https://flutter-project-main-vmkevy.free.laravel.cloud/api'
+    API_BASE_URL: 'http://localhost:9000/api'
 };
 
 // Global helper for fetching with auth

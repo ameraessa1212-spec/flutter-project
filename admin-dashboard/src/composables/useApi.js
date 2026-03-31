@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const API_BASE = 'https://flutter-project-main-vmkevy.free.laravel.cloud/api/admin'
+const API_BASE = 'http://localhost:9000/api/admin'
 
 const api = axios.create({
   baseURL: API_BASE,

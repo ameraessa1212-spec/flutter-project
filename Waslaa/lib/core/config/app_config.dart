@@ -6,7 +6,7 @@ class AppConfig {
   const AppConfig._();
 
   static const String _debugApiBaseUrl =
-      'https://flutter-project-main-vmkevy.free.laravel.cloud/api/mobile/v1';
+      'http://localhost:9000/api/mobile/v1';
 
   static String? _customApiBaseUrl;
 
