@@ -24,46 +24,60 @@
         .submit-btn:hover { background: #5b4dd0; }
         .flex-row { display: flex; gap: 20px; }
         .flex-row > .form-group { flex: 1; }
-        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; cursor: pointer; }
-        .checkbox-group input { width: 20px; height: 20px; }
+        .success-msg { background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: none; }
+        .error-msg { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: none; }
     </style>
 </head>
 <body x-data="opportunityForm()">
 
     <div class="form-container animate-fade">
         <h2 style="margin-top: 0; color: #1e293b; margin-bottom: 25px;"><i class="ri-add-circle-line" style="color: #6A5AE0; vertical-align: middle;"></i> إضافة فرصة تدريب جديدة</h2>
-        
+
+        <div class="success-msg" x-ref="successMsg">تم إضافة الفرصة بنجاح!</div>
+        <div class="error-msg" x-ref="errorMsg" x-text="errorText"></div>
+
         <form @submit.prevent="submit">
             <div class="form-group">
                 <label>عنوان الفرصة *</label>
                 <input type="text" x-model="form.title" required placeholder="مثال: مطور واجهات خلفية (Laravel)">
             </div>
-            
+
             <div class="form-group">
                 <label>الوصف *</label>
                 <textarea x-model="form.description" required placeholder="اكتب وصفاً شاملاً عن التدريب..."></textarea>
             </div>
 
-            <div class="form-group">
-                <label>المتطلبات / المهارات</label>
-                <textarea x-model="form.requirements" placeholder="مثال: معرفة بأساسيات قواعد البيانات..."></textarea>
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>التخصص المستهدف</label>
+                    <select x-model="form.specialization_id">
+                        <option value="">-- كل التخصصات --</option>
+                        <template x-for="spec in specializations" :key="spec.id">
+                            <option :value="spec.id" x-text="spec.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>عدد الطلاب المطلوب</label>
+                    <input type="number" x-model="form.seats_count" min="1" placeholder="مثال: 5">
+                </div>
             </div>
 
             <div class="flex-row">
                 <div class="form-group">
-                    <label>الموقع *</label>
-                    <input type="text" x-model="form.location" required placeholder="مثال: طرابلس، السياحية">
+                    <label>المدينة *</label>
+                    <input type="text" x-model="form.city" required placeholder="مثال: طرابلس">
                 </div>
                 <div class="form-group">
-                    <label>تاريخ البدء المتوقع</label>
-                    <input type="date" x-model="form.start_date">
+                    <label>تفاصيل الموقع</label>
+                    <input type="text" x-model="form.location_text" placeholder="مثال: شارع الجمهورية، بجانب...">
                 </div>
             </div>
 
             <div class="flex-row">
                 <div class="form-group">
-                    <label>المدة (بالأشهر)</label>
-                    <input type="number" x-model="form.duration_months" min="1" max="12" placeholder="3">
+                    <label>مدة التدريب (بالأيام)</label>
+                    <input type="number" x-model="form.duration_days" min="1" placeholder="مثال: 90">
                 </div>
                 <div class="form-group">
                     <label>حالة النشر</label>
@@ -74,13 +88,23 @@
                 </div>
             </div>
 
-            <label class="checkbox-group">
-                <input type="checkbox" x-model="form.is_remote">
-                <span>التدريب عن بُعد (Remote)</span>
-            </label>
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>تاريخ البدء</label>
+                    <input type="date" x-model="form.start_date">
+                </div>
+                <div class="form-group">
+                    <label>تاريخ الانتهاء</label>
+                    <input type="date" x-model="form.end_date">
+                </div>
+                <div class="form-group">
+                    <label>آخر موعد للتقديم</label>
+                    <input type="date" x-model="form.application_deadline">
+                </div>
+            </div>
 
             <button type="submit" class="submit-btn" :disabled="loading">
-                <span x-show="!loading">حفظ ونشر</span>
+                <span x-show="!loading"><i class="ri-save-line"></i> حفظ ونشر</span>
                 <span x-show="loading">جاري الحفظ...</span>
             </button>
         </form>
@@ -90,22 +114,51 @@
         function opportunityForm() {
             return {
                 loading: false,
+                specializations: [],
+                errorText: '',
                 form: {
                     title: '',
                     description: '',
-                    requirements: '',
-                    location: '',
-                    is_remote: false,
-                    duration_months: '',
+                    specialization_id: '',
+                    city: '',
+                    location_text: '',
+                    seats_count: '',
+                    duration_days: '',
                     start_date: '',
+                    end_date: '',
+                    application_deadline: '',
                     status: 'published'
+                },
+
+                async init() {
+                    try {
+                        const response = await apiFetch('/company/specializations');
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.specializations = data.data || [];
+                        }
+                    } catch(e) { console.error('Failed to load specializations', e); }
                 },
 
                 async submit() {
                     this.loading = true;
+                    this.$refs.successMsg.style.display = 'none';
+                    this.$refs.errorMsg.style.display = 'none';
+
                     try {
                         const payload = { ...this.form };
-                        if (payload.duration_months) payload.duration_months = parseInt(payload.duration_months);
+                        // Convert numeric fields
+                        if (payload.seats_count) payload.seats_count = parseInt(payload.seats_count);
+                        if (payload.duration_days) payload.duration_days = parseInt(payload.duration_days);
+                        if (payload.specialization_id) payload.specialization_id = parseInt(payload.specialization_id);
+                        // Remove empty optional fields
+                        if (!payload.specialization_id) delete payload.specialization_id;
+                        if (!payload.seats_count) delete payload.seats_count;
+                        if (!payload.duration_days) delete payload.duration_days;
+                        if (!payload.location_text) delete payload.location_text;
+                        if (!payload.start_date) delete payload.start_date;
+                        if (!payload.end_date) delete payload.end_date;
+                        if (!payload.application_deadline) delete payload.application_deadline;
 
                         const response = await apiFetch('/company/opportunities', {
                             method: 'POST',
@@ -113,19 +166,26 @@
                         });
 
                         const data = await response.json();
-                        
+
                         if (response.ok) {
-                            alert("تم إضافة الفرصة بنجاح!");
+                            this.$refs.successMsg.style.display = 'block';
                             this.form.title = '';
                             this.form.description = '';
-                            this.form.requirements = '';
-                            this.form.location = '';
-                            this.form.is_remote = false;
+                            this.form.specialization_id = '';
+                            this.form.city = '';
+                            this.form.location_text = '';
+                            this.form.seats_count = '';
+                            this.form.duration_days = '';
+                            this.form.start_date = '';
+                            this.form.end_date = '';
+                            this.form.application_deadline = '';
                         } else {
-                            alert("خطأ: " + (data.message || 'تعذر الإضافة'));
+                            this.errorText = data.message || 'تعذر إضافة الفرصة. تحقق من البيانات المدخلة.';
+                            this.$refs.errorMsg.style.display = 'block';
                         }
                     } catch (error) {
-                        alert("حدث خطأ في الاتصال.");
+                        this.errorText = 'حدث خطأ في الاتصال بالخادم.';
+                        this.$refs.errorMsg.style.display = 'block';
                     } finally {
                         this.loading = false;
                     }

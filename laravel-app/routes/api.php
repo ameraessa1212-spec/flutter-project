@@ -38,6 +38,14 @@ Route::prefix('company')->name('company.')->group(function () {
 
         // Evaluations
         Route::post('/evaluations', [EvaluationController::class, 'store']);
+        Route::get('/evaluations', [EvaluationController::class, 'index']);
+
+        // Specializations
+        Route::get('/specializations', function () {
+            return response()->json([
+                'data' => \App\Models\Specialization::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
+            ]);
+        });
     });
 });
 

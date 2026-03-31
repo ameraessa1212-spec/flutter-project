@@ -47,12 +47,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       );
     } on DioException catch (error) {
       if (!mounted) return;
+      String errorMsg = 'حدث خطأ. يرجى المحاولة مرة أخرى.';
+      final responseData = error.response?.data;
+      if (responseData is Map<String, dynamic>) {
+        errorMsg = responseData['message'] as String? ?? errorMsg;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            error.message ?? 'حدث خطأ. يرجى المحاولة مرة أخرى.',
-            textAlign: TextAlign.center,
-          ),
+          content: Text(errorMsg, textAlign: TextAlign.center),
+          backgroundColor: Colors.redAccent,
         ),
       );
     } finally {
@@ -80,6 +83,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: primarycolor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.lock_outline_rounded, size: 40, color: primarycolor),
+              ),
+              const SizedBox(height: 20),
               Text(
                 'نسيت كلمة المرور؟',
                 style: TextStyle(
@@ -188,6 +201,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               color: Colors.white,
                             ),
                           ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'العودة لتسجيل الدخول',
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 14,
+                    color: primarycolor,
+                  ),
                 ),
               ),
             ],

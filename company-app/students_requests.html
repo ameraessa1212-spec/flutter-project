@@ -49,7 +49,7 @@
                     <div class="card-header">
                         <div class="avatar" x-text="getInitials(req.student?.name || 'طالب')"></div>
                         <div class="main-info">
-                            <h4 x-text="req.student?.name || 'اسم غير متوفر'"></h4>
+                            <h4 x-text="req.full_name_snapshot || req.student?.name || 'اسم غير متوفر'"></h4>
                             <span class="id-tag" x-text="req.opportunity?.title || 'عام'"></span>
                         </div>
                     </div>
@@ -59,14 +59,35 @@
                             <i class="ri-user-settings-line"></i>
                             <div>
                                 <label>رقم القيد</label>
-                                <p x-text="req.student?.student_id || '---'"></p>
+                                <p x-text="req.student?.student_profile?.student_number || '---'"></p>
                             </div>
                         </div>
                         <div class="data-item">
                             <i class="ri-mail-line"></i>
                             <div>
                                 <label>البريد الإلكتروني</label>
-                                <p x-text="req.student?.email || '---'"></p>
+                                <p x-text="req.email_snapshot || req.student?.email || '---'"></p>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <i class="ri-phone-line"></i>
+                            <div>
+                                <label>رقم الهاتف</label>
+                                <p x-text="req.phone_snapshot || req.student?.phone || '---'"></p>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <i class="ri-building-line"></i>
+                            <div>
+                                <label>الجامعة</label>
+                                <p x-text="req.university_snapshot || req.student?.student_profile?.university_name || '---'"></p>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <i class="ri-book-mark-line"></i>
+                            <div>
+                                <label>التخصص</label>
+                                <p x-text="req.student?.student_profile?.specialization?.name || req.major_snapshot || '---'"></p>
                             </div>
                         </div>
                     </div>

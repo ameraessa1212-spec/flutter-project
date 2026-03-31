@@ -16,7 +16,7 @@ class InternshipController extends Controller
     {
         $status = $request->query('status');
         
-        $query = Internship::with(['student', 'opportunity'])
+        $query = Internship::with(['student.studentProfile', 'opportunity'])
             ->where('company_id', Auth::user()->company->id);
 
         if ($status) {
@@ -36,7 +36,7 @@ class InternshipController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $internship->load(['student', 'opportunity']);
+        $internship->load(['student.studentProfile', 'opportunity']);
         
         return response()->json($internship);
     }

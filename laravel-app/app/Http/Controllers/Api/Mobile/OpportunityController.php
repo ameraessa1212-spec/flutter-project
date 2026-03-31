@@ -23,7 +23,10 @@ class OpportunityController extends Controller
                 $search = (string) $request->string('search');
                 $query->where(function ($inner) use ($search) {
                     $inner->where('title', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('company', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
                 });
             })
             ->whereIn('status', ['published', 'closed'])

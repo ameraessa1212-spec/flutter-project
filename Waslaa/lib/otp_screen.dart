@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -31,9 +33,18 @@ class _OtpScreenState extends State<OtpScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   bool _isLoading = false;
+  int _resendCooldown = 0;
+  Timer? _resendTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startResendTimer();
+  }
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     for (final c in _controllers) {
       c.dispose();
     }
@@ -41,6 +52,57 @@ class _OtpScreenState extends State<OtpScreen> {
       f.dispose();
     }
     super.dispose();
+  }
+
+  void _startResendTimer() {
+    _resendCooldown = 60;
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        _resendCooldown--;
+        if (_resendCooldown <= 0) {
+          _resendCooldown = 0;
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  Future<void> _resendOtp() async {
+    try {
+      final repo = context.read<AuthRepository>();
+      if (widget.flow == OtpFlow.passwordReset) {
+        await repo.forgotPassword(identifier: widget.identifier);
+      } else {
+        // For registration flow, re-trigger the OTP send
+        await repo.forgotPassword(identifier: widget.identifier);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم إعادة إرسال رمز التحقق بنجاح', textAlign: TextAlign.center),
+          backgroundColor: Colors.green,
+        ),
+      );
+      _startResendTimer();
+    } on DioException catch (error) {
+      if (!mounted) return;
+      String errorMsg = 'حدث خطأ أثناء إعادة الإرسال.';
+      final responseData = error.response?.data;
+      if (responseData is Map<String, dynamic>) {
+        errorMsg = responseData['message'] as String? ?? errorMsg;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg, textAlign: TextAlign.center),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   String get _otp => _controllers.map((c) => c.text).join();
@@ -242,6 +304,20 @@ class _OtpScreenState extends State<OtpScreen> {
                             color: Colors.white,
                           ),
                         ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: _resendCooldown > 0 ? null : _resendOtp,
+              child: Text(
+                _resendCooldown > 0
+                    ? 'إعادة الإرسال بعد $_resendCooldown ثانية'
+                    : 'إعادة إرسال الرمز',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 14,
+                  color: _resendCooldown > 0 ? Colors.grey : primarycolor,
+                ),
               ),
             ),
           ],

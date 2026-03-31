@@ -33,17 +33,20 @@ class OpportunityController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'requirements' => 'nullable|string',
-            'benefits' => 'nullable|string',
-            'location' => 'required|string|max:255',
-            'is_remote' => 'boolean',
-            'duration_months' => 'nullable|integer',
+            'specialization_id' => 'nullable|integer|exists:specializations,id',
+            'city' => 'nullable|string|max:255',
+            'location_text' => 'nullable|string|max:255',
+            'duration_text' => 'nullable|string|max:255',
+            'duration_days' => 'nullable|integer|min:1',
+            'seats_count' => 'nullable|integer|min:1',
+            'is_available' => 'boolean',
+            'status' => 'required|in:draft,published,closed',
             'start_date' => 'nullable|date',
-            'status' => 'required|in:draft,published,closed'
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'application_deadline' => 'nullable|date',
         ]);
 
         $validated['company_id'] = Auth::user()->company->id;
-        $validated['created_by'] = Auth::id();
 
         $opportunity = InternshipOpportunity::create($validated);
 

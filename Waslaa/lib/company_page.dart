@@ -277,9 +277,15 @@ class _CompanyPageState extends State<CompanyPage> {
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: _selectedSpecializationId != null
+                    ? primarycolor.withValues(alpha: 0.12)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: primarycolor.withValues(alpha: 0.18)),
+                border: Border.all(
+                  color: _selectedSpecializationId != null
+                      ? primarycolor
+                      : primarycolor.withValues(alpha: 0.18),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.03),

@@ -16,7 +16,7 @@ class ApplicationController extends Controller
     {
         $status = $request->query('status');
         
-        $query = Application::with(['student', 'opportunity'])
+        $query = Application::with(['student.studentProfile.specialization', 'opportunity.specialization'])
             ->where('company_id', Auth::user()->company->id);
 
         if ($status) {
@@ -36,7 +36,7 @@ class ApplicationController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $application->load(['student', 'opportunity']);
+        $application->load(['student.studentProfile.specialization', 'opportunity.specialization']);
         
         return response()->json($application);
     }

@@ -42,7 +42,7 @@
                         </template>
                     </select>
                 </div>
-                <div class="meta-item"><strong>رقم القيد:</strong> <input type="text" placeholder="000000" id="stID" disabled :value="selectedInternData?.student?.student_id || ''"></div>
+                <div class="meta-item"><strong>رقم القيد:</strong> <input type="text" placeholder="000000" id="stID" disabled :value="selectedInternData?.student?.student_profile?.student_number || ''"></div>
                 <div class="meta-item"><strong>جهة التدريب:</strong> <input type="text" placeholder="اسم الشركة" id="stCompany" disabled :value="companyProfile?.name || ''"></div>
                 <div class="meta-item"><strong>المشرف:</strong> <input type="text" placeholder="اسم المشرف المباشر" disabled :value="userProfile?.name || ''"></div>
                 <div class="meta-item date-box"><strong>تاريخ بداية التدريب:</strong> <input type="date" id="startDate" disabled :value="selectedInternData?.start_date || ''"></div>
@@ -216,7 +216,7 @@
                             const response = await apiFetch('/company/evaluations', {
                                 method: 'POST',
                                 body: JSON.stringify({
-                                    internship_id: this.selectedInternship,
+                                    internship_id: parseInt(this.selectedInternship),
                                     detailed_scores: detailedScores,
                                     total_score: totalScore,
                                     comments: notes
@@ -227,7 +227,8 @@
                                 alert("تم إرسال التقييم بنجاح.");
                                 window.parent.location.reload();
                             } else {
-                                alert("حدث خطأ أثناء الإرسال.");
+                                const errData = await response.json().catch(() => ({}));
+                                alert("خطأ: " + (errData.message || 'حدث خطأ أثناء الإرسال.'));
                             }
                         } catch(e) {
                             alert("خطأ في الاتصال بالخادم.");

@@ -11,6 +11,7 @@ class OpportunityCompany {
     this.description,
     this.phone,
     this.email,
+    this.activeOpportunitiesCount,
   });
 
   final int id;
@@ -22,6 +23,7 @@ class OpportunityCompany {
   final String? description;
   final String? phone;
   final String? email;
+  final int? activeOpportunitiesCount;
 
   factory OpportunityCompany.fromJson(Map<String, dynamic> json) {
     return OpportunityCompany(
@@ -34,6 +36,7 @@ class OpportunityCompany {
       description: json['description'] as String?,
       phone: json['phone'] as String?,
       email: json['email'] as String?,
+      activeOpportunitiesCount: json['active_opportunities_count'] as int?,
     );
   }
 }

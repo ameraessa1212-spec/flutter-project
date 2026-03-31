@@ -80,7 +80,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx'],
+      allowedExtensions: ['pdf'],
       withData: kIsWeb,
     );
 
@@ -285,7 +285,7 @@ class _ReportsPageState extends State<ReportsPage> {
           ),
           SizedBox(height: 8),
           Text(
-            "يمكنك من هنا رفع التقرير الميداني والبحث العلمي بصيغة PDF أو Word، ثم إرسالها للمراجعة.",
+            "يمكنك من هنا رفع التقرير الميداني والبحث العلمي بصيغة PDF، ثم إرسالها للمراجعة.",
             style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.7),
           ),
         ],
@@ -468,7 +468,7 @@ class _ReportsPageState extends State<ReportsPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "الملفات المسموح بها: PDF - DOC - DOCX\nالحد الأقصى: ملفان فقط",
+                          "الملفات المسموح بها: PDF فقط\nالحد الأقصى: ملفان فقط",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12.5,

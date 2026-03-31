@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/applications/repositories/application_repository.dart';
 import 'package:Waslaa/features/opportunities/models/opportunity.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
+import 'package:Waslaa/features/profile/models/user_profile.dart';
 
 class ApplyInternshipPage extends StatefulWidget {
   final Opportunity opportunity;
@@ -25,6 +27,28 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
   String? _selectedCvPath;
   String? _selectedCvName;
   List<int>? _selectedCvBytes;
+  UserProfile? _profile;
+  bool _isLoadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final repo = context.read<ProfileRepository>();
+      final profile = await repo.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _profile = profile;
+        _isLoadingProfile = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingProfile = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -169,6 +193,37 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
     );
   }
 
+  Widget _buildProfileInfoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.10)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: primarycolor, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 11, color: Colors.black.withValues(alpha: 0.50))),
+                const SizedBox(height: 2),
+                Text(value, style: const TextStyle(fontSize: 13, color: Colors.black)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final opp = widget.opportunity;
@@ -268,6 +323,64 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                     ],
                   ),
                 ),
+
+                // بيانات الطالب
+                const SizedBox(height: 22),
+                const Text('بيانات الطالب', style: TextStyle(fontSize: 17, color: Colors.black)),
+                const SizedBox(height: 6),
+                Text(
+                  'سيتم إرسال بياناتك تلقائياً من ملفك الشخصي',
+                  style: TextStyle(fontSize: 12, color: Colors.black.withValues(alpha: 0.5)),
+                ),
+                const SizedBox(height: 12),
+                if (_isLoadingProfile)
+                  const Center(child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ))
+                else if (_profile != null) ...[
+                  _buildProfileInfoCard(
+                    icon: Icons.person_outline,
+                    label: 'الاسم الكامل',
+                    value: _profile!.name,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildProfileInfoCard(
+                    icon: Icons.email_outlined,
+                    label: 'البريد الإلكتروني',
+                    value: _profile!.email,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildProfileInfoCard(
+                    icon: Icons.phone_outlined,
+                    label: 'رقم الهاتف',
+                    value: _profile!.phone,
+                  ),
+                  if (_profile!.studentProfile?.universityName != null) ...[
+                    const SizedBox(height: 8),
+                    _buildProfileInfoCard(
+                      icon: Icons.school_outlined,
+                      label: 'الجامعة',
+                      value: _profile!.studentProfile!.universityName!,
+                    ),
+                  ],
+                  if (_profile!.studentProfile?.specializationName != null) ...[
+                    const SizedBox(height: 8),
+                    _buildProfileInfoCard(
+                      icon: Icons.category_outlined,
+                      label: 'التخصص',
+                      value: _profile!.studentProfile!.specializationName!,
+                    ),
+                  ],
+                  if (_profile!.studentProfile?.studyLevel != null) ...[
+                    const SizedBox(height: 8),
+                    _buildProfileInfoCard(
+                      icon: Icons.bar_chart_outlined,
+                      label: 'المستوى الدراسي',
+                      value: _profile!.studentProfile!.studyLevel!,
+                    ),
+                  ],
+                ],
 
                 const SizedBox(height: 22),
 

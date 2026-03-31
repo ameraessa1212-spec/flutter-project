@@ -379,6 +379,25 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (company?.logoPath != null && company!.logoPath!.isNotEmpty) ...[
+                        Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              company.logoPath!,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.business_outlined,
+                                color: primarycolor,
+                                size: 40,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
                       Row(
                         children: [
                           Icon(
@@ -405,6 +424,29 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                         textAlign: TextAlign.right,
                         style: const TextStyle(fontSize: 14, color: CompanyDetailsPage.textMuted),
                       ),
+                      if (company != null && (company.activeOpportunitiesCount ?? 0) == 0) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.orange.withValues(alpha: 0.20)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Text(
+                                  'لا تتوفر لدى هذه الشركة فرص تدريب نشطة حالياً',
+                                  style: TextStyle(fontSize: 12.5, color: Colors.black87),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
