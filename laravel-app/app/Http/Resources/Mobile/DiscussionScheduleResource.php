@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources\Mobile;
 
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class DiscussionScheduleResource extends JsonResource
 {
@@ -15,8 +15,8 @@ class DiscussionScheduleResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'academic_term' => $this->academic_term,
-            'schedule_file_path' => $this->schedule_file_path ? Storage::disk('public')->url($this->schedule_file_path) : null,
-            'schedule_image_path' => $this->schedule_image_path ? Storage::disk('public')->url($this->schedule_image_path) : null,
+            'schedule_file_path' => PublicMediaUrl::forPath($this->schedule_file_path),
+            'schedule_image_path' => PublicMediaUrl::forPath($this->schedule_image_path),
             'published_at' => optional($this->published_at)?->toIso8601String(),
             'is_active' => (bool) $this->is_active,
             'specialization' => new SpecializationResource($this->whenLoaded('specialization')),

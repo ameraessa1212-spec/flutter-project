@@ -9,11 +9,11 @@ use App\Models\Application;
 use App\Models\DashboardContent;
 use App\Models\Internship;
 use App\Models\InternshipOpportunity;
+use App\Services\PublicMediaUrl;
 use App\Models\UserNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -95,7 +95,7 @@ class DashboardController extends Controller
                 'title' => $item->title,
                 'subtitle' => $item->subtitle,
                 'image_asset' => $item->image_asset,
-                'image_url' => $item->image_path ? Storage::disk('public')->url($item->image_path) : null,
+                'image_url' => PublicMediaUrl::forPath($item->image_path),
                 'icon_key' => $item->icon_key,
                 'badge' => $item->badge,
             ];
