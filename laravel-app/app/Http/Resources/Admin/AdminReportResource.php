@@ -4,6 +4,7 @@ namespace App\Http\Resources\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class AdminReportResource extends JsonResource
 {
@@ -26,7 +27,7 @@ class AdminReportResource extends JsonResource
             'status' => $this->status,
             'submitted_at' => $this->submitted_at?->toISOString(),
             'reviewed_at' => $this->reviewed_at?->toISOString(),
-            'download_url' => $this->file_path ? url("storage/{$this->file_path}") : null,
+            'download_url' => $this->file_path ? Storage::disk('public')->url($this->file_path) : null,
         ];
     }
 }

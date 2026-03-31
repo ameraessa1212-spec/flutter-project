@@ -4,6 +4,7 @@ namespace App\Http\Resources\Mobile;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class MessageAttachmentResource extends JsonResource
 {
@@ -12,6 +13,7 @@ class MessageAttachmentResource extends JsonResource
         return [
             'id' => $this->id,
             'file_path' => $this->file_path,
+            'file_url' => $this->file_path ? Storage::disk('public')->url($this->file_path) : null,
             'file_name' => $this->file_name,
             'mime_type' => $this->mime_type,
             'file_size' => $this->file_size,

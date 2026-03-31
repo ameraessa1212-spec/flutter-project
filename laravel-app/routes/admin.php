@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Admin\AdminDiscussionScheduleController;
 use App\Http\Controllers\Api\Admin\SystemReportController;
 use App\Http\Controllers\Api\Admin\ChatController;
 use App\Http\Controllers\Api\Admin\ExaminerDashboardController;
+use App\Http\Controllers\Api\Admin\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -52,6 +53,7 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
 
     // Student Evaluations
     Route::get('/student-evaluations', [StudentEvaluationController::class, 'index']);
+    Route::get('/student-evaluations/{internship}', [StudentEvaluationController::class, 'show']);
 
     // Company Offers
     Route::get('/company-offers', [CompanyOfferController::class, 'index']);
@@ -69,6 +71,9 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
 
     // Examiners
     Route::get('/examiners', [ExaminerController::class, 'index']);
+    Route::post('/examiners', [ExaminerController::class, 'store']);
+    Route::put('/examiners/{user}', [ExaminerController::class, 'update']);
+    Route::delete('/examiners/{user}', [ExaminerController::class, 'destroy']);
     Route::put('/examiners/{user}/toggle-status', [ExaminerController::class, 'toggleStatus']);
     Route::get('/examiners/{examiner}/reports', [ExaminerController::class, 'reports']);
     Route::get('/examiner/students', [ExaminerController::class, 'students']);
@@ -92,6 +97,12 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
     Route::get('/chat/contacts', [ChatController::class, 'contacts']);
     Route::get('/chat/messages', [ChatController::class, 'messages']);
     Route::post('/chat/messages', [ChatController::class, 'send']);
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
 
     // Examiner Dashboard
     Route::get('/examiner/dashboard', [ExaminerDashboardController::class, 'index']);

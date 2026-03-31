@@ -294,7 +294,7 @@ class _CompanyPageState extends State<CompanyPage> {
                   ),
                 ],
               ),
-              child: PopupMenuButton<int?>(
+              child: PopupMenuButton<int>(
                 borderRadius: BorderRadius.circular(16),
                 icon: Icon(
                   Icons.filter_list_rounded,
@@ -304,18 +304,18 @@ class _CompanyPageState extends State<CompanyPage> {
                 enabled: !_isLoadingFilters,
                 onSelected: (value) {
                   setState(() {
-                    _selectedSpecializationId = value;
+                    _selectedSpecializationId = value == -1 ? null : value;
                   });
                   _reloadOpportunities();
                 },
                 itemBuilder:
                     (context) => [
-                      const PopupMenuItem<int?>(
-                        value: null,
+                      const PopupMenuItem<int>(
+                        value: -1,
                         child: Text('كل التخصصات', textAlign: TextAlign.right),
                       ),
                       ..._specializations.map(
-                        (spec) => PopupMenuItem<int?>(
+                        (spec) => PopupMenuItem<int>(
                           value: spec.id,
                           child: Text(spec.name, textAlign: TextAlign.right),
                         ),

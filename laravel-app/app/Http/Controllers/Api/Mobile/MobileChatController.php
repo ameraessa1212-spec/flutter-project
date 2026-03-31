@@ -3,61 +3,61 @@
 namespace App\Http\Controllers\Api\Mobile;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChatThread;
+use App\Models\Message;
 use App\Models\User;
-use Chatify\Facades\ChatifyMessenger as Chatify;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\ChMessage; 
-use Illuminate\Support\Str;
 
 class MobileChatController extends Controller
 {
     /**
-     * Get chat history for Student Support (User ID 1).
-     * If receiver_id is not provided, it defaults to 1 (System Support).
+     * Get chat messages between student and a support/admin user.
+     * Uses the unified ChatThread + Message system.
      */
     public function getMessages(Request $request): JsonResponse
     {
         $user = $request->user();
-        $receiver_id = $request->input('receiver_id', 1);
+        $receiverId = $request->input('receiver_id');
 
-        $messages = DB::table('ch_messages')
-            ->where(function ($query) use ($user, $receiver_id) {
-                $query->where('from_id', $user->id)
-                      ->where('to_id', $receiver_id);
-            })
-            ->orWhere(function ($query) use ($user, $receiver_id) {
-                $query->where('from_id', $receiver_id)
-                      ->where('to_id', $user->id);
-            });
+        $thread = ChatThread::where('student_id', $user->id)
+            ->whereNull('internship_id')
+            ->first();
 
-        if ($receiver_id == 1) {
-            $staffIds = User::role(['super_admin', 'supervisor', 'support'])->pluck('id');
-            $messages->orWhere(function ($query) use ($user, $staffIds) {
-                $query->whereIn('from_id', $staffIds)
-                      ->where('to_id', $user->id);
-            });
+        if (! $thread) {
+            return response()->json([
+                'status' => 'success',
+                'data' => [],
+            ]);
         }
 
-        $list = $messages->orderBy('created_at', 'asc')->get();
+        $messages = Message::where('thread_id', $thread->id)
+            ->orderBy('sent_at', 'asc')
+            ->get();
+
+        // Mark messages from others as read
+        Message::where('thread_id', $thread->id)
+            ->where('sender_id', '!=', $user->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         return response()->json([
             'status' => 'success',
-            'data' => $list->map(fn($m) => [
+            'data' => $messages->map(fn($m) => [
                 'id' => $m->id,
-                'from_id' => (int) $m->from_id,
-                'to_id' => (int) $m->to_id,
+                'from_id' => $m->sender_id,
+                'to_id' => $m->sender_id === $user->id ? ($receiverId ?? 0) : $user->id,
                 'body' => $m->body,
-                'attachment' => $m->attachment ? json_decode($m->attachment) : null,
-                'seen' => (bool) $m->seen,
-                'created_at' => $m->created_at,
+                'attachment' => null,
+                'seen' => $m->read_at !== null,
+                'created_at' => $m->sent_at?->toISOString() ?? $m->created_at?->toISOString(),
             ]),
         ]);
     }
 
     /**
-     * Send a message to System Support (User ID 1) or a specific user.
+     * Send a message to support/admin.
+     * Uses the unified ChatThread + Message system.
      */
     public function sendMessage(Request $request): JsonResponse
     {
@@ -67,65 +67,36 @@ class MobileChatController extends Controller
         ]);
 
         $user = $request->user();
-        $receiver_id = $request->input('receiver_id', 1);
 
-        $messageId = (string) Str::uuid();
-        DB::table('ch_messages')->insert([
-            'id' => $messageId,
-            'from_id' => $user->id,
-            'to_id' => $receiver_id,
-            'body' => $request->message,
-            'attachment' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
+        // Find or create a support thread (no internship_id = support thread)
+        $thread = ChatThread::firstOrCreate(
+            [
+                'student_id' => $user->id,
+                'internship_id' => null,
+            ],
+            [
+                'status' => 'active',
+                'last_message_at' => now(),
+            ]
+        );
+
+        $message = Message::create([
+            'thread_id' => $thread->id,
+            'sender_id' => $user->id,
+            'message_type' => 'text',
+            'body' => $request->input('message'),
+            'sent_at' => now(),
         ]);
+
+        $thread->update(['last_message_at' => now()]);
 
         return response()->json([
             'status' => 'success',
             'data' => [
-                'id' => $messageId,
-                'message' => $request->message,
-                'receiver_id' => $receiver_id,
+                'id' => $message->id,
+                'message' => $message->body,
+                'receiver_id' => $request->input('receiver_id', 0),
             ],
-        ]);
-    }
-
-    /**
-     * List of students who messaged System Support (for Supervisors/Admins).
-     */
-    public function supportQueue(Request $request): JsonResponse
-    {
-        if (!$request->user()->hasAnyRole(['super_admin', 'supervisor', 'support'])) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $studentIds = DB::table('ch_messages')
-            ->where('to_id', 1)
-            ->distinct()
-            ->pluck('from_id');
-
-        $students = User::whereIn('id', $studentIds)->get();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $students->map(function ($s) {
-                $lastMsg = DB::table('ch_messages')
-                    ->where('from_id', $s->id)
-                    ->where('to_id', 1)
-                    ->orderByDesc('created_at')
-                    ->first();
-
-                return [
-                    'id' => $s->id,
-                    'name' => $s->name,
-                    'last_message' => $lastMsg ? $lastMsg->body : null,
-                    'unread_count' => DB::table('ch_messages')
-                        ->where('from_id', $s->id)
-                        ->where('to_id', 1)
-                        ->where('seen', 0)
-                        ->count(),
-                ];
-            }),
         ]);
     }
 
@@ -146,13 +117,16 @@ class MobileChatController extends Controller
             ->first();
 
         if ($internship && $internship->supervisor) {
-            $supervisorUser = \App\Models\User::where('email', '=', $internship->supervisor->email)->first();
+            $supervisorUser = User::where('email', '=', $internship->supervisor->email)->first();
             if ($supervisorUser) {
                 $supervisorUsers->push($supervisorUser);
             }
         }
 
-        $supportAdmins = User::role(['super_admin', 'support'])->get();
+        $supportAdmins = User::where('role', 'super_admin')
+            ->orWhere('role', 'support')
+            ->where('status', 'active')
+            ->get();
         $contacts = $supervisorUsers->merge($supportAdmins)->unique('id')->values();
 
         return response()->json([
@@ -160,8 +134,8 @@ class MobileChatController extends Controller
             'data' => $contacts->map(fn($u) => [
                 'id'   => $u->id,
                 'name' => $u->name,
-                'role' => $u->getRoleNames()->first(),
-                'type' => $u->hasAnyRole(['super_admin', 'support']) ? 'support' : 'supervisor',
+                'role' => $u->role,
+                'type' => in_array($u->role, ['super_admin', 'support']) ? 'support' : 'supervisor',
             ]),
         ]);
     }

@@ -20,7 +20,7 @@ class DashboardController extends Controller
 
         $stats = [
             'total_opportunities' => InternshipOpportunity::where('company_id', $companyId)->count(),
-            'active_opportunities' => InternshipOpportunity::where('company_id', $companyId)->where('status', 'published')->count(),
+            'active_opportunities' => InternshipOpportunity::where('company_id', $companyId)->active()->count(),
             'total_applications' => Application::where('company_id', $companyId)->count(),
             'pending_applications' => Application::where('company_id', $companyId)->where('status', 'pending')->count(),
             'active_interns' => Internship::where('company_id', $companyId)->where('status', 'active')->count(),

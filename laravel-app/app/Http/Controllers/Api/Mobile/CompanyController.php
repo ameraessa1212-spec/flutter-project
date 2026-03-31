@@ -16,7 +16,7 @@ class CompanyController extends Controller
 
         $companies = Company::query()
             ->withCount(['opportunities as active_opportunities_count' => function ($query) {
-                $query->where('is_available', true)->where('status', 'published');
+                $query->active();
             }])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = (string) $request->string('search');
@@ -36,7 +36,7 @@ class CompanyController extends Controller
     public function show(Company $company): JsonResponse
     {
         $company->loadCount(['opportunities as active_opportunities_count' => function ($query) {
-            $query->where('is_available', true)->where('status', 'published');
+            $query->active();
         }]);
 
         return response()->json([

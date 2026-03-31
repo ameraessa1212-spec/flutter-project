@@ -92,43 +92,30 @@ class ChatRepository {
     final data =
         (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
     return data.map<ChatMessage>((item) {
-      // Map Chatify fields to ChatMessage model
       return ChatMessage(
         id: item['id'],
-        body: item['body'],
+        body: item['body'] as String?,
         senderId: (item['from_id'] as num).toInt(),
         fromId: (item['from_id'] as num).toInt(),
         toId: (item['to_id'] as num).toInt(),
-        messageType: item['attachment'] != null ? 'file' : 'text',
-        createdAt: item['created_at'],
-        sentAt: item['created_at'],
-        attachments:
-            item['attachment'] != null
-                ? [
-                  ChatAttachment(
-                    id: item['id'],
-                    fileUrl:
-                        '/storage/attachments/${item['attachment']['new_name']}',
-                    fileName: item['attachment']['old_name'],
-                  ),
-                ]
-                : [],
+        messageType: 'text',
+        createdAt: item['created_at'] as String?,
+        sentAt: item['created_at'] as String?,
       );
     }).toList();
   }
 
-  Future<ChatMessage> sendChatifyMessage(int receiverId, String body) async {
+  Future<ChatMessage> sendChatifyMessage(int receiverId, String body, {required int senderId}) async {
     final response = await _apiClient.post(
       '/chat/messages',
       data: {'receiver_id': receiverId, 'message': body},
     );
     final data =
         (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
-    // The response has minimal data, we manually construct the message for UI
     return ChatMessage(
       id: data['id'],
       body: body,
-      senderId: 0, // Will be set by UI caller or refresh
+      senderId: senderId,
       messageType: 'text',
       createdAt: DateTime.now().toIso8601String(),
     );

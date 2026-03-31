@@ -113,6 +113,11 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
 }
 .btn-primary:hover { background: var(--primary-dark); box-shadow: var(--shadow-glow); }
+.btn-secondary {
+  background: var(--bg-body); color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border-light); }
 
 .btn-success { background: var(--success); color: var(--text-white); }
 .btn-success:hover { filter: brightness(1.1); }
@@ -367,6 +372,12 @@ a { text-decoration: none; color: inherit; }
   min-height: 100vh;
   animation: fadeIn 0.3s ease;
 }
+.main-topbar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 16px;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -491,6 +502,30 @@ a { text-decoration: none; color: inherit; }
   transition: all var(--transition);
 }
 .modal-close:hover { background: var(--danger-bg); color: var(--danger); }
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(27, 29, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+.modal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl); padding: 28px;
+  width: 90%; max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+.alert-success {
+  background: var(--success-bg); color: var(--success);
+  padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px;
+}
+.alert-danger {
+  background: var(--danger-bg); color: var(--danger);
+  padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px;
+}
 
 /* ═══════════════════════════════════════════
    PROGRESS BARS

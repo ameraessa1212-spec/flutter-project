@@ -8,6 +8,7 @@ use App\Models\UserNotification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminDiscussionScheduleController extends Controller
 {
@@ -23,8 +24,8 @@ class AdminDiscussionScheduleController extends Controller
                     'description' => $schedule->description,
                     'specialization' => $schedule->specialization?->name,
                     'academic_term' => $schedule->academic_term,
-                    'image_url' => $schedule->schedule_image_path ? url("storage/{$schedule->schedule_image_path}") : null,
-                    'file_url' => $schedule->schedule_file_path ? url("storage/{$schedule->schedule_file_path}") : null,
+                    'image_url' => $schedule->schedule_image_path ? Storage::disk('public')->url($schedule->schedule_image_path) : null,
+                    'file_url' => $schedule->schedule_file_path ? Storage::disk('public')->url($schedule->schedule_file_path) : null,
                     'is_active' => $schedule->is_active,
                     'published_at' => $schedule->published_at?->toISOString(),
                 ];

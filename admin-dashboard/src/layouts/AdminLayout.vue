@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../composables/useApi'
+import NotificationDropdown from '../components/NotificationDropdown.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -67,6 +68,9 @@ const menu = [
       </div>
     </aside>
     <main class="main">
+      <div class="main-topbar">
+        <NotificationDropdown />
+      </div>
       <router-view />
     </main>
   </div>

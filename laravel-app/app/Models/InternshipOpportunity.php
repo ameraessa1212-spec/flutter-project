@@ -60,4 +60,9 @@ class InternshipOpportunity extends Model
     {
         return $this->hasMany(Internship::class, 'opportunity_id');
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'published');
+    }
 }

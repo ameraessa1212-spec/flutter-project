@@ -424,7 +424,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                         textAlign: TextAlign.right,
                         style: const TextStyle(fontSize: 14, color: CompanyDetailsPage.textMuted),
                       ),
-                      if (company != null && (company.activeOpportunitiesCount ?? 0) == 0) ...[
+                      if (!opportunity.isAvailable) ...[
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -439,7 +439,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                               const SizedBox(width: 10),
                               const Expanded(
                                 child: Text(
-                                  'لا تتوفر لدى هذه الشركة فرص تدريب نشطة حالياً',
+                                  'هذه الفرصة غير متاحة حالياً',
                                   style: TextStyle(fontSize: 12.5, color: Colors.black87),
                                 ),
                               ),

@@ -7,6 +7,7 @@ const loading = ref(true)
 const modal = ref(false)
 const current = ref(null)
 const scores = ref({})
+const decision = ref('pass')
 const total = computed(() => Object.values(scores.value).reduce((a, b) => a + (Number(b) || 0), 0))
 
 const fields = [
@@ -24,14 +25,30 @@ onMounted(async () => {
 })
 
 function openGrade(s) {
-  current.value = s; scores.value = {}; modal.value = true
+  current.value = s; scores.value = {}; decision.value = 'pass'; modal.value = true
+}
+
+function validateScores() {
+  for (const f of fields) {
+    for (const key of f.items) {
+      const v = scores.value[key]
+      if (v === undefined || v === null || v === '') return 'يرجى تعبئة جميع الدرجات'
+      if (v < 0) return `الدرجة لا يمكن أن تكون سالبة`
+      if (v > f.max) return `الحد الأقصى للدرجة هو ${f.max}`
+    }
+  }
+  if (total.value > 70) return 'المجموع لا يمكن أن يتجاوز 70'
+  return null
 }
 
 async function submitGrade() {
+  const err = validateScores()
+  if (err) return alert(err)
   await api.post('/examiner/grades', {
     examiner_discussion_id: current.value.id,
     rubric_scores: scores.value,
     total_score: total.value,
+    decision: decision.value,
   })
   const s = students.value.find(x => x.id === current.value.id)
   if (s) s.status = `تم التقييم (${total.value}/70)`
@@ -68,6 +85,14 @@ async function submitGrade() {
               <input v-for="key in f.items" :key="key" v-model.number="scores[key]" type="number" min="0" :max="f.max" :placeholder="`(${f.max})`"
                 style="width:55px;padding:8px;border:1px solid #ddd;border-radius:8px;text-align:center;font-family:Cairo;">
             </div>
+          </div>
+          <div style="margin-top:12px;">
+            <strong style="font-size:14px;">القرار</strong>
+            <select v-model="decision" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-top:6px;font-family:Cairo;">
+              <option value="pass">ناجح</option>
+              <option value="fail">راسب</option>
+              <option value="conditional_pass">ناجح مشروط</option>
+            </select>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;">
             <span style="font-size:18px;font-weight:700;">المجموع: <span style="color:#6A5AE0;">{{ total }}</span>/70</span>

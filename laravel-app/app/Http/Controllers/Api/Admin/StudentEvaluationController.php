@@ -70,4 +70,55 @@ class StudentEvaluationController extends Controller
             ],
         ]);
     }
+
+    public function show(Internship $internship): JsonResponse
+    {
+        $internship->load([
+            'student.studentProfile.specialization',
+            'company',
+            'companyEvaluation.evaluator',
+            'discussionEvaluations.examiner',
+        ]);
+
+        $companyEval = $internship->companyEvaluation;
+        $examinerEvals = $internship->discussionEvaluations;
+        $companyScore = $companyEval?->total_score ?? 0;
+        $examinerScore = $examinerEvals->avg('total_score') ?? 0;
+
+        return response()->json([
+            'data' => [
+                'id' => $internship->id,
+                'student' => [
+                    'id' => $internship->student->id,
+                    'name' => $internship->student->name,
+                    'student_number' => $internship->student->studentProfile?->student_number,
+                    'specialization' => $internship->student->studentProfile?->specialization?->name,
+                ],
+                'company' => [
+                    'id' => $internship->company->id,
+                    'name' => $internship->company->name,
+                ],
+                'company_evaluation' => $companyEval ? [
+                    'total_score' => $companyEval->total_score,
+                    'detailed_scores' => $companyEval->detailed_scores,
+                    'evaluator_name' => $companyEval->evaluator?->name,
+                    'created_at' => $companyEval->created_at?->toISOString(),
+                ] : null,
+                'examiner_evaluations' => $examinerEvals->map(fn($eval) => [
+                    'id' => $eval->id,
+                    'examiner_name' => $eval->examiner?->name,
+                    'rubric_scores' => $eval->rubric_scores,
+                    'total_score' => $eval->total_score,
+                    'decision' => $eval->decision,
+                    'notes' => $eval->notes,
+                    'submitted_at' => $eval->submitted_at?->toISOString(),
+                ]),
+                'company_score' => round($companyScore, 1),
+                'company_weighted' => round($companyScore * 0.3, 1),
+                'examiner_score' => round($examinerScore, 1),
+                'examiner_weighted' => round($examinerScore * 0.7, 1),
+                'final_score' => round($companyScore * 0.3 + $examinerScore * 0.7, 1),
+            ],
+        ]);
+    }
 }

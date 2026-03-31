@@ -131,28 +131,29 @@ class _ChatPageState extends State<ChatPage> {
           }
         });
       } else {
-        // No thread found — fallback to Chatify with supervisor if available
-        if (widget.internshipId != null) {
-          // Try to get contacts and find the supervisor
-          try {
-            final contacts = await repo.getChatifyContacts();
-            if (contacts.isNotEmpty) {
-              // Prefer supervisor over support
-              final supervisor = contacts.firstWhere(
-                (c) => c['type'] == 'supervisor',
-                orElse: () => contacts.first,
-              );
-              _chatifyReceiverId = supervisor['id'] as int;
-              await _loadChatifyMessages();
-              // Start polling for this contact
-              _pollTimer?.cancel();
-              _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-                _pollChatifyMessages();
-              });
-              return;
-            }
-          } catch (_) {
-            // Contacts endpoint failed, show empty state
+        // No thread found — fallback to Chatify with support contact
+        try {
+          final contacts = await repo.getChatifyContacts();
+          if (contacts.isNotEmpty) {
+            // Prefer support over supervisor for admin chat
+            final contact = contacts.firstWhere(
+              (c) => c['type'] == 'support',
+              orElse: () => contacts.first,
+            );
+            _chatifyReceiverId = contact['id'] as int;
+            await _loadChatifyMessages();
+            // Start polling for this contact
+            _pollTimer?.cancel();
+            _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+              _pollChatifyMessages();
+            });
+            return;
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('تعذر تحميل جهات الاتصال')),
+            );
           }
         }
 
@@ -200,7 +201,13 @@ class _ChatPageState extends State<ChatPage> {
       final repo = context.read<ChatRepository>();
       final msgs = await repo.getChatifyMessages(receiverId);
 
-      if (mounted && msgs.length != _messages.length) {
+      if (!mounted) return;
+
+      // Compare by count and last message ID to detect any changes
+      final hasChanges = msgs.length != _messages.length ||
+          (msgs.isNotEmpty && _messages.isNotEmpty && msgs.last.id != _messages.last.id);
+
+      if (hasChanges) {
         setState(() {
           _messages
             ..clear()
@@ -325,14 +332,7 @@ class _ChatPageState extends State<ChatPage> {
       ChatMessage message;
       if (receiverId != null && threadId == null) {
         // Chatify direct messaging mode
-        await repo.sendChatifyMessage(receiverId, text);
-        message = ChatMessage(
-          id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-          senderId: _currentUserId ?? 0,
-          body: text,
-          messageType: 'text',
-          createdAt: DateTime.now().toIso8601String(),
-        );
+        message = await repo.sendChatifyMessage(receiverId, text, senderId: _currentUserId ?? 0);
       } else {
         // Thread-based messaging
         message = await repo.sendMessage(threadId!, body: text);

@@ -9,6 +9,9 @@ use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ExaminerController extends Controller
 {
@@ -51,9 +54,85 @@ class ExaminerController extends Controller
         ]);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone'],
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+            'role' => 'examiner',
+            'status' => 'active',
+        ]);
+
+        return response()->json([
+            'message' => 'تم إنشاء حساب الممتحن بنجاح.',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'status' => $user->status,
+            ],
+        ], 201);
+    }
+
+    public function update(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', Rule::unique('users')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($user->id)],
+            'password' => ['nullable', 'string', 'min:6'],
+        ]);
+
+        $updateData = collect($validated)->except('password')->filter()->all();
+        if (!empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'message' => 'تم تحديث بيانات الممتحن.',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'status' => $user->status,
+            ],
+        ]);
+    }
+
+    public function destroy(User $user): JsonResponse
+    {
+        $activeDiscussions = ExaminerDiscussion::where('examiner_id', $user->id)
+            ->whereDoesntHave('evaluation')
+            ->count();
+
+        if ($activeDiscussions > 0) {
+            return response()->json([
+                'message' => "لا يمكن حذف الممتحن لديه {$activeDiscussions} تقييم معلق.",
+            ], 422);
+        }
+
+        $user->update(['status' => 'inactive']);
+
+        return response()->json(['message' => 'تم تعطيل حساب الممتحن.']);
+    }
+
     public function reports(User $examiner): JsonResponse
     {
         $discussions = ExaminerDiscussion::where('examiner_id', $examiner->id)
+            ->whereHas('internship', fn($q) => $q->where('status', 'active'))
             ->with(['internship.reports.student', 'student'])
             ->get();
 
@@ -66,7 +145,7 @@ class ExaminerController extends Controller
                     'report_type' => $report->report_type,
                     'title' => $report->title,
                     'submitted_at' => $report->submitted_at?->toDateString(),
-                    'download_url' => $report->file_path ? url("storage/{$report->file_path}") : null,
+                    'download_url' => $report->file_path ? Storage::disk('public')->url($report->file_path) : null,
                 ];
             }) ?? collect();
         });
@@ -106,8 +185,9 @@ class ExaminerController extends Controller
         $validated = $request->validate([
             'examiner_discussion_id' => ['required', 'exists:examiner_discussions,id'],
             'rubric_scores' => ['required', 'array'],
+            'rubric_scores.*' => ['required', 'numeric', 'min:0', 'max:5'],
             'total_score' => ['required', 'numeric', 'min:0', 'max:70'],
-            'decision' => ['nullable', 'string'],
+            'decision' => ['required', 'string', 'in:pass,fail,conditional_pass'],
             'notes' => ['nullable', 'string'],
         ]);
 
@@ -121,7 +201,7 @@ class ExaminerController extends Controller
                 'examiner_id' => $request->user()->id,
                 'rubric_scores' => $validated['rubric_scores'],
                 'total_score' => $validated['total_score'],
-                'decision' => $validated['decision'] ?? null,
+                'decision' => $validated['decision'],
                 'notes' => $validated['notes'] ?? null,
                 'submitted_at' => now(),
                 'visible_to_supervisor' => true,
