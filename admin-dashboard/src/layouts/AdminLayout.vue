@@ -16,7 +16,7 @@ const menu = [
   { label: 'الرئيسية', icon: 'ri-home-4-line', to: '/', name: 'dashboard' },
   { group: 'الطلاب', items: [
     { label: 'تحميل قائمة الطلاب', icon: 'ri-upload-2-line', to: '/upload', name: 'upload' },
-    { label: 'بيانات الطلاب', icon: 'ri-id-card-line', to: '/requests', name: 'requests' },
+    { label: 'بيانات الطلاب', icon: 'ri-id-card-line', to: '/student', name: 'student' },
     { label: 'تقارير الطلاب', icon: 'ri-file-text-line', to: '/reports', name: 'reports' },
     { label: 'النتائج النهائية', icon: 'ri-bar-chart-line', to: '/evaluation', name: 'evaluation' },
     { label: 'الدردشة', icon: 'ri-chat-1-line', to: '/chat', name: 'chat' },

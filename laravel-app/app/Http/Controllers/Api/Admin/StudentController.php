@@ -121,12 +121,6 @@ class StudentController extends Controller
         $skipped = 0;
 
         foreach ($rows as $row) {
-            $eligible = EligibleStudent::where('student_number', $row['student_number'])->first();
-            if (! $eligible) {
-                $skipped++;
-                continue;
-            }
-
             $exists = User::whereHas('studentProfile', function ($q) use ($row) {
                 $q->where('student_number', $row['student_number']);
             })->exists();
@@ -135,6 +129,12 @@ class StudentController extends Controller
                 $skipped++;
                 continue;
             }
+
+            // Ensure student is in eligible list
+            EligibleStudent::firstOrCreate(
+                ['student_number' => $row['student_number']],
+                ['name' => $row['name']]
+            );
 
             $nameParts = explode(' ', $row['name'], 2);
             $password = Str::random(8);

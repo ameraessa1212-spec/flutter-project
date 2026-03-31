@@ -37,7 +37,7 @@ const routes = [
     children: [
       { path: '', name: 'dashboard', component: DashboardView },
       { path: 'students', name: 'students', component: StudentsView },
-      { path: 'requests', name: 'requests', component: RequestsView },
+      { path: 'student', name: 'student', component: RequestsView },
       { path: 'upload', name: 'upload', component: UploadView },
       { path: 'reports', name: 'reports', component: ReportsView },
       { path: 'evaluation', name: 'evaluation', component: EvaluationView },
