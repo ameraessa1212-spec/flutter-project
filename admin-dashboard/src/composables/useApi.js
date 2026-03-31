@@ -54,4 +54,5 @@ export function useAuth() {
   return { user, token, isLoggedIn, login, logout }
 }
 
+export { api }
 export default api
