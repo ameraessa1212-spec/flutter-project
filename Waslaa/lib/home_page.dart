@@ -70,7 +70,6 @@ class _HomePageState extends State<HomePage> {
       surfaceTintColor: const Color(0xFFF8F8FC),
       elevation: 0,
       centerTitle: true,
-      // السطر المطلوب لإلغاء زر الرجوع التلقائي
       automaticallyImplyLeading: false,
       title: const Text(
         "الصفحة الرئيسية",
@@ -145,7 +144,6 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
       );
       return;
     }
-
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -178,203 +176,135 @@ class _HomeContentBodyState extends State<_HomeContentBody> {
     );
   }
 
-  String _reportSubtitle() {
-    final internship = _dashboard?.currentInternship;
-    if (internship == null) {
-      return 'يتطلب وجود تدريب نشط';
-    }
-    final dueDate = internship.reportDueDate;
-    if (dueDate == null || dueDate.isEmpty) {
-      return 'أرسل التقرير المرتبط بتدريبك';
-    }
-    return 'آخر موعد: ${_formatDate(dueDate)}';
-  }
-
-  String _chatSubtitle() {
-    final supervisorName = _dashboard?.currentInternship?.supervisor?.name;
-    if (supervisorName == null || supervisorName.isEmpty) {
-      return 'افتح المحادثات الحالية';
-    }
-    return 'المشرف: $supervisorName';
-  }
-
-  String _formatDate(String value) {
-    try {
-      final date = DateTime.parse(value);
-      return '${date.year}/${date.month}/${date.day}';
-    } catch (_) {
-      return value;
-    }
-  }
+  String _reportSubtitle() =>
+      _dashboard?.currentInternship == null
+          ? 'يتطلب وجود تدريب نشط'
+          : 'أرسل التقرير المرتبط بتدريبك';
+  String _chatSubtitle() =>
+      _dashboard?.currentInternship?.supervisor?.name ??
+      'افتح المحادثات الحالية';
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSearchField(),
-          const SizedBox(height: 14),
-          const _WelcomeCard(),
-          if (_dashboard != null && _dashboard!.sliderItems.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            ImageSliderScreen(items: _dashboard!.sliderItems),
-            const SizedBox(height: 18),
-          ],
-          const _SectionTitle(title: 'نظرة سريعة'),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickStatCard(
-                  title: 'إشعارات',
-                  value:
-                      _dashboard != null
-                          ? _dashboard!.unreadNotificationsCount.toString()
-                          : '–',
-                  icon: Icons.notifications_none_rounded,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _QuickStatCard(
-                  title: 'طلباتي',
-                  value:
-                      _dashboard != null
-                          ? _dashboard!.applicationsCount.toString()
-                          : '–',
-                  icon: Icons.description_outlined,
-                ),
-              ),
+    return RefreshIndicator(
+      onRefresh: _loadHomeData,
+      color: primarycolor,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // تم حذف _buildSearchField() من هنا
+            const _WelcomeCard(),
+            if (_dashboard != null && _dashboard!.sliderItems.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              ImageSliderScreen(items: _dashboard!.sliderItems),
+              const SizedBox(height: 18),
             ],
-          ),
-          const SizedBox(height: 22),
-          const _SectionTitle(title: 'تدريبك الحالي'),
-          const SizedBox(height: 12),
-          _CurrentInternshipCard(
-            internship: _dashboard?.currentInternship,
-            onOpenInternships: widget.onOpenInternships,
-            onOpenCompanies: widget.onOpenCompanies,
-          ),
-          const SizedBox(height: 22),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const _SectionTitle(title: 'فرص تدريب متاحة'),
-              InkWell(
-                onTap: widget.onOpenCompanies,
-                child: Text(
-                  'عرض الكل',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: primarycolor,
-                    fontWeight: FontWeight.w600,
+            const _SectionTitle(title: 'نظرة سريعة'),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _QuickStatCard(
+                    title: 'إشعارات',
+                    value:
+                        _dashboard != null
+                            ? _dashboard!.unreadNotificationsCount.toString()
+                            : '–',
+                    icon: Icons.notifications_none_rounded,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (_isLoadingHomeData)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (_dashboard == null ||
-              _dashboard!.featuredOpportunities.isEmpty)
-            _EmptyFeaturedOpportunitiesCard(onTap: widget.onOpenCompanies)
-          else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children:
-                    _dashboard!.featuredOpportunities
-                        .map(
-                          (opportunity) => Padding(
-                            padding: const EdgeInsets.only(left: 12),
-                            child: _FeaturedOpportunityCard(
-                              opportunity: opportunity,
-                              onTap: () => _openOpportunity(opportunity),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _QuickStatCard(
+                    title: 'طلباتي',
+                    value:
+                        _dashboard != null
+                            ? _dashboard!.applicationsCount.toString()
+                            : '–',
+                    icon: Icons.description_outlined,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
+            const _SectionTitle(title: 'تدريبك الحالي'),
+            const SizedBox(height: 12),
+            _CurrentInternshipCard(
+              internship: _dashboard?.currentInternship,
+              onOpenInternships: widget.onOpenInternships,
+              onOpenCompanies: widget.onOpenCompanies,
+            ),
+            const SizedBox(height: 22),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const _SectionTitle(title: 'فرص تدريب متاحة'),
+                InkWell(
+                  onTap: widget.onOpenCompanies,
+                  child: Text(
+                    'عرض الكل',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: primarycolor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (_isLoadingHomeData)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_dashboard == null ||
+                _dashboard!.featuredOpportunities.isEmpty)
+              _EmptyFeaturedOpportunitiesCard(onTap: widget.onOpenCompanies)
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children:
+                      _dashboard!.featuredOpportunities
+                          .map(
+                            (opportunity) => Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: _FeaturedOpportunityCard(
+                                opportunity: opportunity,
+                                onTap: () => _openOpportunity(opportunity),
+                              ),
                             ),
-                          ),
-                        )
-                        .toList(),
-              ),
-            ),
-          if (_dashboard != null && _dashboard!.announcements.isNotEmpty) ...[
-            const SizedBox(height: 22),
-            const _SectionTitle(title: 'إعلانات مهمة'),
-            const SizedBox(height: 12),
-            ..._dashboard!.announcements.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _AnnouncementCard(item: item),
-              ),
-            ),
-          ],
-          const SizedBox(height: 22),
-          const _SectionTitle(title: 'خطوات سريعة'),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const SizedBox(width: 12),
-              Expanded(
-                child: _ActionCard(
-                  title: 'رفع التقرير',
-                  subtitle: _reportSubtitle(),
-                  icon: Icons.upload_file_rounded,
-                  enabled: _dashboard?.currentInternship != null,
-                  onTap: _openReports,
+                          )
+                          .toList(),
                 ),
               ),
-            ],
-          ),
-          if (_dashboard != null && _dashboard!.tipCards.isNotEmpty) ...[
             const SizedBox(height: 22),
-            const _SectionTitle(title: 'نصائح مهمة'),
+            const _SectionTitle(title: 'خطوات سريعة'),
             const SizedBox(height: 12),
-            ..._dashboard!.tipCards.asMap().entries.map(
-              (entry) => Padding(
-                padding: EdgeInsets.only(
-                  bottom: entry.key == _dashboard!.tipCards.length - 1 ? 0 : 10,
+            Row(
+              children: [
+                Expanded(
+                  child: _ActionCard(
+                    title: 'رفع التقرير',
+                    subtitle: _reportSubtitle(),
+                    icon: Icons.upload_file_rounded,
+                    enabled: _dashboard?.currentInternship != null,
+                    onTap: _openReports,
+                  ),
                 ),
-                child: _InfoTipCard(item: entry.value),
-              ),
+                const SizedBox(width: 12),
+              ],
             ),
+            const SizedBox(height: 20),
           ],
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchField() {
-    return TextFormField(
-      readOnly: true,
-      onTap: widget.onOpenCompanies,
-      decoration: InputDecoration(
-        hintText: 'ابحث عن شركة أو فرصة تدريب...',
-        hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 14,
-          horizontal: 15,
-        ),
-        prefixIcon: Icon(Icons.search, color: primarycolor),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: primarycolor, width: 1.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: primarycolor.withValues(alpha: 0.30)),
         ),
       ),
-      cursorColor: primarycolor,
     );
   }
 }
