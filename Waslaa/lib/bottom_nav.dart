@@ -18,14 +18,14 @@ class GlassyBottomNavBar extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(5, 0, 5, 25),
+        margin: EdgeInsets.fromLTRB(5, 0, 5, MediaQuery.of(context).padding.bottom + 8),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(35),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
               decoration: BoxDecoration(
-                color: primarycolor.withValues(alpha: 0.12),
+                color: primarycolor.withValues(alpha: 0.16),
                 borderRadius: BorderRadius.circular(35),
                 border: Border.all(
                   color: primarycolor.withValues(alpha: 0.2),
@@ -49,7 +49,7 @@ class GlassyBottomNavBar extends StatelessWidget {
                   ),
                   duration: const Duration(milliseconds: 400),
                   tabBackgroundColor: primarycolor,
-                  color: primarycolor.withValues(alpha: 0.7),
+                  color: primarycolor.withValues(alpha: 0.55),
                   selectedIndex: currentIndex,
                   onTabChange: onTabChange,
                   tabs: const [

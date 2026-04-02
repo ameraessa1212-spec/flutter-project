@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Mobile\AuthController;
 use App\Http\Controllers\Api\Mobile\ChatThreadController;
 use App\Http\Controllers\Api\Mobile\CompanyController;
 use App\Http\Controllers\Api\Mobile\ContentController;
+use App\Http\Controllers\Api\Mobile\DashboardController;
 use App\Http\Controllers\Api\Mobile\DiscussionScheduleController;
 use App\Http\Controllers\Api\Mobile\InternshipController;
 use App\Http\Controllers\Api\Mobile\MessageController;
@@ -18,6 +19,8 @@ use App\Http\Controllers\Api\Mobile\SpecializationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('v1.')->group(function () {
+    Route::get('specializations', [SpecializationController::class, 'index'])->name('specializations.index');
+
     Route::prefix('auth')->name('auth.')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->name('register');
         Route::post('verify-otp', [AuthController::class, 'verifyOtp'])->name('verify-otp');
@@ -37,6 +40,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         Route::get('about-us', [ContentController::class, 'aboutUs'])->name('about-us');
     });
 
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('auth')->name('auth.')->group(function () {
             Route::get('me', [AuthController::class, 'me'])->name('me');
@@ -48,11 +52,14 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::get('/', [ProfileController::class, 'show'])->name('show');
             Route::patch('/', [ProfileController::class, 'update'])->name('update');
             Route::patch('password', [ProfileController::class, 'updatePassword'])->name('password.update');
+            Route::patch('fcm-token', [ProfileController::class, 'updateFcmToken'])->name('fcm-token.update');
             Route::post('avatar', [ProfileController::class, 'uploadAvatar'])->name('avatar.upload');
             Route::post('cv', [ProfileController::class, 'uploadCv'])->name('cv.upload');
         });
 
-        Route::get('specializations', [SpecializationController::class, 'index'])->name('specializations.index');
+        Route::prefix('dashboard')->name('dashboard.')->group(function () {
+            Route::get('home', [DashboardController::class, 'home'])->name('home');
+        });
 
         Route::prefix('companies')->name('companies.')->group(function () {
             Route::get('/', [CompanyController::class, 'index'])->name('index');
@@ -66,6 +73,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
         });
 
         Route::prefix('applications')->name('applications.')->group(function () {
+            Route::get('can-apply', [ApplicationController::class, 'canApply'])->name('can-apply');
             Route::get('/', [ApplicationController::class, 'index'])->name('index');
             Route::get('{application}', [ApplicationController::class, 'show'])->name('show');
             Route::delete('{application}', [ApplicationController::class, 'destroy'])->name('destroy');
@@ -93,6 +101,11 @@ Route::prefix('v1')->name('v1.')->group(function () {
             Route::post('threads/{thread}/messages', [MessageController::class, 'store'])->name('messages.store');
             Route::post('threads/{thread}/attachments', [MessageController::class, 'storeAttachment'])->name('messages.attachments.store');
             Route::post('threads/{thread}/read', [MessageController::class, 'markRead'])->name('messages.read');
+
+            // --- Chatify Bridge Routes ---
+            Route::get('contacts', [\App\Http\Controllers\Api\Mobile\MobileChatController::class, 'contacts']);
+            Route::get('messages', [\App\Http\Controllers\Api\Mobile\MobileChatController::class, 'getMessages']);
+            Route::post('messages', [\App\Http\Controllers\Api\Mobile\MobileChatController::class, 'sendMessage']);
         });
 
         Route::prefix('notifications')->name('notifications.')->group(function () {

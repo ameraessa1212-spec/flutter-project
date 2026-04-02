@@ -1,0 +1,72 @@
+:root {
+    --primary: #6A5AE0;
+    --primary-soft: #f3ebff;
+    --text-dark: #1e293b;
+    --text-gray: #64748b;
+    --bg-color: #f4f7ff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+
+body {
+    background-color: var(--bg-color);
+    direction: rtl;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.signup-card {
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    width: 100%;
+    max-width: 750px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+}
+
+.signup-header { text-align: center; margin-bottom: 30px; }
+.logo { font-size: 24px; font-weight: 900; }
+.logo span { color: var(--primary); }
+
+.grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.full-width { grid-column: span 2; }
+
+/* تنسيق رفع الشعار */
+.logo-upload-container { text-align: center; margin-bottom: 10px; }
+.logo-preview {
+    width: 100px; height: 100px; border: 2px dashed #cbd5e1;
+    border-radius: 20px; margin: 0 auto 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; overflow: hidden; background: #f8fafc; transition: 0.3s;
+}
+.logo-preview:hover { border-color: var(--primary); background: var(--primary-soft); }
+.preview-img { width: 100%; height: 100%; object-fit: cover; }
+.upload-placeholder { color: var(--text-gray); font-size: 11px; display: flex; flex-direction: column; }
+.upload-placeholder i { font-size: 25px; color: var(--primary); }
+.hidden-input { display: none; }
+.upload-hint { font-size: 10px; color: var(--text-gray); }
+
+.input-box { position: relative; }
+.input-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--primary); }
+.input-box input, .input-box textarea {
+    width: 100%; padding: 10px 40px 10px 15px;
+    border-radius: 12px; border: 1px solid #e2e8f0; outline: none;
+}
+
+.submit-btn {
+    grid-column: span 2; background: var(--primary); color: white;
+    padding: 12px; border: none; border-radius: 12px;
+    font-weight: 700; cursor: pointer; transition: 0.3s;
+}
+.submit-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+.rotate { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.error-message { color: #ef4444; font-size: 12px; margin-top: 4px; }
+.success-message { color: #10b981; text-align: center; margin-bottom: 15px; font-weight: 700; }
+
+@media (max-width: 600px) { .grid-form { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }

@@ -1,75 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/apply_internship_page.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/applications/repositories/application_repository.dart';
+import 'package:Waslaa/features/opportunities/models/opportunity.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CompanyDetailsPage extends StatelessWidget {
-  final String opportunityTitle;
-  final String companyName;
-  final String description;
-  final String logoPath;
-  final bool isAvailable;
-  final String specialization;
-  final String location;
-  final String duration;
+class CompanyDetailsPage extends StatefulWidget {
+  final Opportunity opportunity;
 
-  const CompanyDetailsPage({
-    super.key,
-    required this.opportunityTitle,
-    required this.companyName,
-    required this.description,
-    required this.logoPath,
-    required this.isAvailable,
-    required this.specialization,
-    required this.location,
-    required this.duration,
-  });
+  const CompanyDetailsPage({super.key, required this.opportunity});
 
   static const Color textDark = Color(0xFF1F2937);
   static const Color textMuted = Color(0xFF6B7280);
 
-  String _getMapUrl() {
-    if (companyName.contains("ليبيانا")) {
-      return "https://maps.google.com/?q=Libyana+Mobile+Phone";
-    }
-    if (companyName.contains("هاتف ليبيا")) {
-      return "https://maps.google.com/?q=Hatif+Libya";
-    }
-    if (companyName.contains("المدار")) {
-      return "https://maps.google.com/?q=Al-Madar+Al-Jadeed";
-    }
-    if (companyName.contains("الواحة")) {
-      return "https://maps.google.com/?q=Waha+Oil+Company";
-    }
-    if (companyName.contains("مصرف الجمهورية")) {
-      return "https://maps.google.com/?q=Jumhouria+Bank";
-    }
-    if (companyName.contains("مليته للنفط")) {
-      return "https://maps.google.com/?q=Mellitah+Oil+and+Gas";
-    }
-    return "https://maps.google.com";
-  }
+  @override
+  State<CompanyDetailsPage> createState() => _CompanyDetailsPageState();
+}
 
-  String _getWebsiteUrl() {
-    if (companyName.contains("ليبيانا")) return "https://libyana.ly";
-    if (companyName.contains("هاتف ليبيا")) return "https://hl.ly";
-    if (companyName.contains("المدار")) return "https://almadar.ly";
-    if (companyName.contains("الواحة")) return "https://wahaoil.ly";
-    if (companyName.contains("مصرف الجمهورية")) return "https://jbank.ly";
-    if (companyName.contains("مليته للنفط")) return "https://mellitahog.ly";
-    return "https://google.com";
-  }
+class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
+  bool _isCheckingEligibility = false;
 
   Future<void> _launchURL(String urlString) async {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      debugPrint("لا يمكن فتح الرابط: $urlString");
+      debugPrint('لا يمكن فتح الرابط: $urlString');
+    }
+  }
+
+  Future<void> _handleApply() async {
+    setState(() => _isCheckingEligibility = true);
+    try {
+      final repo = context.read<ApplicationRepository>();
+      final result = await repo.canApplyCheck();
+
+      if (!mounted) return;
+      if (!result.canApply) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('لا يمكن التقديم', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Text(result.reason ?? 'لا يمكنك التقديم حالياً.', textAlign: TextAlign.center),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('حسناً')),
+            ],
+          ),
+        );
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ApplyInternshipPage(opportunity: widget.opportunity),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      // If check fails, allow navigation anyway — server will validate on submit
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ApplyInternshipPage(opportunity: widget.opportunity),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isCheckingEligibility = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final opportunity = widget.opportunity;
+    final company = opportunity.company;
+    final companyName = company?.name ?? '';
+    final imagePath = opportunity.imagePath;
+    final location = opportunity.locationText ?? opportunity.city ?? '';
+    final duration = opportunity.durationText ?? '';
+    final spec = opportunity.specialization?.name ?? '';
+    final description = opportunity.description ?? '';
+    final companyDescription = company?.description ?? '';
+    final mapUrl = company?.mapUrl ?? '';
+    final websiteUrl = company?.websiteUrl ?? '';
+    final companyCity = company?.city ?? '';
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -80,7 +97,7 @@ class CompanyDetailsPage extends StatelessWidget {
           elevation: 0,
           centerTitle: true,
           title: Text(
-            "تفاصيل الفرصة",
+            'تفاصيل الفرصة',
             style: TextStyle(color: primarycolor, fontSize: 20),
           ),
           iconTheme: IconThemeData(color: primarycolor),
@@ -92,17 +109,35 @@ class CompanyDetailsPage extends StatelessWidget {
             children: [
               const SizedBox(height: 6),
 
-              /// صورة الفرصة / الشركة
+              // صورة الفرصة
               Stack(
                 children: [
                   Container(
                     height: AppDimensions.screenHeight * 0.30,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
-                      image: DecorationImage(
-                        image: AssetImage(logoPath),
-                        fit: BoxFit.cover,
-                      ),
+                      color: primarycolor.withValues(alpha: 0.1),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child:
+                          imagePath != null
+                              ? Image.network(
+                                imagePath,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                errorBuilder:
+                                    (_, __, ___) => Icon(
+                                      Icons.business,
+                                      size: 60,
+                                      color: primarycolor,
+                                    ),
+                              )
+                              : Icon(
+                                Icons.business,
+                                size: 60,
+                                color: primarycolor,
+                              ),
                     ),
                   ),
                   Container(
@@ -129,13 +164,13 @@ class CompanyDetailsPage extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color:
-                            isAvailable
+                            opportunity.isAvailable
                                 ? Colors.green.withValues(alpha: 0.85)
                                 : Colors.red.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        isAvailable ? "متاح الآن" : "مغلق حالياً",
+                        opportunity.isAvailable ? 'متاح الآن' : 'غير متاحة في النظام',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -161,7 +196,7 @@ class CompanyDetailsPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          opportunityTitle,
+                          opportunity.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -175,7 +210,7 @@ class CompanyDetailsPage extends StatelessWidget {
 
               const SizedBox(height: 18),
 
-              /// معلومات سريعة
+              // معلومات سريعة
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -193,186 +228,237 @@ class CompanyDetailsPage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
+                        if (spec.isNotEmpty)
+                          Expanded(
+                            child: _MiniInfoCard(
+                              icon: Icons.school_outlined,
+                              title: 'التخصص',
+                              value: spec,
+                            ),
+                          ),
+                        if (spec.isNotEmpty && location.isNotEmpty)
+                          const SizedBox(width: 10),
+                        if (location.isNotEmpty)
+                          Expanded(
+                            child: _MiniInfoCard(
+                              icon: Icons.location_on_outlined,
+                              title: 'الموقع',
+                              value:
+                                  location.isNotEmpty ? location : companyCity,
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (duration.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      _MiniInfoCard(
+                        icon: Icons.access_time_rounded,
+                        title: 'مدة التدريب',
+                        value: duration,
+                        fullWidth: true,
+                      ),
+                    ],
+                    if (opportunity.applicationDeadline != null) ...[
+                      const SizedBox(height: 10),
+                      _MiniInfoCard(
+                        icon: Icons.calendar_today_outlined,
+                        title: 'آخر موعد للتقديم',
+                        value: opportunity.applicationDeadline!,
+                        fullWidth: true,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // أزرار الخريطة والموقع
+              if (websiteUrl.isNotEmpty || mapUrl.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      if (websiteUrl.isNotEmpty)
                         Expanded(
-                          child: _MiniInfoCard(
-                            icon: Icons.school_outlined,
-                            title: "التخصص",
-                            value: specialization,
+                          child: _ActionInfoCard(
+                            title: 'الموقع الإلكتروني',
+                            icon: Icons.language_rounded,
+                            onTap: () => _launchURL(websiteUrl),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                      if (websiteUrl.isNotEmpty && mapUrl.isNotEmpty)
+                        const SizedBox(width: 12),
+                      if (mapUrl.isNotEmpty)
                         Expanded(
-                          child: _MiniInfoCard(
+                          child: _ActionInfoCard(
+                            title: 'عرض الخريطة',
                             icon: Icons.location_on_outlined,
-                            title: "الموقع",
-                            value: location,
+                            onTap: () => _launchURL(mapUrl),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 18),
+
+              // وصف الفرصة
+              if (description.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: primarycolor,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'وصف فرصة التدريب',
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        description,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: CompanyDetailsPage.textMuted,
+                          height: 1.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // نبذة عن الشركة
+              if (companyName.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (company?.logoPath != null && company!.logoPath!.isNotEmpty) ...[
+                        Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              company.logoPath!,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.business_outlined,
+                                color: primarycolor,
+                                size: 40,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.business_outlined,
+                            color: primarycolor,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'نبذة عن الشركة',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: CompanyDetailsPage.textDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        companyDescription.isNotEmpty
+                            ? companyDescription
+                            : '$companyName توفر فرص تدريب للطلاب في عدد من التخصصات، وتهدف إلى منحهم تجربة عملية حقيقية داخل بيئة العمل.',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(fontSize: 14, color: CompanyDetailsPage.textMuted),
+                      ),
+                      if (!opportunity.isAvailable) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.orange.withValues(alpha: 0.20)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Text(
+                                  'هذه الفرصة غير متاحة حالياً',
+                                  style: TextStyle(fontSize: 12.5, color: Colors.black87),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-                    _MiniInfoCard(
-                      icon: Icons.access_time_rounded,
-                      title: "مدة التدريب",
-                      value: duration,
-                      fullWidth: true,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 18),
-
-              /// أزرار الخريطة والموقع
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _ActionInfoCard(
-                        title: "الموقع الإلكتروني",
-                        icon: Icons.language_rounded,
-                        onTap: () => _launchURL(_getWebsiteUrl()),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _ActionInfoCard(
-                        title: "عرض الخريطة",
-                        icon: Icons.location_on_outlined,
-                        onTap: () => _launchURL(_getMapUrl()),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              /// وصف الفرصة
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: primarycolor,
-                          size: 20,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "وصف فرصة التدريب",
-                          style: TextStyle(fontSize: 16, color: Colors.black),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      description,
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: textMuted,
-                        height: 1.8,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              /// نبذة عن الشركة
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.business_outlined,
-                          color: primarycolor,
-                          size: 20,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "نبذة عن الشركة",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: textDark,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      "$companyName توفر فرص تدريب للطلاب في عدد من التخصصات، وتهدف إلى منحهم تجربة عملية حقيقية داخل بيئة العمل.",
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(fontSize: 14, color: textMuted),
-                    ),
-                  ],
-                ),
-              ),
+              ],
 
               SizedBox(height: AppDimensions.screenHeight * 0.04),
 
-              /// زر التقديم
+              // زر التقديم
               ElevatedButton(
                 onPressed:
-                    isAvailable
-                        ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => ApplyInternshipPage(
-                                    opportunityTitle: opportunityTitle,
-                                    companyName: companyName,
-                                    specialization: specialization,
-                                    location: location,
-                                    duration: duration,
-                                  ),
-                            ),
-                          );
-                        }
+                    opportunity.isAvailable && !_isCheckingEligibility
+                        ? _handleApply
                         : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primarycolor,
@@ -383,10 +469,18 @@ class CompanyDetailsPage extends StatelessWidget {
                   ),
                   minimumSize: Size(AppDimensions.screenWidth * 0.8, 54),
                 ),
-                child: Text(
-                  isAvailable ? "طلب تدريب" : "التدريب غير متاح حالياً",
-                  style: const TextStyle(color: Colors.white, fontSize: 17),
-                ),
+                child: _isCheckingEligibility
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2.3, color: Colors.white),
+                      )
+                    : Text(
+                        opportunity.isAvailable
+                            ? 'طلب تدريب'
+                            : 'غير متاحة في النظام',
+                        style: const TextStyle(color: Colors.white, fontSize: 17),
+                      ),
               ),
 
               const SizedBox(height: 20),

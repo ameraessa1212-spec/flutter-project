@@ -74,17 +74,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
         // 🔹 Body
         body: SafeArea(
-          child: isEmpty
-              ? const _EmptyNotifications()
-              : ListView.separated(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  itemCount: items.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, i) =>
-                      _NotificationRow(item: items[i]),
-                ),
+          child:
+              isEmpty
+                  ? const _EmptyNotifications()
+                  : ListView.separated(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder:
+                        (context, i) => _NotificationRow(item: items[i]),
+                  ),
         ),
       ),
     );
@@ -121,11 +123,7 @@ class _NotificationRow extends StatelessWidget {
                   color: primary.withOpacity(0.18),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.mail_outline,
-                  color: primary,
-                  size: 18,
-                ),
+                child: const Icon(Icons.mail_outline, color: primary, size: 18),
               ),
 
               const SizedBox(width: 10),
@@ -215,8 +213,7 @@ class _EmptyNotifications extends StatelessWidget {
                     height: iconSize,
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F6FF),
-                      borderRadius:
-                          BorderRadius.circular(iconSize / 2),
+                      borderRadius: BorderRadius.circular(iconSize / 2),
                     ),
                   ),
                   Icon(
@@ -269,9 +266,3 @@ class _EmptyNotifications extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-

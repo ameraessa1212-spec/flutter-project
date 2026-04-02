@@ -1,116 +1,136 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
+import 'sign_in.dart';
 
 class ResetPasswordPage extends StatefulWidget {
-  const ResetPasswordPage({super.key});
+  const ResetPasswordPage({
+    super.key,
+    required this.identifier,
+    required this.otp,
+  });
+
+  final String identifier;
+  final String otp;
 
   @override
   State<ResetPasswordPage> createState() => _ResetPasswordPageState();
 }
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
-  bool _isObscured = true;
-
-  // 1. مفتاح النموذج للتحقق
   final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
-  final TextEditingController _passController = TextEditingController();
-  final TextEditingController _confirmPassController = TextEditingController();
-
-  bool _isArabic(String text) {
-    if (text.isEmpty) return true;
-    return RegExp(r'^[\u0600-\u06FF]').hasMatch(text);
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
   }
 
-  // دالة التحقق قبل إظهار الديالوج
-  void _handlePasswordReset() {
-    if (_formKey.currentState!.validate()) {
-      _showSuccessDialog();
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final repo = context.read<AuthRepository>();
+      await repo.resetPassword(
+        identifier: widget.identifier,
+        otp: widget.otp,
+        password: _passwordController.text,
+        passwordConfirmation: _confirmController.text,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'تم تغيير كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const SignInPage()),
+        (route) => false,
+      );
+    } on DioException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            error.message ?? 'حدث خطأ أثناء تغيير كلمة المرور.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showSuccessDialog() {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierLabel: '',
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
-      transitionBuilder: (context, anim1, anim2, child) {
-        return Transform.scale(
-          scale: anim1.value,
-          child: Opacity(
-            opacity: anim1.value,
-            child: Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(30.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/success.png',
-                      height: 150,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.check_circle,
-                        size: 100,
-                        color: Colors.green,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    const Text(
-                      'تهانينا!',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF6A5AE0),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const Text(
-                      'تمت إعادة تعيين كلمة المرور بنجاح\nسيتم توجيهك إلى شاشة تسجيل الدخول الآن',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        fontSize: 14,
-                        color: Colors.black54,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6A5AE0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        child: const Text(
-                          'تسجيل الدخول',
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String hint,
+    required String? Function(String?) validator,
+    required bool obscure,
+    required VoidCallback onToggleObscure,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      validator: validator,
+      textDirection: TextDirection.rtl,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintTextDirection: TextDirection.rtl,
+        hintStyle: const TextStyle(
+          fontFamily: 'Cairo',
+          color: Colors.grey,
+          fontSize: 14,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF1F0F9),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
+        errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey,
           ),
-        );
-      },
+          onPressed: onToggleObscure,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primarycolor, width: 1),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+      ),
     );
   }
 
@@ -121,156 +141,106 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'إعادة تعيين كلمة السر',
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            color: Color(0xFF6A5AE0),
-            fontSize: 16,
-          ),
-        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Form(
-          // 2. تغليف الحقول بـ Form
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 40),
-              const Text(
-                'إنشاء كلمة مرور جديدة',
+              Text(
+                'تعيين كلمة مرور جديدة',
                 style: TextStyle(
                   fontFamily: 'Cairo',
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF6A5AE0),
+                  color: primarycolor,
                 ),
               ),
-              const SizedBox(height: 40),
-
-              // حقل كلمة المرور الأولى مع Validation
-              _buildPasswordField(_passController, 'كلمة المرور الجديدة', (
-                value,
-              ) {
-                if (value == null || value.isEmpty) {
-                  return 'يرجى إدخال كلمة المرور';
-                }
-                if (value.length < 8) return 'يجب أن تكون 8 أحرف على الأقل';
-                return null;
-              }),
-
-              const SizedBox(height: 20),
-
-              // حقل التأكيد مع Validation (المطابقة)
-              _buildPasswordField(_confirmPassController, 'تأكيد كلمة المرور', (
-                value,
-              ) {
-                if (value == null || value.isEmpty) {
-                  return 'يرجى تأكيد كلمة المرور';
-                }
-                if (value != _passController.text) {
-                  return 'كلمات المرور غير متطابقة';
-                }
-                return null;
-              }),
-
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const Text(
-                    'إظهار كلمة المرور',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  Checkbox(
-                    value: !_isObscured,
-                    onChanged: (value) => setState(() => _isObscured = !value!),
-                    activeColor: const Color(0xFF6A5AE0),
-                  ),
-                ],
+              const SizedBox(height: 12),
+              const Text(
+                'يجب أن تكون كلمة المرور 8 أحرف على الأقل',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 15,
+                  color: Colors.black54,
+                ),
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 50),
+
+              _buildPasswordField(
+                controller: _passwordController,
+                hint: 'كلمة المرور الجديدة',
+                obscure: _obscurePassword,
+                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'يرجى إدخال كلمة المرور';
+                  if (v.length < 8)
+                    return 'كلمة المرور يجب أن لا تقل عن 8 أحرف';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              _buildPasswordField(
+                controller: _confirmController,
+                hint: 'تأكيد كلمة المرور',
+                obscure: _obscureConfirm,
+                onToggleObscure: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'يرجى تأكيد كلمة المرور';
+                  if (v != _passwordController.text)
+                    return 'كلمتا المرور غير متطابقتين';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 35),
+
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: _handlePasswordReset, // استدعاء دالة التحقق
+                  onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A5AE0),
+                    backgroundColor: primarycolor,
+                    elevation: 5,
+                    shadowColor: primarycolor.withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'تحقق',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                          : const Text(
+                            'حفظ كلمة المرور',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  // تعديل الـ Widget لاستخدام TextFormField
-  Widget _buildPasswordField(
-    TextEditingController controller,
-    String hint,
-    String? Function(String?)? validator,
-  ) {
-    return TextFormField(
-      controller: controller,
-      obscureText: _isObscured,
-      validator: validator,
-      textDirection: _isArabic(controller.text)
-          ? TextDirection.rtl
-          : TextDirection.ltr,
-      textAlign: TextAlign.start,
-      onChanged: (value) => setState(() {}),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintTextDirection: TextDirection.rtl,
-        hintStyle: const TextStyle(
-          fontFamily: 'Cairo',
-          color: Colors.grey,
-          fontSize: 14,
-        ),
-        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6A5AE0)),
-        filled: true,
-        fillColor: const Color(0xFFF1F0F9),
-        errorStyle: const TextStyle(fontFamily: 'Cairo'),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 18,
-          horizontal: 20,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: BorderSide.none,
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(25),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
       ),
     );

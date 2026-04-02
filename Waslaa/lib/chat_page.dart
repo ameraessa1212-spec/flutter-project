@@ -1,13 +1,30 @@
-import 'dart:io';
+import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/core/session/app_session_controller.dart';
+import 'package:Waslaa/core/services/pusher_service.dart';
+import 'package:Waslaa/features/chat/models/chat_models.dart';
+import 'package:Waslaa/features/chat/repositories/chat_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  final int? threadId;
+  final int? internshipId;
+  final int? receiverId;
+  final String? receiverName;
+
+  const ChatPage({
+    super.key,
+    this.threadId,
+    this.internshipId,
+    this.receiverId,
+    this.receiverName,
+  });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -17,29 +34,236 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<Map<String, dynamic>> _messages = [
-    {
-      "type": "text",
-      "content": "مرحباً بك يا طالب، هل بدأت في كتابة التقرير؟",
-      "isMe": false,
-      "time": "10:30",
-    },
-  ];
+  final List<ChatMessage> _messages = [];
+  ChatThread? _activeThread;
+  int? _activeThreadId;
+  int? _currentUserId;
+  bool _isLoading = true;
+  bool _isSending = false;
+  String? _error;
+  Timer? _pollTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _initChat().then((_) {
+      // Start polling for Chatify messages after init
+      if (_chatifyReceiverId != null || widget.receiverId != null) {
+        _pollTimer ??= Timer.periodic(const Duration(seconds: 5), (_) {
+          _pollChatifyMessages();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    if (_activeThreadId != null) {
+      PusherService().unsubscribeFromChat(_activeThreadId!);
+    }
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Track if we are in Chatify (direct message) mode
+  int? _chatifyReceiverId;
+
+  Future<void> _initChat() async {
+    try {
+      _currentUserId = context.read<AppSessionController>().currentUser?.id;
+      final repo = context.read<ChatRepository>();
+
+      // If receiverId is explicitly provided → use Chatify direct messaging
+      if (widget.receiverId != null) {
+        _chatifyReceiverId = widget.receiverId;
+        await _loadChatifyMessages();
+        return;
+      }
+
+      // Try thread-based chat first
+      final explicitThreadId = widget.threadId;
+      final explicitInternshipId = widget.internshipId;
+      if (explicitThreadId != null) {
+        _activeThreadId = explicitThreadId;
+        _activeThread = await repo.getThread(explicitThreadId);
+      } else {
+        final threads = await repo.getThreads();
+        if (threads.isNotEmpty) {
+          ChatThread? matchedThread;
+          if (explicitInternshipId != null) {
+            for (final thread in threads) {
+              if (thread.internshipId == explicitInternshipId) {
+                matchedThread = thread;
+                break;
+              }
+            }
+          } else {
+            matchedThread = threads.first;
+          }
+          if (matchedThread != null) {
+            _activeThreadId = matchedThread.id;
+            _activeThread = matchedThread;
+          }
+        }
+      }
+
+      if (_activeThreadId != null) {
+        final msgs = await repo.getMessages(_activeThreadId!);
+        if (!mounted) return;
+        setState(() {
+          _messages.clear();
+          _messages.addAll(msgs.reversed);
+          _isLoading = false;
+        });
+        _scrollToBottom();
+        await repo.markRead(_activeThreadId!);
+
+        await PusherService().initPusher();
+        PusherService().subscribeToChat(_activeThreadId!, (messageData) {
+          final newMessage = ChatMessage.fromJson(messageData);
+          if (mounted && newMessage.senderId != _currentUserId) {
+            setState(() {
+              _messages.add(newMessage);
+            });
+            _scrollToBottom();
+          }
+        });
+      } else {
+        // No thread found — fallback to Chatify with support contact
+        try {
+          final contacts = await repo.getChatifyContacts();
+          if (contacts.isNotEmpty) {
+            // Prefer support over supervisor for admin chat
+            final contact = contacts.firstWhere(
+              (c) => c['type'] == 'support',
+              orElse: () => contacts.first,
+            );
+            _chatifyReceiverId = contact['id'] as int;
+            await _loadChatifyMessages();
+            // Start polling for this contact
+            _pollTimer?.cancel();
+            _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+              _pollChatifyMessages();
+            });
+            return;
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('تعذر تحميل جهات الاتصال')),
+            );
+          }
+        }
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    } on DioException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.message ?? 'تعذر تحميل المحادثة';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadChatifyMessages() async {
+    if (_chatifyReceiverId == null) return;
+    try {
+      final repo = context.read<ChatRepository>();
+      final msgs = await repo.getChatifyMessages(_chatifyReceiverId!);
+      if (mounted) {
+        setState(() {
+          _messages
+            ..clear()
+            ..addAll(msgs);
+          _isLoading = false;
+        });
+        _scrollToBottom();
+      }
+    } on DioException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error.message ?? 'تعذر تحميل المحادثة';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _pollChatifyMessages() async {
+    final receiverId = _chatifyReceiverId ?? widget.receiverId;
+    if (receiverId == null || _isSending) return;
+
+    try {
+      final repo = context.read<ChatRepository>();
+      final msgs = await repo.getChatifyMessages(receiverId);
+
+      if (!mounted) return;
+
+      // Compare by count and last message ID to detect any changes
+      final hasChanges = msgs.length != _messages.length ||
+          (msgs.isNotEmpty && _messages.isNotEmpty && msgs.last.id != _messages.last.id);
+
+      if (hasChanges) {
+        setState(() {
+          _messages
+            ..clear()
+            ..addAll(msgs);
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      debugPrint('Polling error: $e');
+    }
+  }
+
+  Future<void> _refreshMessages() async {
+    final threadId = _activeThreadId;
+    if (threadId == null) {
+      return;
+    }
+
+    try {
+      final repo = context.read<ChatRepository>();
+      final msgs = await repo.getMessages(threadId);
+      if (!mounted) return;
+      setState(() {
+        _messages
+          ..clear()
+          ..addAll(msgs.reversed);
+      });
+      await repo.markRead(threadId);
+      _scrollToBottom();
+    } on DioException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message ?? 'تعذر تحديث الرسائل')),
+      );
+    }
+  }
+
+  String _parseTime(String isoDate) {
+    try {
+      final dt = DateTime.parse(isoDate).toLocal();
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      setState(() {
-        _messages.add({
-          "type": "image",
-          "content": image.path,
-          "isMe": true,
-          "time": _formattedTime(),
-        });
-      });
-      _scrollToBottom();
+      await _sendAttachment(
+        filePath: image.path,
+        fileName: image.name,
+        messageType: 'image',
+      );
     }
   }
 
@@ -47,39 +271,89 @@ class _ChatPageState extends State<ChatPage> {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
 
     if (result != null) {
-      setState(() {
-        _messages.add({
-          "type": "file",
-          "content": result.files.single.name,
-          "isMe": true,
-          "time": _formattedTime(),
-        });
-      });
-      _scrollToBottom();
+      final file = result.files.single;
+      if (file.path != null) {
+        await _sendAttachment(filePath: file.path!, fileName: file.name);
+      }
     }
   }
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isNotEmpty) {
-      setState(() {
-        _messages.add({
-          "type": "text",
-          "content": _messageController.text.trim(),
-          "isMe": true,
-          "time": _formattedTime(),
-        });
-      });
+  Future<void> _sendAttachment({
+    required String filePath,
+    String? fileName,
+    String messageType = 'file',
+  }) async {
+    final threadId = _activeThreadId;
+    if (threadId == null || _isSending) {
+      if (threadId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('إرسال المرفقات غير متاح في هذه المحادثة حالياً')),
+        );
+      }
+      return;
+    }
 
-      _messageController.clear();
+    setState(() => _isSending = true);
+    try {
+      final repo = context.read<ChatRepository>();
+      final message = await repo.sendAttachment(
+        threadId,
+        filePath: filePath,
+        fileName: fileName,
+        messageType: messageType,
+      );
+      if (!mounted) return;
+      setState(() {
+        _messages.add(message);
+      });
       _scrollToBottom();
+    } on DioException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message ?? 'تعذر إرسال المرفق')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
-  String _formattedTime() {
-    final now = TimeOfDay.now();
-    final hour = now.hour.toString().padLeft(2, '0');
-    final minute = now.minute.toString().padLeft(2, '0');
-    return "$hour:$minute";
+  Future<void> _sendMessage() async {
+    final threadId = _activeThreadId;
+    final receiverId = _chatifyReceiverId ?? widget.receiverId;
+    final text = _messageController.text.trim();
+    if (text.isEmpty || _isSending) return;
+    if (threadId == null && receiverId == null) return;
+
+    setState(() => _isSending = true);
+    _messageController.clear();
+
+    try {
+      final repo = context.read<ChatRepository>();
+      ChatMessage message;
+      if (receiverId != null && threadId == null) {
+        // Chatify direct messaging mode
+        message = await repo.sendChatifyMessage(receiverId, text, senderId: _currentUserId ?? 0);
+      } else {
+        // Thread-based messaging
+        message = await repo.sendMessage(threadId!, body: text);
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _messages.add(message);
+      });
+      _scrollToBottom();
+    } on DioException catch (error) {
+      if (!mounted) return;
+      final errorMsg = error.response?.data is Map
+          ? (error.response!.data as Map)['message'] as String?
+          : null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMsg ?? error.message ?? 'تعذر إرسال الرسالة')),
+      );
+    }
+
+    if (mounted) setState(() => _isSending = false);
   }
 
   void _scrollToBottom() {
@@ -187,128 +461,158 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  void _showFullScreenImage(String path) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => Scaffold(
-              backgroundColor: Colors.black,
-              appBar: AppBar(
-                backgroundColor: Colors.black,
-                iconTheme: const IconThemeData(color: Colors.white),
-              ),
-              body: Center(child: Image.file(File(path))),
-            ),
-      ),
-    );
-  }
+  Widget _renderMessageContent(ChatMessage msg) {
+    final isImage = msg.messageType == 'image';
+    final isFile = msg.messageType == 'file' || msg.messageType == 'attachment';
+    final isMe = _isMyMessage(msg);
+    final firstAttachment =
+        msg.attachments.isNotEmpty ? msg.attachments.first : null;
 
-  Widget _renderMessageContent(Map<String, dynamic> msg) {
-    if (msg['type'] == 'image') {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Image.file(
-          File(msg['content']),
-          fit: BoxFit.cover,
-          width: 220,
-          height: 180,
-        ),
-      );
-    } else if (msg['type'] == 'file') {
+    if (isImage && firstAttachment?.fileUrl != null) {
       return Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.description_rounded,
-              color: msg['isMe'] ? Colors.white : primarycolor,
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                msg['content'],
-                style: TextStyle(
-                  color: msg['isMe'] ? Colors.white : Colors.black87,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+        padding: const EdgeInsets.all(4),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            firstAttachment!.fileUrl!,
+            fit: BoxFit.cover,
+            width: 200,
+            errorBuilder:
+                (_, __, ___) => const Icon(Icons.broken_image, size: 40),
+          ),
         ),
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Text(
-        msg['content'],
-        textAlign: TextAlign.right,
-        style: TextStyle(
-          color: msg['isMe'] ? Colors.white : Colors.black87,
-          fontSize: 14,
-          height: 1.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMessageItem(Map<String, dynamic> msg) {
-    final bool isMe = msg['isMe'];
-
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: GestureDetector(
-        onTap: () {
-          if (msg['type'] == 'image') {
-            _showFullScreenImage(msg['content']);
-          }
-        },
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.74,
-          ),
-          decoration: BoxDecoration(
-            color: isMe ? primarycolor : const Color(0xFFF0ECEC),
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(18),
-              topRight: const Radius.circular(18),
-              bottomLeft: Radius.circular(isMe ? 18 : 6),
-              bottomRight: Radius.circular(isMe ? 6 : 18),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    if (isFile) {
+      final attachmentLabel = firstAttachment?.fileName ?? msg.body ?? 'مرفق';
+      return Padding(
+        padding: const EdgeInsets.all(12),
+        child: InkWell(
+          onTap:
+              () =>
+                  firstAttachment?.fileUrl != null
+                      ? launchUrl(Uri.parse(firstAttachment!.fileUrl!))
+                      : null,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _renderMessageContent(msg),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isMe ? Colors.white24 : primarycolor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.insert_drive_file_rounded,
+                  size: 20,
+                  color: isMe ? Colors.white : primarycolor,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
                 child: Text(
-                  msg['time'] ?? '',
+                  attachmentLabel,
                   style: TextStyle(
-                    color: isMe ? Colors.white70 : Colors.black45,
-                    fontSize: 10.5,
+                    color: isMe ? Colors.white : Colors.black87,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
         ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Text(
+        msg.body ?? '',
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          color: isMe ? Colors.white : Colors.black87,
+          fontSize: 14.5,
+          height: 1.4,
+        ),
+      ),
+    );
+  }
+
+  bool _isMyMessage(ChatMessage msg) {
+    final currentUserId = _currentUserId;
+    return currentUserId != null && msg.senderId == currentUserId;
+  }
+
+  Widget _buildMessageItem(ChatMessage msg) {
+    final bool isMe = _isMyMessage(msg);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe)
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Color(0xFFE0E0E0),
+                    child: Icon(Icons.person, size: 16, color: Colors.grey),
+                  ),
+                ),
+              Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.72,
+                ),
+                decoration: BoxDecoration(
+                  color: isMe ? primarycolor : Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(20),
+                    topRight: const Radius.circular(20),
+                    bottomLeft: Radius.circular(isMe ? 20 : 4),
+                    bottomRight: Radius.circular(isMe ? 4 : 20),
+                  ),
+                  border: isMe ? null : Border.all(color: primarycolor.withValues(alpha: 0.10)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: _renderMessageContent(msg),
+              ),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              top: 4,
+              right: isMe ? 4 : 42,
+              left: isMe ? 4 : 4,
+            ),
+            child: Text(
+              _parseTime(msg.sentAt ?? msg.createdAt ?? ''),
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildInputArea() {
+    final isEnabled =
+        (_activeThreadId != null || _chatifyReceiverId != null || widget.receiverId != null) && !_isLoading;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 5, 12, 5),
       decoration: BoxDecoration(
@@ -326,7 +630,7 @@ class _ChatPageState extends State<ChatPage> {
       child: Row(
         children: [
           InkWell(
-            onTap: _sendMessage,
+            onTap: isEnabled ? _sendMessage : null,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: AppDimensions.screenWidth * 0.08,
@@ -342,6 +646,7 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: TextField(
               controller: _messageController,
+              enabled: isEnabled,
               textAlign: TextAlign.right,
               minLines: 1,
               maxLines: 4,
@@ -354,7 +659,7 @@ class _ChatPageState extends State<ChatPage> {
           ),
           const SizedBox(width: 8),
           InkWell(
-            onTap: _showAttachmentOptions,
+            onTap: isEnabled ? _showAttachmentOptions : null,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: AppDimensions.screenWidth * 0.08,
@@ -372,6 +677,15 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildTopBar() {
+    final thread = _activeThread;
+    final supervisorName =
+        widget.receiverId != null
+            ? (widget.receiverName ?? 'الدعم الفني')
+            : (thread?.supervisorName ?? 'المشرف غير متاح');
+    final companyName =
+        thread?.companyName ?? (widget.receiverId != null ? 'نظام وصلة' : '');
+    final supervisorPhone = thread?.supervisorPhone;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: BoxDecoration(
@@ -387,7 +701,10 @@ class _ChatPageState extends State<ChatPage> {
       child: Row(
         children: [
           InkWell(
-            onTap: () => _callPhone("0915004645"),
+            onTap:
+                supervisorPhone != null && supervisorPhone.isNotEmpty
+                    ? () => _callPhone(supervisorPhone)
+                    : null,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: AppDimensions.screenWidth * 0.08,
@@ -401,7 +718,10 @@ class _ChatPageState extends State<ChatPage> {
           ),
           const SizedBox(width: 10),
           InkWell(
-            onTap: () => _openWhatsApp("0915004645"),
+            onTap:
+                supervisorPhone != null && supervisorPhone.isNotEmpty
+                    ? () => _openWhatsApp(supervisorPhone)
+                    : null,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: AppDimensions.screenWidth * 0.08,
@@ -420,19 +740,19 @@ class _ChatPageState extends State<ChatPage> {
           const Spacer(),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: const [
+            children: [
               Text(
-                "Nabil Kamal",
-                style: TextStyle(
+                supervisorName,
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
-              SizedBox(height: 3),
+              const SizedBox(height: 3),
               Text(
-                "المشرف المباشر",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                companyName.isNotEmpty ? companyName : 'المشرف المباشر',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
@@ -445,7 +765,7 @@ class _ChatPageState extends State<ChatPage> {
           const SizedBox(width: 10),
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_forward_rounded, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.black),
           ),
         ],
       ),
@@ -461,17 +781,73 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             _buildTopBar(),
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  return _buildMessageItem(_messages[index]);
-                },
-              ),
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
+                      ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                size: 44,
+                                color: Colors.redAccent,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(_error!, textAlign: TextAlign.center),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: _initChat,
+                                child: const Text('إعادة المحاولة'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      : (_activeThreadId == null && _chatifyReceiverId == null && widget.receiverId == null)
+                      ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            'لا توجد محادثات متاحة حالياً.\nيرجى التواصل مع الدعم الفني من صفحة حسابي.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.6),
+                          ),
+                        ),
+                      )
+                      : RefreshIndicator(
+                        onRefresh: _refreshMessages,
+                        child:
+                            _messages.isEmpty
+                                ? ListView(
+                                  padding: const EdgeInsets.all(24),
+                                  children: const [
+                                    SizedBox(height: 120),
+                                    Text(
+                                      'ابدأ المحادثة مع المشرف بإرسال أول رسالة.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                                : ListView.builder(
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  itemCount: _messages.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildMessageItem(_messages[index]);
+                                  },
+                                ),
+                      ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),

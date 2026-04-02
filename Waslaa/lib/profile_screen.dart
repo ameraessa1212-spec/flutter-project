@@ -1,16 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/about_app_page.dart';
 import 'package:Waslaa/const/app_dimensions.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/core/session/app_session_controller.dart';
+import 'package:Waslaa/features/applications/repositories/application_repository.dart';
+import 'package:Waslaa/features/dashboard/repositories/dashboard_repository.dart';
+import 'package:Waslaa/features/profile/models/user_profile.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 import 'package:Waslaa/terms_and_conditions_page.dart';
 import 'package:Waslaa/discussion_schedule.dart';
 import 'package:Waslaa/settings_page.dart';
-import 'package:Waslaa/sign_in.dart'; // استيراد صفحة تسجيل الدخول
+import 'package:Waslaa/chat_page.dart';
+import 'package:Waslaa/sign_in.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final VoidCallback onOpenCompanies;
 
   const ProfileScreen({super.key, required this.onOpenCompanies});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserProfile? _profile;
+  bool _loadingProfile = true;
+  int _applicationsCount = 0;
+  int _unreadMessagesCount = 0;
+  int _reportsCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+    _loadStats();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final repo = context.read<ProfileRepository>();
+      final p = await repo.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _profile = p;
+        _loadingProfile = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingProfile = false);
+    }
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final dashboardRepo = context.read<DashboardRepository>();
+      final dashboard = await dashboardRepo.getHomeDashboard();
+      if (!mounted) return;
+      setState(() {
+        _applicationsCount = dashboard.applicationsCount;
+        _unreadMessagesCount = dashboard.unreadMessagesCount;
+      });
+    } catch (_) {
+      // Stats are non-critical, silently fail
+    }
+  }
 
   // دالة لإظهار رسالة تأكيد تسجيل الخروج
   void _showLogoutConfirmation(BuildContext context) {
@@ -39,8 +92,10 @@ class ProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              onPressed: () {
-                // الانتقال لصفحة تسجيل الدخول وحذف مسار الصفحات السابق
+              onPressed: () async {
+                Navigator.pop(context);
+                await context.read<AppSessionController>().signOut();
+                if (!context.mounted) return;
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const SignInPage()),
@@ -62,6 +117,15 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sessionUser = context.watch<AppSessionController>().currentUser;
+    final displayName = _profile?.name ?? sessionUser?.name ?? 'مستخدم';
+    final displayPhone = _profile?.phone ?? sessionUser?.phone ?? '';
+    final displayRole =
+        (_profile?.role == 'student' || sessionUser?.role == 'student')
+            ? 'طالب تدريب ميداني'
+            : (_profile?.role ?? sessionUser?.role ?? '');
+    final avatarPath = _profile?.studentProfile?.profileImagePath;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F8FC),
       body: SafeArea(
@@ -102,37 +166,51 @@ class ProfileScreen extends StatelessWidget {
                         color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.person,
-                        color: Colors.white,
-                        size: 34,
-                      ),
+                      child:
+                          avatarPath != null
+                              ? ClipOval(
+                                child: Image.network(
+                                  avatarPath,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (_, __, ___) => const Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 34,
+                                      ),
+                                ),
+                              )
+                              : const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 34,
+                              ),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "شدى الشريف",
-                            style: TextStyle(
+                            displayName,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 6),
+                          const SizedBox(height: 6),
                           Text(
-                            "0942501318",
-                            style: TextStyle(
+                            displayPhone,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            "طالب تدريب ميداني",
-                            style: TextStyle(
+                            displayRole,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                             ),
@@ -147,28 +225,20 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 18),
 
               /// Quick info cards
-              const Row(
+              Row(
                 children: [
                   Expanded(
                     child: _ProfileMiniCard(
-                      title: "الطلب",
-                      value: "1",
+                      title: "الطلبات",
+                      value: _applicationsCount.toString(),
                       icon: Icons.description_outlined,
                     ),
                   ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: _ProfileMiniCard(
-                      title: "التقارير",
-                      value: "1",
-                      icon: Icons.upload_file_outlined,
-                    ),
-                  ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: _ProfileMiniCard(
                       title: "الرسائل",
-                      value: "2",
+                      value: _unreadMessagesCount.toString(),
                       icon: Icons.chat_bubble_outline_rounded,
                     ),
                   ),
@@ -195,6 +265,24 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
+                    _ProfileMenuTile(
+                      title: "التواصل مع المشرف",
+                      subtitle: "تواصل مع إدارة القسم للاستفسارات ",
+                      icon: Icons.support_agent_rounded,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const ChatPage(
+                                  receiverId: 1,
+                                  receiverName: 'التواصل مع المشرف',
+                                ),
+                          ),
+                        );
+                      },
+                    ),
+                    _tileDivider(),
                     _ProfileMenuTile(
                       title: "مواعيد المناقشات",
                       subtitle: "الاطلاع على جدول مواعيد مناقشة التقارير",
@@ -281,7 +369,87 @@ class ProfileScreen extends StatelessWidget {
                       subtitle: "الخروج من الحساب الحالي",
                       icon: Icons.logout_outlined,
                       color: Colors.red,
-                      onTap: () => _showLogoutConfirmation(context),
+                      onTap: () {
+                        // إظهار نافذة التأكيد قبل تسجيل الخروج
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              title: const Text(
+                                "تأكيد الخروج",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              content: const Text(
+                                "هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟",
+                                textAlign: TextAlign.right,
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              actions: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    // زر إلغاء العملية
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text(
+                                        "إلغاء",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    // زر تأكيد الخروج
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        // 1. إغلاق نافذة التنبيه
+                                        Navigator.pop(context);
+
+                                        // 2. الانتقال لصفحة تسجيل الدخول وحذف كل الصفحات السابقة من الـ Stack
+                                        // تأكدي من أن اسم الصفحة عندك هو SignInPage أو استبدليه بالاسم الصحيح
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => const SignInPage(),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      },
+                                      child: const Text(
+                                        "تسجيل خروج",
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -336,10 +504,10 @@ class _ProfileMiniCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: primarycolor.withOpacity(0.08)),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -365,7 +533,7 @@ class _ProfileMiniCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.65),
+              color: Colors.black.withValues(alpha: 0.65),
               fontSize: 12,
             ),
           ),

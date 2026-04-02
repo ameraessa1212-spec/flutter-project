@@ -22,23 +22,43 @@ class AppDrawer extends StatelessWidget {
           // عناصر القائمة
           _drawerItem(Icons.settings_outlined, 'الإعدادات', () {
             Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
           }),
 
           _drawerItem(Icons.info_outline, 'من نحن ؟', () {
             Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutUsPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutUsPage()),
+            );
           }),
 
           _drawerItem(Icons.account_balance_outlined, 'سياسات الاستخدام', () {
             Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PrivacyPolicyPage(),
+              ),
+            );
           }),
 
-          _drawerItem(Icons.calendar_month_outlined, 'جدول مواعيد المناقشات', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const DiscussionSchedulePage()));
-          }),
+          _drawerItem(
+            Icons.calendar_month_outlined,
+            'جدول مواعيد المناقشات',
+            () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DiscussionSchedulePage(),
+                ),
+              );
+            },
+          ),
 
           const Spacer(),
 
@@ -52,12 +72,19 @@ class AppDrawer extends StatelessWidget {
                 onPressed: () => _showLogoutDialog(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6A5AE0),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   elevation: 0,
                 ),
                 child: const Text(
                   'تسجيل خروج',
-                  style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -99,17 +126,53 @@ class AppDrawer extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('تسجيل الخروج', textAlign: TextAlign.right, style: TextStyle(fontFamily: 'Cairo', fontSize: 15, fontWeight: FontWeight.bold)),
-          content: const Text('هل أنت متأكد أنك تريد مغادرة التطبيق؟', textAlign: TextAlign.right, style: TextStyle(fontFamily: 'Cairo', fontSize: 13)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'تسجيل الخروج',
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: const Text(
+            'هل أنت متأكد أنك تريد مغادرة التطبيق؟',
+            textAlign: TextAlign.right,
+            style: TextStyle(fontFamily: 'Cairo', fontSize: 13),
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.grey))),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const SignInPage()), (route) => false);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignInPage()),
+                  (route) => false,
+                );
               },
-              child: const Text('خروج', style: TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.red, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'خروج',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12,
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );

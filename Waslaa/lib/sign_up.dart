@@ -1,4 +1,14 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/auth/models/specialization.dart';
+import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
 import 'otp_screen.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -11,19 +21,166 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _userController = TextEditingController();
-  final TextEditingController _idController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _studentNumberController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _passwordConfirmController = TextEditingController();
 
-  String? selectedMajor;
+  List<Specialization> _specializations = [];
+  int? _selectedSpecializationId;
+  bool _isLoading = false;
+  bool _isLoadingSpecializations = false;
 
-  // دالة فحص اللغة: ترجع true إذا كان النص فارغاً أو عربياً
-  bool _isArabic(String text) {
-    if (text.isEmpty) return true;
-    return RegExp(r'^[\u0600-\u06FF]').hasMatch(text);
+  File? _profileImage;
+  XFile? _profileImageXFile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSpecializations();
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _studentNumberController.dispose();
+    _passwordController.dispose();
+    _passwordConfirmController.dispose();
+    super.dispose();
+  }
+
+  bool _specializationsLoadFailed = false;
+
+  Future<void> _loadSpecializations() async {
+    setState(() {
+      _isLoadingSpecializations = true;
+      _specializationsLoadFailed = false;
+    });
+    try {
+      final repo = context.read<AuthRepository>();
+      final specs = await repo.getSpecializations();
+      if (mounted) {
+        setState(() => _specializations = specs);
+      }
+    } on DioException {
+      if (mounted) {
+        setState(() => _specializationsLoadFailed = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'تعذر تحميل التخصصات. اضغط على إعادة المحاولة.',
+              textAlign: TextAlign.center,
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingSpecializations = false);
+      }
+    }
+  }
+
+  Future<void> _pickProfileImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 800, imageQuality: 80);
+    if (picked != null) {
+      setState(() {
+        _profileImageXFile = picked;
+        if (!kIsWeb) {
+          _profileImage = File(picked.path);
+        }
+      });
+    }
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedSpecializationId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى اختيار التخصص', textAlign: TextAlign.center),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final repo = context.read<AuthRepository>();
+      await repo.register(
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+        passwordConfirmation: _passwordConfirmController.text,
+        studentNumber: _studentNumberController.text.trim(),
+        specializationId: _selectedSpecializationId,
+        profileImagePath: _profileImageXFile?.path,
+      );
+
+      if (!mounted) return;
+
+      // الانتقال لشاشة التحقق من OTP بعد التسجيل
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => OtpScreen(
+                identifier: _emailController.text.trim(),
+                flow: OtpFlow.registration,
+              ),
+        ),
+      );
+    } on DioException catch (error) {
+      if (!mounted) return;
+
+      String errorMessage = 'حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.';
+
+      if (error.response?.statusCode == 422) {
+        final data = error.response?.data;
+        if (data is Map<String, dynamic> && data.containsKey('errors')) {
+          final errors = data['errors'] as Map<String, dynamic>;
+          if (errors.containsKey('student_number')) {
+            errorMessage = (errors['student_number'] as List).first.toString();
+          } else if (errors.isNotEmpty) {
+            errorMessage = (errors.values.first as List).first.toString();
+          }
+        } else if (data is Map<String, dynamic> &&
+            data.containsKey('message')) {
+          errorMessage = data['message'];
+        }
+      } else {
+        errorMessage = error.message ?? errorMessage;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errorMessage,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontFamily: 'Cairo'),
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -43,165 +200,181 @@ class _SignUpPageState extends State<SignUpPage> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text(
-                'إنشاء حساب',
+              const SizedBox(height: 20),
+              Text(
+                'إنشاء حساب جديد',
                 style: TextStyle(
                   fontFamily: 'Cairo',
-                  fontSize: 28,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF6A5AE0),
+                  color: primarycolor,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               const Text(
-                'أنشئ حساباً لتتمكن من استعراض الوظائف',
+                'سجّل وانطلق نحو مستقبلك المهني',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Cairo',
-                  fontSize: 16,
+                  fontSize: 15,
                   color: Colors.black54,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
 
-              _buildTextFormField(
+              // الصورة الشخصية
+              _buildProfileImagePicker(),
+              const SizedBox(height: 20),
+
+              // الاسم الأول
+              _buildTextField(
                 controller: _firstNameController,
                 hint: 'الاسم الأول',
-                validator:
-                    (v) =>
-                        (v == null || v.isEmpty)
-                            ? 'يرجى إدخال الاسم الأول'
-                            : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال الاسم الأول';
+                  return null;
+                },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 14),
 
-              _buildTextFormField(
+              // اسم العائلة
+              _buildTextField(
                 controller: _lastNameController,
-                hint: 'اللقب',
-                validator:
-                    (v) => (v == null || v.isEmpty) ? 'يرجى إدخال اللقب' : null,
+                hint: 'اسم العائلة',
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال اسم العائلة';
+                  return null;
+                },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 14),
 
-              _buildTextFormField(
+              // اسم المستخدم
+              _buildTextField(
+                controller: _usernameController,
+                hint: 'اسم المستخدم',
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال اسم المستخدم';
+                  if (v.trim().length < 3)
+                    return 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+
+              // البريد الإلكتروني
+              _buildTextField(
                 controller: _emailController,
-                hint: 'البريد الالكتروني',
+                hint: 'البريد الإلكتروني',
                 keyboardType: TextInputType.emailAddress,
-                validator:
-                    (v) =>
-                        (v == null || !v.contains('@'))
-                            ? 'بريد غير صحيح'
-                            : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال البريد الإلكتروني';
+                  if (!v.contains('@')) return 'يرجى إدخال بريد إلكتروني صحيح';
+                  return null;
+                },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 14),
 
-              _buildTextFormField(
+              // رقم الهاتف
+              _buildTextField(
                 controller: _phoneController,
                 hint: 'رقم الهاتف',
                 keyboardType: TextInputType.phone,
-                validator:
-                    (v) => (v == null || v.length < 10) ? 'رقم غير صحيح' : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال رقم الهاتف';
+                  return null;
+                },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 14),
 
-              _buildTextFormField(
-                controller: _userController,
-                hint: 'اسم المستخدم',
-                validator: (v) => (v == null || v.isEmpty) ? 'مطلوب' : null,
+              // الرقم الجامعي / رقم القيد (إلزامي)
+              _buildTextField(
+                controller: _studentNumberController,
+                hint: 'الرقم الجامعي / رقم القيد',
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'يرجى إدخال رقم القيد للتحقق';
+                  return null;
+                },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 14),
 
-              _buildTextFormField(
-                controller: _idController,
-                hint: 'رقم القيد',
-                keyboardType: TextInputType.number,
-                validator:
-                    (v) =>
-                        (v == null ||
-                                v.length != 6 ||
-                                !RegExp(r'^[0-9]+$').hasMatch(v))
-                            ? 'يجب 6 أرقام فقط'
-                            : null,
+              // التخصص
+              _buildSpecializationDropdown(),
+              const SizedBox(height: 14),
+
+              // كلمة المرور
+              _buildTextField(
+                controller: _passwordController,
+                hint: 'كلمة المرور',
+                isPassword: true,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'يرجى إدخال كلمة المرور';
+                  if (v.length < 6)
+                    return 'كلمة المرور يجب أن لا تقل عن 6 أحرف';
+                  return null;
+                },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 14),
 
-              DropdownButtonFormField<String>(
-                // initialValue: _selectedMajor,
-                isExpanded: true,
-                style: const TextStyle(
-                  fontFamily: 'Cairo',
-                  color: Colors.black,
-                  fontSize: 14,
-                ),
-                decoration: _dropdownDecoration('اختر التخصص'),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'حاسب الي',
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'حاسب آلي',
-                        style: TextStyle(fontFamily: 'Cairo'),
-                      ),
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'اتصالات',
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'اتصالات',
-                        style: TextStyle(fontFamily: 'Cairo'),
-                      ),
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'تحكم الي',
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'تحكم آلي',
-                        style: TextStyle(fontFamily: 'Cairo'),
-                      ),
-                    ),
-                  ),
-                ],
-                onChanged: (value) => setState(() => selectedMajor = value),
-                validator: (value) => (value == null) ? 'يرجى الاختيار' : null,
+              // تأكيد كلمة المرور
+              _buildTextField(
+                controller: _passwordConfirmController,
+                hint: 'تأكيد كلمة المرور',
+                isPassword: true,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'يرجى تأكيد كلمة المرور';
+                  if (v != _passwordController.text)
+                    return 'كلمتا المرور غير متطابقتين';
+                  return null;
+                },
               ),
-
               const SizedBox(height: 30),
+
+              // زر التسجيل
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (c) => const OTPScreen()),
-                      );
-                    }
-                  },
+                  onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A5AE0),
+                    backgroundColor: primarycolor,
+                    elevation: 5,
+                    shadowColor: primarycolor.withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'تسجيل حسابي',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                          : const Text(
+                            'إنشاء الحساب',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -209,56 +382,168 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget _buildTextFormField({
+  Widget _buildProfileImagePicker() {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _pickProfileImage,
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: const Color(0xFFF1F0F9),
+                backgroundImage: _profileImage != null ? FileImage(_profileImage!) : null,
+                child: _profileImage == null
+                    ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                    : null,
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: primarycolor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _profileImage != null ? 'اضغط لتغيير الصورة' : 'إضافة صورة شخصية (اختياري)',
+          style: const TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 13,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSpecializationDropdown() {
+    if (_isLoadingSpecializations) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F0F9),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            SizedBox(width: 12),
+            Text('جارٍ تحميل التخصصات...', style: TextStyle(fontFamily: 'Cairo', color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    if (_specializationsLoadFailed && _specializations.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F0F9),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'تعذر تحميل التخصصات',
+                style: TextStyle(fontFamily: 'Cairo', color: Colors.redAccent, fontSize: 13),
+              ),
+            ),
+            TextButton(
+              onPressed: _loadSpecializations,
+              child: Text(
+                'إعادة المحاولة',
+                style: TextStyle(fontFamily: 'Cairo', color: primarycolor, fontSize: 13, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F0F9),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          isExpanded: true,
+          hint: const Text(
+            'التخصص *',
+            style: TextStyle(fontFamily: 'Cairo', color: Colors.grey, fontSize: 14),
+          ),
+          value: _selectedSpecializationId,
+          items: _specializations
+              .map(
+                (s) => DropdownMenuItem<int>(
+                  value: s.id,
+                  child: Text(s.name, style: const TextStyle(fontFamily: 'Cairo', fontSize: 14)),
+                ),
+              )
+              .toList(),
+          onChanged: (val) => setState(() => _selectedSpecializationId = val),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
-    required String? Function(String?)? validator,
+    bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
-      // التحكم في اتجاه النص المكتوب بناءً على لغته
-      textDirection:
-          _isArabic(controller.text) ? TextDirection.rtl : TextDirection.ltr,
-      // جعل المؤشر يبدأ من "البداية" حسب اتجاه النص المختار أعلاه
-      textAlign: TextAlign.start,
-      keyboardType: keyboardType,
       validator: validator,
-      onChanged: (value) => setState(() {}),
+      obscureText: isPassword,
+      keyboardType: keyboardType,
+      textDirection: TextDirection.rtl,
       decoration: InputDecoration(
         hintText: hint,
-        // التعديل الأساسي هنا: جعل التلميح (Hint) دائماً جهة اليمين
         hintTextDirection: TextDirection.rtl,
-        hintStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 14),
+        hintStyle: const TextStyle(
+          fontFamily: 'Cairo',
+          color: Colors.grey,
+          fontSize: 14,
+        ),
         filled: true,
         fillColor: const Color(0xFFF1F0F9),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
           vertical: 18,
         ),
+        errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
-        // لضمان محاذاة رسائل الخطأ أيضاً لليمين
-        errorMaxLines: 1,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primarycolor, width: 1),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
       ),
-    );
-  }
-
-  InputDecoration _dropdownDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintTextDirection: TextDirection.rtl,
-      hintStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 14),
-      filled: true,
-      fillColor: const Color(0xFFF1F0F9),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-      errorStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 12),
     );
   }
 }

@@ -8,6 +8,7 @@ use App\Http\Requests\Api\Mobile\UpdateProfileRequest;
 use App\Http\Requests\Api\Mobile\UploadAvatarRequest;
 use App\Http\Requests\Api\Mobile\UploadCvRequest;
 use App\Http\Resources\Mobile\UserResource;
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -82,6 +83,7 @@ class ProfileController extends Controller
             'message' => 'Avatar uploaded successfully.',
             'data' => [
                 'path' => $path,
+                'url' => PublicMediaUrl::forPath($path),
             ],
         ], 201);
     }
@@ -101,7 +103,23 @@ class ProfileController extends Controller
             'message' => 'CV uploaded successfully.',
             'data' => [
                 'path' => $path,
+                'url' => PublicMediaUrl::forPath($path),
             ],
         ], 201);
+    }
+
+    public function updateFcmToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            'fcm_token' => ['required', 'string'],
+        ]);
+
+        $request->user()->update([
+            'fcm_token' => $request->fcm_token,
+        ]);
+
+        return response()->json([
+            'message' => 'FCM token updated successfully.',
+        ]);
     }
 }

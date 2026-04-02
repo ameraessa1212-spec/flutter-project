@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Supervisors\Schemas;
 
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class SupervisorInfolist
@@ -12,36 +14,23 @@ class SupervisorInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('user.name')
-                    ->label('حساب المستخدم')
-                    ->placeholder('-'),
-                TextEntry::make('company.name')
-                    ->label('الشركة')
-                    ->placeholder('-'),
-                TextEntry::make('name')
-                    ->label('الاسم'),
-                TextEntry::make('phone')
-                    ->label('رقم الهاتف')
-                    ->placeholder('-'),
-                TextEntry::make('email')
-                    ->label('البريد الإلكتروني')
-                    ->placeholder('-'),
-                TextEntry::make('type')
-                    ->label('النوع'),
-                TextEntry::make('department')
-                    ->label('القسم')
-                    ->placeholder('-'),
-                IconEntry::make('is_active')
-                    ->label('نشط')
-                    ->boolean(),
-                TextEntry::make('created_at')
-                    ->label('تاريخ الإنشاء')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->label('تاريخ التحديث')
-                    ->dateTime()
-                    ->placeholder('-'),
+                Grid::make(2)->schema([
+                    Section::make('المعلومات الأساسية')
+                        ->schema([
+                            TextEntry::make('name')->label('الاسم'),
+                            TextEntry::make('user.name')->label('حساب المستخدم')->placeholder('-'),
+                            TextEntry::make('phone')->label('رقم الهاتف')->placeholder('-')->icon('heroicon-m-phone'),
+                            TextEntry::make('email')->label('البريد الإلكتروني')->placeholder('-')->icon('heroicon-m-envelope'),
+                        ])->columnSpan(1),
+                        
+                    Section::make('معلومات العمل')
+                        ->schema([
+                            TextEntry::make('type')->label('النوع')->badge(),
+                            TextEntry::make('company.name')->label('المرجع (الشركة / الجامعة)')->placeholder('أكاديمي / غير محدد'),
+                            TextEntry::make('department')->label('القسم')->placeholder('-'),
+                            IconEntry::make('is_active')->label('نشط')->boolean(),
+                        ])->columnSpan(1),
+                ]),
             ]);
     }
 }

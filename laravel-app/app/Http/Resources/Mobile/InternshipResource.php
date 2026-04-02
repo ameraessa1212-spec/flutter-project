@@ -17,9 +17,18 @@ class InternshipResource extends JsonResource
             'end_date' => optional($this->end_date)?->toDateString(),
             'report_due_date' => optional($this->report_due_date)?->toDateString(),
             'notes' => $this->notes,
-            'company' => new CompanyResource($this->whenLoaded('company')),
-            'opportunity' => new InternshipOpportunityResource($this->whenLoaded('opportunity')),
-            'supervisor' => new SupervisorResource($this->whenLoaded('supervisor')),
+            'company' => $this->when(
+                $this->relationLoaded('company') && $this->company !== null,
+                fn () => CompanyResource::make($this->company),
+            ),
+            'opportunity' => $this->when(
+                $this->relationLoaded('opportunity') && $this->opportunity !== null,
+                fn () => InternshipOpportunityResource::make($this->opportunity),
+            ),
+            'supervisor' => $this->when(
+                $this->relationLoaded('supervisor') && $this->supervisor !== null,
+                fn () => SupervisorResource::make($this->supervisor),
+            ),
         ];
     }
 }

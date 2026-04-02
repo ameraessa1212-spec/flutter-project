@@ -16,6 +16,7 @@ class RolePermissionSeeder extends Seeder
             'super_admin',
             'operations',
             'supervisor',
+            'examiner',
             'content_manager',
             'support',
         ];
@@ -41,6 +42,11 @@ class RolePermissionSeeder extends Seeder
             'content.manage',
             'chat.view',
             'settings.manage',
+            'examiner.dashboard',
+            'examiner.discussions.view',
+            'examiner.discussions.manage',
+            'examiner.evaluations.view',
+            'examiner.evaluations.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -81,6 +87,19 @@ class RolePermissionSeeder extends Seeder
             'schedules.manage',
             'chat.view',
             'notifications.view',
+        ]);
+
+        Role::findByName('examiner')->syncPermissions([
+            'dashboard.view',
+            'reports.view',
+            'reports.review',
+            'notifications.view',
+            'chat.view',
+            'examiner.dashboard',
+            'examiner.discussions.view',
+            'examiner.discussions.manage',
+            'examiner.evaluations.view',
+            'examiner.evaluations.manage',
         ]);
 
         Role::findByName('content_manager')->syncPermissions([

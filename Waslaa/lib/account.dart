@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/core/session/app_session_controller.dart';
+import 'package:Waslaa/features/internships/models/internship.dart';
+import 'package:Waslaa/features/internships/repositories/internship_repository.dart';
+import 'package:Waslaa/features/profile/models/user_profile.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 
 class AccountPage extends StatefulWidget {
   final GlobalKey<ScaffoldState>? scaffoldKey;
@@ -13,25 +17,54 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  File? _image;
-  DateTime? startDate;
-  DateTime? endDate;
-  int currentStatus = 0;
-  final List<String> statusLabels = [
-    "تم القبول",
-    "بدء التدريب",
-    "قيد التدريب",
-    "انتهاء التدريب",
-    "تسليم التقرير",
-  ];
+  UserProfile? _profile;
+  Internship? _currentInternship;
+  List<TimelineItem> _timeline = [];
+  bool _isLoading = true;
+  String? _error;
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() => _image = File(pickedFile.path));
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final profileRepo = context.read<ProfileRepository>();
+      final internshipRepo = context.read<InternshipRepository>();
+
+      final results = await Future.wait([
+        profileRepo.getProfile(),
+        internshipRepo.getCurrentInternship(),
+      ]);
+
+      final profile = results[0] as UserProfile;
+      final internship = results[1] as Internship?;
+
+      List<TimelineItem> timeline = [];
+      if (internship != null) {
+        timeline = await internshipRepo.getTimeline(internship.id);
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _profile = profile;
+        _currentInternship = internship;
+        _timeline = timeline;
+        _isLoading = false;
+      });
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message ?? 'حدث خطأ أثناء تحميل البيانات';
+        _isLoading = false;
+      });
     }
   }
 
@@ -52,54 +85,54 @@ class _AccountPageState extends State<AccountPage> {
             fontSize: 18,
           ),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.notifications_none, color: primarycolor, size: 26),
-        //     onPressed: () {
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(
-        //           builder: (context) => const NotificationsScreen(),
-        //         ),
-        //       );
-        //     },
-        //   ),
-        //   const SizedBox(width: 5),
-        //   IconButton(
-        //     icon: Icon(Icons.menu, color: primarycolor, size: 26),
-        //     onPressed: () {
-        //       if (widget.scaffoldKey != null) {
-        //         widget.scaffoldKey!.currentState?.openEndDrawer();
-        //       } else {
-        //         Scaffold.of(context).openEndDrawer();
-        //       }
-        //     },
-        //   ),
-        //   const SizedBox(width: 15),
-        // ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              const SizedBox(height: 30),
-              _buildProfileHeader(),
-              const SizedBox(height: 30),
-              _buildStatusTimeline(),
-              const SizedBox(height: 40),
-              _buildDateSection("تاريخ بداية التدريب", startDate, true),
-              const SizedBox(height: 25),
-              _buildDateSection("تاريخ نهاية التدريب", endDate, false),
-              const SizedBox(height: 50),
-            ],
-          ),
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const SizedBox(height: 12),
+                      Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+                      const SizedBox(height: 16),
+                      ElevatedButton(onPressed: _loadData, child: const Text('إعادة المحاولة')),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadData,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 30),
+                          _buildProfileHeader(),
+                          const SizedBox(height: 30),
+                          _buildStatusTimeline(),
+                          if (_currentInternship != null) ...[
+                            const SizedBox(height: 30),
+                            _buildInternshipDates(),
+                          ],
+                          const SizedBox(height: 50),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
     );
   }
 
   Widget _buildProfileHeader() {
+    final sessionUser = context.read<AppSessionController>().currentUser;
+    final displayName = _profile?.name ?? sessionUser?.name ?? 'مستخدم';
+    final studentNumber = _profile?.studentProfile?.studentNumber;
+    final specialization = _profile?.studentProfile?.specializationName;
+    final avatarPath = _profile?.studentProfile?.profileImagePath;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -110,58 +143,38 @@ class _AccountPageState extends State<AccountPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Stack(
-            children: [
-              GestureDetector(
-                onTap: _pickImage,
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.white,
-                  backgroundImage: _image != null ? FileImage(_image!) : null,
-                  child:
-                      _image == null
-                          ? const Icon(
-                            Icons.person,
-                            size: 50,
-                            color: Colors.grey,
-                          )
-                          : null,
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: primarycolor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 15),
-                ),
-              ),
-            ],
+          CircleAvatar(
+            radius: 40,
+            backgroundColor: Colors.white,
+            backgroundImage: avatarPath != null ? NetworkImage(avatarPath) : null,
+            child: avatarPath == null
+                ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                : null,
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'أميرة عيسى كرناص',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                'رقم القيد: 219180456',
-                style: TextStyle(color: Colors.grey),
-              ),
-              Text(
-                'حاسب آلي',
-                style: TextStyle(
-                  color: primarycolor,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
-            ],
+                if (studentNumber != null)
+                  Text(
+                    'رقم القيد: $studentNumber',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                if (specialization != null)
+                  Text(
+                    specialization,
+                    style: TextStyle(
+                      color: primarycolor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -169,6 +182,26 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Widget _buildStatusTimeline() {
+    if (_currentInternship == null && _timeline.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F4FF),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Text(
+            'لا يوجد تدريب نشط حالياً',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+        ),
+      );
+    }
+
+    if (_timeline.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       children: [
         Align(
@@ -181,8 +214,9 @@ class _AccountPageState extends State<AccountPage> {
         const SizedBox(height: 15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(statusLabels.length, (index) {
-            bool isCurrentOrPast = index <= currentStatus;
+          children: List.generate(_timeline.length, (index) {
+            final item = _timeline[index];
+            final isCompleted = item.status == 'completed' || item.status == 'current';
             return Expanded(
               child: Column(
                 children: [
@@ -190,29 +224,22 @@ class _AccountPageState extends State<AccountPage> {
                     children: [
                       Expanded(
                         child: Divider(
-                          color:
-                              index == 0
-                                  ? Colors.transparent
-                                  : (isCurrentOrPast
-                                      ? primarycolor
-                                      : Colors.grey[300]),
+                          color: index == 0
+                              ? Colors.transparent
+                              : (isCompleted ? primarycolor : Colors.grey[300]),
                           thickness: 2,
                         ),
                       ),
                       Icon(
-                        isCurrentOrPast ? Icons.check_circle : Icons.circle,
+                        isCompleted ? Icons.check_circle : Icons.circle,
                         size: 16,
-                        color:
-                            isCurrentOrPast ? primarycolor : Colors.grey[300],
+                        color: isCompleted ? primarycolor : Colors.grey[300],
                       ),
                       Expanded(
                         child: Divider(
-                          color:
-                              index == statusLabels.length - 1
-                                  ? Colors.transparent
-                                  : (index < currentStatus
-                                      ? primarycolor
-                                      : Colors.grey[300]),
+                          color: index == _timeline.length - 1
+                              ? Colors.transparent
+                              : (item.status == 'completed' ? primarycolor : Colors.grey[300]),
                           thickness: 2,
                         ),
                       ),
@@ -220,10 +247,10 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    statusLabels[index],
+                    _timelineLabel(item.key),
                     style: TextStyle(
                       fontSize: 8,
-                      color: isCurrentOrPast ? Colors.black : Colors.grey,
+                      color: isCompleted ? Colors.black : Colors.grey,
                     ),
                   ),
                 ],
@@ -235,79 +262,61 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  Widget _buildDateSection(String title, DateTime? date, bool isStart) {
+  String _timelineLabel(String key) {
+    switch (key) {
+      case 'accepted':
+        return 'تم القبول';
+      case 'started':
+        return 'بدء التدريب';
+      case 'in_progress':
+        return 'قيد التدريب';
+      case 'completed':
+        return 'انتهاء التدريب';
+      case 'report_submitted':
+        return 'تسليم التقرير';
+      default:
+        return key;
+    }
+  }
+
+  Widget _buildInternshipDates() {
+    final internship = _currentInternship!;
+    return Column(
+      children: [
+        _buildDateRow("تاريخ بداية التدريب", internship.startDate),
+        const SizedBox(height: 25),
+        _buildDateRow("تاريخ نهاية التدريب", internship.endDate),
+      ],
+    );
+  }
+
+  Widget _buildDateRow(String title, String? date) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
-        Row(
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                if (currentStatus < statusLabels.length - 1) {
-                  setState(() => currentStatus++);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primarycolor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(Icons.calendar_month, color: primarycolor),
+              Text(
+                date ?? 'غير محدد',
+                style: TextStyle(
+                  color: date != null ? Colors.black : Colors.grey,
                 ),
               ),
-              child: const Text(
-                "إرسال",
-                style: TextStyle(color: Colors.white, fontFamily: 'Cairo'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: InkWell(
-                onTap: () => _selectDate(context, isStart),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Icon(Icons.calendar_month, color: primarycolor),
-                      Text(
-                        date == null
-                            ? "2025-01-10"
-                            : DateFormat('yyyy-MM-dd').format(date),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
-  }
-
-  Future<void> _selectDate(BuildContext context, bool isStart) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          startDate = picked;
-        } else {
-          endDate = picked;
-        }
-      });
-    }
   }
 }

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/core/session/app_session_controller.dart';
 // 1. تأكد من إزالة التعليق عن السطر التالي (يجب أن يكون الملف موجوداً بنفس الاسم)
 import 'welcome_screen.dart';
 
@@ -22,14 +26,14 @@ class Intro2 extends StatelessWidget {
               ),
               const SizedBox(height: 40),
 
-              const Text(
+              Text(
                 'تدريبك أصبح أسهل',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Cairo',
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF4A47D1),
+                  color: primarycolor,
                 ),
               ),
               const SizedBox(height: 20),
@@ -54,18 +58,18 @@ class Intro2 extends StatelessWidget {
                   Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFC4C4C4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    width: 8,
+                    width: 20,
                     height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.black,
-                      shape: BoxShape.circle,
+                    decoration: BoxDecoration(
+                      color: primarycolor,
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ],
@@ -76,7 +80,13 @@ class Intro2 extends StatelessWidget {
               // 2. تعديل زر التالي ليفعل الانتقال
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await context
+                        .read<AppSessionController>()
+                        .markOnboardingSeen();
+                    if (!context.mounted) {
+                      return;
+                    }
                     // أمر الانتقال إلى الصفحة التالية
                     Navigator.push(
                       context,
@@ -86,7 +96,7 @@ class Intro2 extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF635BFF),
+                    backgroundColor: primarycolor,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 80,
                       vertical: 15,

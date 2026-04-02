@@ -62,7 +62,8 @@ class CompanyResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\Companies\RelationManagers\OpportunitiesRelationManager::class,
+            \App\Filament\Resources\Companies\RelationManagers\InternshipsRelationManager::class,
         ];
     }
 

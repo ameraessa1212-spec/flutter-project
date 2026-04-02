@@ -17,8 +17,8 @@ class AboutUsPage extends StatelessWidget {
           child: const Text(
             "من نحن ؟",
             style: TextStyle(
-              fontFamily: 'Cairo', 
-              color: Color(0xFF6A5AE0), 
+              fontFamily: 'Cairo',
+              color: Color(0xFF6A5AE0),
               fontWeight: FontWeight.bold,
               fontSize: 15, // تصغير عنوان الصفحة الرئيسي
             ),
@@ -27,38 +27,69 @@ class AboutUsPage extends StatelessWidget {
         leading: Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF6A5AE0), size: 18), // تصغير السهم
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: Color(0xFF6A5AE0),
+              size: 18,
+            ), // تصغير السهم
             onPressed: () => Navigator.pop(context),
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 30.0, left: 25.0, right: 25.0, bottom: 40.0),
+        padding: const EdgeInsets.only(
+          top: 30.0,
+          left: 25.0,
+          right: 25.0,
+          bottom: 40.0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            _buildSection("الرؤية", "تجربة التدريب ميداني رقمية سهلة وموثوقة تربط الطلبة بسوق العمل"),
-            
+            _buildSection(
+              "الرؤية",
+              "تجربة التدريب ميداني رقمية سهلة وموثوقة تربط الطلبة بسوق العمل",
+            ),
+
             const SizedBox(height: 5),
-            
-            _buildSection("الرسالة", "تسهيل إجراءات التدريب من التقديم إلى التقييم عبر نظام واضح وآمن يدعم التواصل والمتابعة"),
-            
+
+            _buildSection(
+              "الرسالة",
+              "تسهيل إجراءات التدريب من التقديم إلى التقييم عبر نظام واضح وآمن يدعم التواصل والمتابعة",
+            ),
+
             const SizedBox(height: 5),
 
             const Text(
-              "الأهداف", 
-              style: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Color(0xFF6A5AE0), fontWeight: FontWeight.bold)
+              "الأهداف",
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 13,
+                color: Color(0xFF6A5AE0),
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
-            _buildBulletPoint("ربط الطلبة بالشركات وتسهيل التقديم على فرص التدريب"),
-            _buildBulletPoint("دعم التواصل عبر الشات بين الطالب ومشرف الكلية لتسهيل المتابعة"),
-            _buildBulletPoint("إشعارات فورية لحالة الطلب (قبول/رفض) والتنبيهات والمواعيد"),
-            
+            _buildBulletPoint(
+              "ربط الطلبة بالشركات وتسهيل التقديم على فرص التدريب",
+            ),
+            _buildBulletPoint(
+              "دعم التواصل عبر الشات بين الطالب ومشرف الكلية لتسهيل المتابعة",
+            ),
+            _buildBulletPoint(
+              "إشعارات فورية لحالة الطلب (قبول/رفض) والتنبيهات والمواعيد",
+            ),
+
             const SizedBox(height: 20),
-            
+
             const Text(
-              "القيم", 
-              style: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Color(0xFF6A5AE0), fontWeight: FontWeight.bold)
+              "القيم",
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 13,
+                color: Color(0xFF6A5AE0),
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
             _buildBulletPoint("الأمان"),
@@ -77,14 +108,24 @@ class AboutUsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            title, 
-            style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Color(0xFF6A5AE0), fontWeight: FontWeight.bold)
+            title,
+            style: const TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 13,
+              color: Color(0xFF6A5AE0),
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            content, 
-            textAlign: TextAlign.right, 
-            style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.black87, height: 1.5)
+            content,
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 12,
+              color: Colors.black87,
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -100,15 +141,23 @@ class AboutUsPage extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              text, 
-              textAlign: TextAlign.right, 
-              style: const TextStyle(fontFamily: 'Cairo', fontSize: 12, color: Colors.black)
-            )
+              text,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 12,
+                color: Colors.black,
+              ),
+            ),
           ),
           const SizedBox(width: 10),
           const Padding(
             padding: EdgeInsets.only(top: 3),
-            child: Icon(Icons.check_circle, color: Color(0xFF6A5AE0), size: 15), // تصغير أيقونة الصح
+            child: Icon(
+              Icons.check_circle,
+              color: Color(0xFF6A5AE0),
+              size: 15,
+            ), // تصغير أيقونة الصح
           ),
         ],
       ),

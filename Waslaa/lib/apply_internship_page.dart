@@ -1,21 +1,18 @@
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:Waslaa/const/color.dart';
+import 'package:Waslaa/features/applications/repositories/application_repository.dart';
+import 'package:Waslaa/features/opportunities/models/opportunity.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
+import 'package:Waslaa/features/profile/models/user_profile.dart';
 
 class ApplyInternshipPage extends StatefulWidget {
-  final String opportunityTitle;
-  final String companyName;
-  final String specialization;
-  final String location;
-  final String duration;
+  final Opportunity opportunity;
 
-  const ApplyInternshipPage({
-    super.key,
-    required this.opportunityTitle,
-    required this.companyName,
-    required this.specialization,
-    required this.location,
-    required this.duration,
-  });
+  const ApplyInternshipPage({super.key, required this.opportunity});
 
   @override
   State<ApplyInternshipPage> createState() => _ApplyInternshipPageState();
@@ -23,66 +20,118 @@ class ApplyInternshipPage extends StatefulWidget {
 
 class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
   final _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _universityController = TextEditingController();
-  final TextEditingController _majorController = TextEditingController();
-  final TextEditingController _levelController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
   bool _agreed = false;
   bool _isSubmitting = false;
+  String? _selectedCvPath;
   String? _selectedCvName;
+  List<int>? _selectedCvBytes;
+  UserProfile? _profile;
+  bool _isLoadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final repo = context.read<ProfileRepository>();
+      final profile = await repo.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _profile = profile;
+        _isLoadingProfile = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingProfile = false);
+    }
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    _universityController.dispose();
-    _majorController.dispose();
-    _levelController.dispose();
     _noteController.dispose();
     super.dispose();
   }
 
-  void _pickCvFile() {
-    setState(() {
-      _selectedCvName = "cv_moad_ben_yousef.pdf";
-    });
+  Future<void> _pickCvFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      withData: kIsWeb,
+    );
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        if (kIsWeb) {
+          _selectedCvBytes = result.files.first.bytes;
+        } else {
+          _selectedCvPath = result.files.first.path;
+        }
+        _selectedCvName = result.files.first.name;
+      });
+    }
   }
 
   Future<void> _submitApplication() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (!_agreed) {
+    if (_selectedCvPath == null && _selectedCvBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("يرجى الموافقة على صحة البيانات قبل الإرسال"),
+          content: Text('يرجى إرفاق السيرة الذاتية (PDF) قبل الإرسال'),
         ),
       );
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    if (!_agreed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('يرجى الموافقة على صحة البيانات قبل الإرسال'),
+        ),
+      );
+      return;
+    }
 
-    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _isSubmitting = true);
 
-    if (!mounted) return;
+    try {
+      final repo = context.read<ApplicationRepository>();
+      await repo.apply(
+        opportunityId: widget.opportunity.id,
+        notes:
+            _noteController.text.trim().isEmpty
+                ? null
+                : _noteController.text.trim(),
+        cvFilePath: _selectedCvPath,
+        cvFileBytes: _selectedCvBytes,
+        cvFileName: _selectedCvName,
+      );
 
-    setState(() {
-      _isSubmitting = false;
-    });
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("تم إرسال طلب التدريب بنجاح")));
-
-    Navigator.pop(context);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم إرسال طلب التدريب بنجاح'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final errorMsg = e.response?.data is Map
+          ? (e.response!.data as Map)['message'] as String?
+          : null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg ?? e.message ?? 'حدث خطأ أثناء إرسال الطلب'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   InputDecoration _inputDecoration(String hint, {IconData? icon}) {
@@ -105,17 +154,6 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide(color: primarycolor, width: 1.5),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.red),
-      ),
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(fontSize: 17, color: Colors.black),
     );
   }
 
@@ -155,8 +193,45 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
     );
   }
 
+  Widget _buildProfileInfoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: primarycolor.withValues(alpha: 0.10)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: primarycolor, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 11, color: Colors.black.withValues(alpha: 0.50))),
+                const SizedBox(height: 2),
+                Text(value, style: const TextStyle(fontSize: 13, color: Colors.black)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final opp = widget.opportunity;
+    final companyName = opp.company?.name ?? '';
+    final spec = opp.specialization?.name ?? '';
+    final location = opp.locationText ?? opp.city ?? '';
+    final duration = opp.durationText ?? '';
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -167,7 +242,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
           elevation: 0,
           centerTitle: true,
           title: Text(
-            "طلب تدريب",
+            'طلب تدريب',
             style: TextStyle(color: primarycolor, fontSize: 20),
           ),
           iconTheme: IconThemeData(color: primarycolor),
@@ -179,14 +254,12 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // بطاقة الفرصة
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        primarycolor,
-                        primarycolor.withValues(alpha: 0.82),
-                      ],
+                      colors: [primarycolor, primarycolor.withValues(alpha: 0.82)],
                       begin: Alignment.topRight,
                       end: Alignment.bottomLeft,
                     ),
@@ -202,16 +275,17 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.companyName,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
+                      if (companyName.isNotEmpty)
+                        Text(
+                          companyName,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 6),
                       Text(
-                        widget.opportunityTitle,
+                        opp.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -222,112 +296,99 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                       const SizedBox(height: 14),
                       Row(
                         children: [
-                          _miniInfoCard(
-                            icon: Icons.school_outlined,
-                            title: "التخصص",
-                            value: widget.specialization,
-                          ),
-                          const SizedBox(width: 10),
-                          _miniInfoCard(
-                            icon: Icons.location_on_outlined,
-                            title: "الموقع",
-                            value: widget.location,
-                          ),
-                          const SizedBox(width: 10),
-                          _miniInfoCard(
-                            icon: Icons.access_time_rounded,
-                            title: "المدة",
-                            value: widget.duration,
-                          ),
+                          if (spec.isNotEmpty)
+                            _miniInfoCard(
+                              icon: Icons.school_outlined,
+                              title: 'التخصص',
+                              value: spec,
+                            ),
+                          if (spec.isNotEmpty && location.isNotEmpty)
+                            const SizedBox(width: 10),
+                          if (location.isNotEmpty)
+                            _miniInfoCard(
+                              icon: Icons.location_on_outlined,
+                              title: 'الموقع',
+                              value: location,
+                            ),
+                          if (location.isNotEmpty && duration.isNotEmpty)
+                            const SizedBox(width: 10),
+                          if (duration.isNotEmpty)
+                            _miniInfoCard(
+                              icon: Icons.access_time_rounded,
+                              title: 'المدة',
+                              value: duration,
+                            ),
                         ],
                       ),
                     ],
                   ),
                 ),
+
+                // بيانات الطالب
                 const SizedBox(height: 22),
-                _sectionTitle("بيانات الطالب"),
+                const Text('بيانات الطالب', style: TextStyle(fontSize: 17, color: Colors.black)),
+                const SizedBox(height: 6),
+                Text(
+                  'سيتم إرسال بياناتك تلقائياً من ملفك الشخصي',
+                  style: TextStyle(fontSize: 12, color: Colors.black.withValues(alpha: 0.5)),
+                ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: _inputDecoration(
-                    "الاسم الكامل",
+                if (_isLoadingProfile)
+                  const Center(child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ))
+                else if (_profile != null) ...[
+                  _buildProfileInfoCard(
                     icon: Icons.person_outline,
+                    label: 'الاسم الكامل',
+                    value: _profile!.name,
                   ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال الاسم"
-                              : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  decoration: _inputDecoration(
-                    "رقم الهاتف",
-                    icon: Icons.phone_outlined,
-                  ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال رقم الهاتف"
-                              : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration(
-                    "البريد الإلكتروني",
+                  const SizedBox(height: 8),
+                  _buildProfileInfoCard(
                     icon: Icons.email_outlined,
+                    label: 'البريد الإلكتروني',
+                    value: _profile!.email,
                   ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال البريد الإلكتروني"
-                              : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _universityController,
-                  decoration: _inputDecoration(
-                    "الجامعة",
-                    icon: Icons.account_balance_outlined,
+                  const SizedBox(height: 8),
+                  _buildProfileInfoCard(
+                    icon: Icons.phone_outlined,
+                    label: 'رقم الهاتف',
+                    value: _profile!.phone,
                   ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال اسم الجامعة"
-                              : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _majorController,
-                  decoration: _inputDecoration(
-                    "التخصص",
-                    icon: Icons.menu_book_outlined,
-                  ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال التخصص"
-                              : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _levelController,
-                  decoration: _inputDecoration(
-                    "السنة الدراسية / الفصل",
-                    icon: Icons.school_outlined,
-                  ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى إدخال السنة الدراسية أو الفصل"
-                              : null,
-                ),
+                  if (_profile!.studentProfile?.universityName != null) ...[
+                    const SizedBox(height: 8),
+                    _buildProfileInfoCard(
+                      icon: Icons.school_outlined,
+                      label: 'الجامعة',
+                      value: _profile!.studentProfile!.universityName!,
+                    ),
+                  ],
+                  if (_profile!.studentProfile?.specializationName != null) ...[
+                    const SizedBox(height: 8),
+                    _buildProfileInfoCard(
+                      icon: Icons.category_outlined,
+                      label: 'التخصص',
+                      value: _profile!.studentProfile!.specializationName!,
+                    ),
+                  ],
+                  if (_profile!.studentProfile?.studyLevel != null) ...[
+                    const SizedBox(height: 8),
+                    _buildProfileInfoCard(
+                      icon: Icons.bar_chart_outlined,
+                      label: 'المستوى الدراسي',
+                      value: _profile!.studentProfile!.studyLevel!,
+                    ),
+                  ],
+                ],
+
                 const SizedBox(height: 22),
-                _sectionTitle("السيرة الذاتية"),
+
+                // السيرة الذاتية
+                const Text(
+                  'السيرة الذاتية',
+                  style: TextStyle(fontSize: 17, color: Colors.black),
+                ),
                 const SizedBox(height: 12),
                 InkWell(
                   onTap: _pickCvFile,
@@ -337,9 +398,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: primarycolor.withValues(alpha: 0.12),
-                      ),
+                      border: Border.all(color: primarycolor.withValues(alpha: 0.12)),
                     ),
                     child: Row(
                       children: [
@@ -348,7 +407,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                         Expanded(
                           child: Text(
                             _selectedCvName ??
-                                "اختر ملف السيرة الذاتية (PDF / Word)",
+                                'اختر ملف السيرة الذاتية (PDF / Word)',
                             style: TextStyle(
                               color:
                                   _selectedCvName == null
@@ -362,41 +421,55 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                             ),
                           ),
                         ),
+                        if (_selectedCvName != null)
+                          GestureDetector(
+                            onTap:
+                                () => setState(() {
+                                  _selectedCvPath = null;
+                                  _selectedCvBytes = null;
+                                  _selectedCvName = null;
+                                }),
+                            child: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.grey,
+                            ),
+                          ),
                       ],
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 22),
-                _sectionTitle("رسالة تعريفية"),
+
+                // رسالة تعريفية
+                const Text(
+                  'رسالة تعريفية',
+                  style: TextStyle(fontSize: 17, color: Colors.black),
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _noteController,
                   maxLines: 5,
                   decoration: _inputDecoration(
-                    "اكتب نبذة قصيرة عنك ولماذا ترغب في هذه الفرصة",
+                    'اكتب نبذة قصيرة عنك ولماذا ترغب في هذه الفرصة',
                   ),
-                  validator:
-                      (value) =>
-                          value == null || value.trim().isEmpty
-                              ? "يرجى كتابة رسالة تعريفية قصيرة"
-                              : null,
                 ),
+
                 const SizedBox(height: 14),
                 CheckboxListTile(
                   value: _agreed,
-                  onChanged: (value) {
-                    setState(() {
-                      _agreed = value ?? false;
-                    });
-                  },
+                  onChanged:
+                      (value) => setState(() => _agreed = value ?? false),
                   activeColor: primarycolor,
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
                   title: const Text(
-                    "أتعهد بأن جميع البيانات المدخلة صحيحة",
+                    'أتعهد بأن جميع البيانات المدخلة صحيحة',
                     style: TextStyle(fontSize: 13),
                   ),
                 ),
+
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitApplication,
@@ -420,7 +493,7 @@ class _ApplyInternshipPageState extends State<ApplyInternshipPage> {
                             ),
                           )
                           : const Text(
-                            "إرسال الطلب",
+                            'إرسال الطلب',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,

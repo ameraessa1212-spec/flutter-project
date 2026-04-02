@@ -40,7 +40,7 @@ class PasswordController extends Controller
     {
         $validated = $request->validated();
 
-        if ($validated['otp'] !== '6666') {
+        if ($validated['otp'] !== '666666') {
             throw ValidationException::withMessages([
                 'otp' => ['Invalid OTP code.'],
             ]);
@@ -55,7 +55,7 @@ class PasswordController extends Controller
     {
         $validated = $request->validated();
 
-        if ($validated['otp'] !== '6666') {
+        if ($validated['otp'] !== '666666') {
             throw ValidationException::withMessages([
                 'otp' => ['Invalid OTP code.'],
             ]);

@@ -19,6 +19,23 @@ use UnitEnum;
 
 class ApplicationResource extends Resource
 {
+    /**
+     * Scope queries so company users only see their own applications.
+     */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
+        if ($user && $user->hasRole('company')) {
+            // Assuming company_id is set on the user model or via relation
+            if (method_exists($user, 'company') && $user->company) {
+                $query->where('company_id', $user->company->id);
+            } elseif (isset($user->company_id)) {
+                $query->where('company_id', $user->company_id);
+            }
+        }
+        return $query;
+    }
     protected static ?string $model = Application::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;

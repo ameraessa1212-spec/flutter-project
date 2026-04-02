@@ -15,6 +15,9 @@ class CompanyController extends Controller
         $validated = $request->validated();
 
         $companies = Company::query()
+            ->withCount(['opportunities as active_opportunities_count' => function ($query) {
+                $query->active();
+            }])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = (string) $request->string('search');
                 $query->where(function ($inner) use ($search) {
@@ -32,6 +35,10 @@ class CompanyController extends Controller
 
     public function show(Company $company): JsonResponse
     {
+        $company->loadCount(['opportunities as active_opportunities_count' => function ($query) {
+            $query->active();
+        }]);
+
         return response()->json([
             'data' => CompanyResource::make($company),
         ]);

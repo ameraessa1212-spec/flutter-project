@@ -32,10 +32,16 @@ class AuthController extends Controller
             'status' => 'pending',
         ]);
 
+        $profileImagePath = null;
+        if ($request->hasFile('profile_image')) {
+            $profileImagePath = $request->file('profile_image')->store('mobile/profile-avatars', 'public');
+        }
+
         StudentProfile::create([
             'user_id' => $user->id,
             'student_number' => $validated['student_number'] ?? null,
             'specialization_id' => $validated['specialization_id'] ?? null,
+            'profile_image_path' => $profileImagePath,
         ]);
 
         return response()->json([
@@ -51,7 +57,7 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        if ($validated['otp'] !== '6666') {
+        if ($validated['otp'] !== '666666') {
             throw ValidationException::withMessages([
                 'otp' => ['Invalid OTP code.'],
             ]);
