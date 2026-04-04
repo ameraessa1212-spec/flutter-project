@@ -114,10 +114,13 @@ class ChatRepository {
         (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
     return ChatMessage(
       id: data['id'],
-      body: body,
-      senderId: senderId,
+      body: data['body'] as String? ?? body,
+      senderId: (data['from_id'] as num?)?.toInt() ?? senderId,
+      fromId: (data['from_id'] as num?)?.toInt() ?? senderId,
+      toId: (data['to_id'] as num?)?.toInt() ?? receiverId,
       messageType: 'text',
-      createdAt: DateTime.now().toIso8601String(),
+      createdAt: data['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      sentAt: data['created_at'] as String? ?? DateTime.now().toIso8601String(),
     );
   }
 }

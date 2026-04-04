@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\Mobile;
 
+use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\ChatThread;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class MobileChatController extends Controller
 {
@@ -93,12 +95,20 @@ class MobileChatController extends Controller
 
         $thread->update(['last_message_at' => now()]);
 
+        try {
+            broadcast(new MessageSent($message))->toOthers();
+        } catch (Throwable $e) {
+            report($e);
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => [
                 'id' => $message->id,
-                'message' => $message->body,
-                'receiver_id' => $request->input('receiver_id', 0),
+                'from_id' => $user->id,
+                'to_id' => $request->input('receiver_id', 0),
+                'body' => $message->body,
+                'created_at' => $message->sent_at->toISOString(),
             ],
         ]);
     }
