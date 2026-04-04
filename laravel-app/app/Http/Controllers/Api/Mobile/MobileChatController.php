@@ -126,10 +126,10 @@ class MobileChatController extends Controller
             }
         }
 
-        $supportAdmins = User::where('role', 'super_admin')
-            ->orWhere('role', 'support')
-            ->where('status', 'active')
-            ->get();
+        $supportAdmins = User::where(function ($query) {
+            $query->where('role', 'super_admin')
+                ->orWhere('role', 'support');
+        })->where('status', 'active')->get();
         $contacts = $supervisorUsers->merge($supportAdmins)->unique('id')->values();
 
         return response()->json([

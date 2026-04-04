@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Events\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Models\ChatThread;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class ChatController extends Controller
 {
@@ -45,13 +47,14 @@ class ChatController extends Controller
         $userId = (int) $request->input('user_id');
         $currentUserId = $request->user()->id;
 
-        $thread = ChatThread::where('student_id', $userId)->first();
+        // Get all threads for this student and collect messages from all of them
+        $threadIds = ChatThread::where('student_id', $userId)->pluck('id');
 
-        if (! $thread) {
+        if ($threadIds->isEmpty()) {
             return response()->json(['data' => []]);
         }
 
-        $messages = Message::where('thread_id', $thread->id)
+        $messages = Message::whereIn('thread_id', $threadIds)
             ->orderBy('sent_at')
             ->get()
             ->map(function ($msg) use ($currentUserId) {
@@ -66,7 +69,8 @@ class ChatController extends Controller
                 ];
             });
 
-        Message::where('thread_id', $thread->id)
+        // Mark student's messages as read
+        Message::whereIn('thread_id', $threadIds)
             ->where('sender_id', $userId)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
@@ -82,10 +86,20 @@ class ChatController extends Controller
             'type' => ['nullable', 'string', 'in:text,voice,file'],
         ]);
 
-        $thread = ChatThread::firstOrCreate(
-            ['student_id' => $validated['user_id']],
-            ['status' => 'active', 'last_message_at' => now()]
-        );
+        // Find or create a support thread (no internship) for this student
+        $thread = ChatThread::where('student_id', $validated['user_id'])
+            ->whereNull('internship_id')
+            ->first();
+
+        if (! $thread) {
+            $thread = ChatThread::create([
+                'student_id' => $validated['user_id'],
+                'internship_id' => null,
+                'supervisor_id' => null,
+                'status' => 'active',
+                'last_message_at' => now(),
+            ]);
+        }
 
         $message = Message::create([
             'thread_id' => $thread->id,
@@ -96,6 +110,12 @@ class ChatController extends Controller
         ]);
 
         $thread->update(['last_message_at' => now()]);
+
+        try {
+            broadcast(new MessageSent($message))->toOthers();
+        } catch (Throwable $e) {
+            report($e);
+        }
 
         return response()->json([
             'message' => 'تم إرسال الرسالة.',

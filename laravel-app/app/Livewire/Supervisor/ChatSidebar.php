@@ -42,7 +42,10 @@ class ChatSidebar extends Component
             ]);
 
         if (!$user->hasRole('super_admin') && $user->hasRole('supervisor') && $user->supervisorProfile) {
-            $query->where('supervisor_id', $user->supervisorProfile->id);
+            $query->where(function ($q) use ($user) {
+                $q->where('supervisor_id', $user->supervisorProfile->id)
+                    ->orWhereNull('supervisor_id');
+            });
         }
 
         if (!empty($this->search)) {

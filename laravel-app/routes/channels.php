@@ -9,11 +9,11 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 
 Broadcast::channel('chat.{threadId}', function ($user, $threadId) {
     $thread = ChatThread::find($threadId);
-    
+
     if (!$thread) {
         return false;
     }
-    
+
     // Check if user is the student involved
     if ($thread->student_id === $user->id) {
         return true;
@@ -24,8 +24,13 @@ Broadcast::channel('chat.{threadId}', function ($user, $threadId) {
         return true;
     }
 
-    // Admins can view all channels
-    if ($user->hasRole('super_admin')) {
+    // Admins and support can view all channels (especially support threads)
+    if ($user->hasRole('super_admin') || $user->hasRole('support')) {
+        return true;
+    }
+
+    // Supervisors can see support threads (no supervisor assigned)
+    if ($user->hasRole('supervisor') && $thread->supervisor_id === null) {
         return true;
     }
 
