@@ -63,22 +63,25 @@ class MobileChatController extends Controller
     {
         $request->validate([
             'receiver_id' => 'nullable|exists:users,id',
-            'message' => 'required|string',
+            'message' => 'required|string|max:4000',
         ]);
 
         $user = $request->user();
 
         // Find or create a support thread (no internship_id = support thread)
-        $thread = ChatThread::firstOrCreate(
-            [
+        $thread = ChatThread::where('student_id', $user->id)
+            ->whereNull('internship_id')
+            ->first();
+
+        if (! $thread) {
+            $thread = ChatThread::create([
                 'student_id' => $user->id,
                 'internship_id' => null,
-            ],
-            [
+                'supervisor_id' => null,
                 'status' => 'active',
                 'last_message_at' => now(),
-            ]
-        );
+            ]);
+        }
 
         $message = Message::create([
             'thread_id' => $thread->id,

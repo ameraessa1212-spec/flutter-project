@@ -28,7 +28,7 @@ class ChatThread extends Model
 
     public function internship(): BelongsTo
     {
-        return $this->belongsTo(Internship::class);
+        return $this->belongsTo(Internship::class)->withDefault();
     }
 
     public function student(): BelongsTo
@@ -38,7 +38,15 @@ class ChatThread extends Model
 
     public function supervisor(): BelongsTo
     {
-        return $this->belongsTo(Supervisor::class);
+        return $this->belongsTo(Supervisor::class)->withDefault();
+    }
+
+    /**
+     * Check if this is a support thread (no linked internship).
+     */
+    public function isSupportThread(): bool
+    {
+        return $this->internship_id === null;
     }
 
     public function messages(): HasMany

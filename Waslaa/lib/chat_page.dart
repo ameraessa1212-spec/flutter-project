@@ -46,14 +46,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    _initChat().then((_) {
-      // Start polling for Chatify messages after init
-      if (_chatifyReceiverId != null || widget.receiverId != null) {
-        _pollTimer ??= Timer.periodic(const Duration(seconds: 5), (_) {
-          _pollChatifyMessages();
-        });
-      }
-    });
+    _initChat();
   }
 
   @override
@@ -75,20 +68,15 @@ class _ChatPageState extends State<ChatPage> {
       _currentUserId = context.read<AppSessionController>().currentUser?.id;
       final repo = context.read<ChatRepository>();
 
-      // If receiverId is explicitly provided → use Chatify direct messaging
-      if (widget.receiverId != null) {
-        _chatifyReceiverId = widget.receiverId;
-        await _loadChatifyMessages();
-        return;
-      }
-
       // Try thread-based chat first
       final explicitThreadId = widget.threadId;
       final explicitInternshipId = widget.internshipId;
+
       if (explicitThreadId != null) {
         _activeThreadId = explicitThreadId;
         _activeThread = await repo.getThread(explicitThreadId);
       } else {
+        // Search for a matching thread by internship
         final threads = await repo.getThreads();
         if (threads.isNotEmpty) {
           ChatThread? matchedThread;
@@ -131,18 +119,27 @@ class _ChatPageState extends State<ChatPage> {
           }
         });
       } else {
-        // No thread found — fallback to Chatify with support contact
+        // No thread found — fallback to Chatify direct messaging
+        // Use explicitly provided receiverId, or find a support contact
+        if (widget.receiverId != null) {
+          _chatifyReceiverId = widget.receiverId;
+          await _loadChatifyMessages();
+          _pollTimer?.cancel();
+          _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+            _pollChatifyMessages();
+          });
+          return;
+        }
+
         try {
           final contacts = await repo.getChatifyContacts();
           if (contacts.isNotEmpty) {
-            // Prefer support over supervisor for admin chat
             final contact = contacts.firstWhere(
               (c) => c['type'] == 'support',
               orElse: () => contacts.first,
             );
             _chatifyReceiverId = contact['id'] as int;
             await _loadChatifyMessages();
-            // Start polling for this contact
             _pollTimer?.cancel();
             _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
               _pollChatifyMessages();
@@ -222,20 +219,32 @@ class _ChatPageState extends State<ChatPage> {
 
   Future<void> _refreshMessages() async {
     final threadId = _activeThreadId;
-    if (threadId == null) {
+    final receiverId = _chatifyReceiverId;
+
+    if (threadId == null && receiverId == null) {
       return;
     }
 
     try {
       final repo = context.read<ChatRepository>();
-      final msgs = await repo.getMessages(threadId);
-      if (!mounted) return;
-      setState(() {
-        _messages
-          ..clear()
-          ..addAll(msgs.reversed);
-      });
-      await repo.markRead(threadId);
+      if (threadId != null) {
+        final msgs = await repo.getMessages(threadId);
+        if (!mounted) return;
+        setState(() {
+          _messages
+            ..clear()
+            ..addAll(msgs.reversed);
+        });
+        await repo.markRead(threadId);
+      } else if (receiverId != null) {
+        final msgs = await repo.getChatifyMessages(receiverId);
+        if (!mounted) return;
+        setState(() {
+          _messages
+            ..clear()
+            ..addAll(msgs);
+        });
+      }
       _scrollToBottom();
     } on DioException catch (error) {
       if (!mounted) return;

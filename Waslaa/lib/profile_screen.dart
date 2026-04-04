@@ -275,7 +275,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           MaterialPageRoute(
                             builder:
                                 (context) => const ChatPage(
-                                  receiverId: 1,
                                   receiverName: 'التواصل مع المشرف',
                                 ),
                           ),
