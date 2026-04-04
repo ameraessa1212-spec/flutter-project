@@ -14,9 +14,9 @@ class ApiClient {
               baseUrl: AppConfig.apiBaseUrl,
               connectTimeout: AppConfig.connectTimeout,
               receiveTimeout: AppConfig.receiveTimeout,
+              contentType: 'application/json',
               headers: const {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
               },
             ),
           ) {
