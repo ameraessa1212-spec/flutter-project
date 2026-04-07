@@ -11,6 +11,7 @@ class EligibleStudentSeeder extends Seeder
     {
         DB::table('eligible_students')->insertOrIgnore([
             ['student_number' => '192074', 'name' => 'Student One'],
+             ['student_number' => '192026', 'name' => 'Student One'],
         ]);
     }
 }

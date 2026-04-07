@@ -177,7 +177,7 @@ class _CompanyPageState extends State<CompanyPage> {
                 fontSize: 22,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 7),
             Text(
               'استعرض الفرص المتاحة حسب التخصص',
               style: TextStyle(
@@ -277,14 +277,16 @@ class _CompanyPageState extends State<CompanyPage> {
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                color: _selectedSpecializationId != null
-                    ? primarycolor.withValues(alpha: 0.12)
-                    : Colors.white,
+                color:
+                    _selectedSpecializationId != null
+                        ? primarycolor.withValues(alpha: 0.12)
+                        : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: _selectedSpecializationId != null
-                      ? primarycolor
-                      : primarycolor.withValues(alpha: 0.18),
+                  color:
+                      _selectedSpecializationId != null
+                          ? primarycolor
+                          : primarycolor.withValues(alpha: 0.18),
                 ),
                 boxShadow: [
                   BoxShadow(

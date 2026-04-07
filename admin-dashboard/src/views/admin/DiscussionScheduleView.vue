@@ -27,40 +27,79 @@ function toggleTarget(t) {
 async function send() {
   if (!file.value) { alert('ارفع صورة الجدول أولاً'); return }
   if (!targets.value.length) { alert('حدد المستلمين'); return }
-  sending.value = true; result.value = ''
+  
+  sending.value = true
+  result.value = ''
+  
   const fd = new FormData()
   fd.append('image', file.value)
   targets.value.forEach(t => fd.append('targets[]', t))
   if (message.value) fd.append('message', message.value)
+  
   try {
-    const { data } = await api.post('/discussion-schedules', fd)
-    result.value = data.message || 'تم الإرسال بنجاح'
-  } catch (e) { result.value = 'حدث خطأ' }
-  sending.value = false
+    await api.post('/discussion-schedules', fd)
+    // تغيير القيمة هنا لتكون ثابتة كما طلبت
+    result.value = 'تم الإرسال بنجاح' 
+  } catch (e) { 
+    result.value = 'حدث خطأ أثناء الإرسال' 
+  } finally {
+    sending.value = false
+  }
 }
 </script>
 
 <template>
-  <div style="max-width:600px;margin:0 auto;">
-    <h1 class="page-title">إرسال جدول المناقشة</h1>
+  <div style="max-width:600px;margin:0 auto; padding: 20px;">
+    <h1 class="page-title" style="text-align: center; margin-bottom: 25px;">إرسال جدول المناقشة</h1>
 
-    <label class="card" style="display:block;padding:40px;cursor:pointer;border:2px dashed #6A5AE0;text-align:center;margin-bottom:20px;">
-      <img v-if="preview" :src="preview" style="max-width:100%;border-radius:10px;margin-bottom:10px;">
-      <template v-else><i class="ri-upload-cloud-2-line" style="font-size:48px;color:#6A5AE0;display:block;"></i><p>اضغط لرفع صورة الجدول</p></template>
+    <label class="upload-card" style="display:block;padding:40px;cursor:pointer;border:2px dashed #6A5AE0;text-align:center;margin-bottom:20px;border-radius:15px;background:#f8faff;">
+      <img v-if="preview" :src="preview" style="max-width:100%;border-radius:10px;margin-bottom:10px;box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <template v-else>
+        <i class="ri-upload-cloud-2-line" style="font-size:48px;color:#6A5AE0;display:block;"></i>
+        <p style="color:#6A5AE0; font-weight:600;">اضغط لرفع صورة الجدول</p>
+      </template>
       <input type="file" accept="image/*" style="display:none" @change="onFileChange">
     </label>
 
     <div style="display:flex;gap:10px;margin-bottom:15px;">
-      <button class="btn" :class="targets.includes('examiners') ? 'btn-primary' : 'btn-outline'" @click="toggleTarget('examiners')" style="flex:1;">الممتحنين</button>
-      <button class="btn" :class="targets.includes('students') ? 'btn-primary' : 'btn-outline'" @click="toggleTarget('students')" style="flex:1;">الطلاب</button>
+      <button class="btn" :class="targets.includes('examiners') ? 'btn-primary' : 'btn-outline'" @click="toggleTarget('examiners')" style="flex:1; padding: 12px; border-radius: 10px; font-weight: 600;">
+        الممتحنين
+      </button>
+      <button class="btn" :class="targets.includes('students') ? 'btn-primary' : 'btn-outline'" @click="toggleTarget('students')" style="flex:1; padding: 12px; border-radius: 10px; font-weight: 600;">
+        الطلاب
+      </button>
     </div>
 
-    <textarea v-model="message" class="form-input" placeholder="رسالة مرفقة (اختياري)..." style="min-height:80px;resize:vertical;margin-bottom:15px;width:100%;"></textarea>
+    <textarea v-model="message" class="form-input" placeholder="رسالة مرفقة (اختياري)..." style="min-height:100px;resize:vertical;margin-bottom:15px;width:100%; padding:12px; border-radius:10px; border:1px solid #ddd;"></textarea>
 
-    <button class="btn btn-primary" style="width:100%;padding:14px;" @click="send" :disabled="sending">
+    <button class="btn btn-primary" style="width:100%;padding:14px; border-radius:12px; font-size:16px; font-weight:bold;" @click="send" :disabled="sending">
       {{ sending ? 'جاري الإرسال...' : 'إرسال الجدول' }}
     </button>
 
-    <p v-if="result" style="text-align:center;margin-top:15px;color:#22c55e;font-weight:700;">{{ result }}</p>
+    <div v-if="result === 'تم الإرسال بنجاح'" style="text-align:center; margin-top:20px; padding:12px; background:#e8fdf4; border-radius:8px;">
+      <p style="color:#22c55e; font-weight:700; margin:0;">
+        <i class="ri-checkbox-circle-line"></i> {{ result }}
+      </p>
+    </div>
+
+    <p v-else-if="result" style="text-align:center; margin-top:15px; color:#ef4444; font-weight:600;">{{ result }}</p>
   </div>
 </template>
+
+<style scoped>
+/* تأكد من وجود هذه التنسيقات في ملف الـ CSS الخاص بك أو أضفها هنا */
+.btn-primary {
+  background-color: #6A5AE0;
+  color: white;
+  border: none;
+}
+.btn-outline {
+  background-color: white;
+  color: #6A5AE0;
+  border: 2px solid #6A5AE0;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+</style>

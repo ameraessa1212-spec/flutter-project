@@ -39,15 +39,28 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
       if (!result.canApply) {
         showDialog(
           context: context,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('لا يمكن التقديم', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-            content: Text(result.reason ?? 'لا يمكنك التقديم حالياً.', textAlign: TextAlign.center),
-            actionsAlignment: MainAxisAlignment.center,
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('حسناً')),
-            ],
-          ),
+          builder:
+              (ctx) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: const Text(
+                  'لا يمكن التقديم',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                content: Text(
+                  result.reason ?? 'لا يمكنك التقديم حالياً.',
+                  textAlign: TextAlign.center,
+                ),
+                actionsAlignment: MainAxisAlignment.center,
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('حسناً'),
+                  ),
+                ],
+              ),
         );
         return;
       }
@@ -55,7 +68,8 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ApplyInternshipPage(opportunity: widget.opportunity),
+          builder:
+              (context) => ApplyInternshipPage(opportunity: widget.opportunity),
         ),
       );
     } catch (_) {
@@ -64,7 +78,8 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ApplyInternshipPage(opportunity: widget.opportunity),
+          builder:
+              (context) => ApplyInternshipPage(opportunity: widget.opportunity),
         ),
       );
     } finally {
@@ -170,7 +185,9 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        opportunity.isAvailable ? 'متاح الآن' : 'غير متاحة في النظام',
+                        opportunity.isAvailable
+                            ? 'متاح الآن'
+                            : 'غير متاحة في النظام',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -379,21 +396,10 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (company?.logoPath != null && company!.logoPath!.isNotEmpty) ...[
+                      ...[
                         Center(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              company.logoPath!,
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.business_outlined,
-                                color: primarycolor,
-                                size: 40,
-                              ),
-                            ),
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -422,25 +428,40 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                             ? companyDescription
                             : '$companyName توفر فرص تدريب للطلاب في عدد من التخصصات، وتهدف إلى منحهم تجربة عملية حقيقية داخل بيئة العمل.',
                         textAlign: TextAlign.right,
-                        style: const TextStyle(fontSize: 14, color: CompanyDetailsPage.textMuted),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: CompanyDetailsPage.textMuted,
+                        ),
                       ),
                       if (!opportunity.isAvailable) ...[
                         const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.orange.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.orange.withValues(alpha: 0.20)),
+                            border: Border.all(
+                              color: Colors.orange.withValues(alpha: 0.20),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                              const Icon(
+                                Icons.info_outline,
+                                color: Colors.orange,
+                                size: 20,
+                              ),
                               const SizedBox(width: 10),
                               const Expanded(
                                 child: Text(
                                   'هذه الفرصة غير متاحة حالياً',
-                                  style: TextStyle(fontSize: 12.5, color: Colors.black87),
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ),
                             ],
@@ -469,18 +490,25 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                   ),
                   minimumSize: Size(AppDimensions.screenWidth * 0.8, 54),
                 ),
-                child: _isCheckingEligibility
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2.3, color: Colors.white),
-                      )
-                    : Text(
-                        opportunity.isAvailable
-                            ? 'طلب تدريب'
-                            : 'غير متاحة في النظام',
-                        style: const TextStyle(color: Colors.white, fontSize: 17),
-                      ),
+                child:
+                    _isCheckingEligibility
+                        ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.3,
+                            color: Colors.white,
+                          ),
+                        )
+                        : Text(
+                          opportunity.isAvailable
+                              ? 'طلب تدريب'
+                              : 'غير متاحة في النظام',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                          ),
+                        ),
               ),
 
               const SizedBox(height: 20),

@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
         "الصفحة الرئيسية",
         style: TextStyle(
           fontSize: 22,
-          color: Colors.black,
+          color: Color.fromARGB(255, 0, 0, 0),
           fontWeight: FontWeight.w400,
         ),
       ),
@@ -781,12 +781,6 @@ class _CurrentInternshipCard extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _InternshipMetaChip(
-                        icon: Icons.badge_outlined,
-                        label:
-                            activeInternship.supervisor?.name ??
-                            'المشرف غير محدد',
-                      ),
                       _InternshipMetaChip(
                         icon: Icons.event_note_rounded,
                         label:
