@@ -97,6 +97,13 @@ class AuthRepository {
     );
   }
 
+  Future<void> resendOtp({required String identifier}) async {
+    await _apiClient.post(
+      '/auth/resend-otp',
+      data: {'identifier': identifier},
+    );
+  }
+
   Future<void> forgotPassword({required String identifier}) async {
     await _apiClient.post(
       '/auth/password/forgot',

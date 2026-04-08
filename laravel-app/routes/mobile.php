@@ -24,6 +24,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::prefix('auth')->name('auth.')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->name('register');
         Route::post('verify-otp', [AuthController::class, 'verifyOtp'])->name('verify-otp');
+        Route::post('resend-otp', [AuthController::class, 'resendOtp'])->name('resend-otp');
         Route::post('login', [AuthController::class, 'login'])->name('login');
 
         Route::prefix('password')->name('password.')->group(function () {

@@ -7,11 +7,14 @@ use App\Http\Requests\Api\Mobile\LoginRequest;
 use App\Http\Requests\Api\Mobile\RegisterRequest;
 use App\Http\Requests\Api\Mobile\VerifyOtpRequest;
 use App\Http\Resources\Mobile\UserResource;
+use App\Mail\OtpMail;
+use App\Models\PasswordResetOtp;
 use App\Models\StudentProfile;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -44,8 +47,11 @@ class AuthController extends Controller
             'profile_image_path' => $profileImagePath,
         ]);
 
+        // Generate and send OTP for account verification
+        $this->sendOtp($user->email, $user->name);
+
         return response()->json([
-            'message' => 'Registration completed. Please verify OTP to activate account.',
+            'message' => 'تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب.',
             'data' => [
                 'user_id' => $user->id,
                 'status' => $user->status,
@@ -57,9 +63,15 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        if ($validated['otp'] !== '666666') {
+        $otpRecord = PasswordResetOtp::where('identifier', $validated['identifier'])
+            ->where('otp', $validated['otp'])
+            ->whereNull('verified_at')
+            ->latest()
+            ->first();
+
+        if (! $otpRecord || $otpRecord->isExpired()) {
             throw ValidationException::withMessages([
-                'otp' => ['Invalid OTP code.'],
+                'otp' => ['رمز التحقق غير صحيح أو منتهي الصلاحية.'],
             ]);
         }
 
@@ -70,7 +82,7 @@ class AuthController extends Controller
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'identifier' => ['User not found.'],
+                'identifier' => ['لم يتم العثور على المستخدم.'],
             ]);
         }
 
@@ -80,12 +92,39 @@ class AuthController extends Controller
             'email_verified_at' => $user->email_verified_at ?? now(),
         ])->save();
 
+        // Clean up OTPs
+        PasswordResetOtp::where('identifier', $validated['identifier'])->delete();
+
         return response()->json([
-            'message' => 'OTP verified successfully.',
+            'message' => 'تم التحقق بنجاح.',
             'data' => [
                 'user_id' => $user->id,
                 'status' => $user->status,
             ],
+        ]);
+    }
+
+    public function resendOtp(Request $request): JsonResponse
+    {
+        $request->validate([
+            'identifier' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user = User::query()
+            ->where('email', $request->input('identifier'))
+            ->orWhere('phone', $request->input('identifier'))
+            ->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'identifier' => ['لم يتم العثور على المستخدم.'],
+            ]);
+        }
+
+        $this->sendOtp($user->email, $user->name);
+
+        return response()->json([
+            'message' => 'تم إعادة إرسال رمز التحقق بنجاح.',
         ]);
     }
 
@@ -101,13 +140,13 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password ?? '')) {
             throw ValidationException::withMessages([
-                'login' => ['Invalid credentials provided.'],
+                'login' => ['بيانات الدخول غير صحيحة.'],
             ]);
         }
 
         if ($user->status !== 'active') {
             throw ValidationException::withMessages([
-                'login' => ['Account is not active yet.'],
+                'login' => ['الحساب غير مفعل بعد.'],
             ]);
         }
 
@@ -118,7 +157,7 @@ class AuthController extends Controller
         ])->save();
 
         return response()->json([
-            'message' => 'Login successful.',
+            'message' => 'تم تسجيل الدخول بنجاح.',
             'data' => [
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -143,7 +182,7 @@ class AuthController extends Controller
         $request->user()?->currentAccessToken()?->delete();
 
         return response()->json([
-            'message' => 'Logged out from current device successfully.',
+            'message' => 'تم تسجيل الخروج بنجاح.',
         ]);
     }
 
@@ -152,7 +191,25 @@ class AuthController extends Controller
         $request->user()?->tokens()?->delete();
 
         return response()->json([
-            'message' => 'Logged out from all devices successfully.',
+            'message' => 'تم تسجيل الخروج من جميع الأجهزة بنجاح.',
         ]);
+    }
+
+    private function sendOtp(string $identifier, string $userName): void
+    {
+        PasswordResetOtp::where('identifier', $identifier)->delete();
+
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        PasswordResetOtp::create([
+            'identifier' => $identifier,
+            'otp' => $otp,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($identifier)->send(new OtpMail(
+            otp: $otp,
+            userName: $userName,
+        ));
     }
 }

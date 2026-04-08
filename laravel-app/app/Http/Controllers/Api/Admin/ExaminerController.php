@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ExaminerCredentialsMail;
 use App\Models\DiscussionEvaluation;
 use App\Models\ExaminerDiscussion;
 use App\Models\Report;
@@ -10,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -71,6 +73,13 @@ class ExaminerController extends Controller
             'role' => 'examiner',
             'status' => 'active',
         ]);
+
+        // Send credentials email to the new examiner
+        Mail::to($user->email)->send(new ExaminerCredentialsMail(
+            examinerName: $user->name,
+            email: $user->email,
+            password: $validated['password'],
+        ));
 
         return response()->json([
             'message' => 'تم إنشاء حساب الممتحن بنجاح.',

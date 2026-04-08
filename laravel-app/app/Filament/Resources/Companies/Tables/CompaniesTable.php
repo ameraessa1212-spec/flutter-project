@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Companies\Tables;
 
+use App\Mail\CompanyApprovedMail;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -13,6 +14,7 @@ use Filament\Tables\Table;
 use Filament\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
 
 class CompaniesTable
 {
@@ -70,6 +72,15 @@ class CompaniesTable
                         $record->update(['status' => 'approved', 'is_active' => true]);
                         if ($record->user) {
                             $record->user->update(['status' => 'active']);
+                        }
+
+                        // Send approval email to the company
+                        $email = $record->email ?? $record->user?->email;
+                        if ($email) {
+                            Mail::to($email)->send(new CompanyApprovedMail(
+                                companyName: $record->name,
+                                loginUrl: config('app.url') . '/company/login',
+                            ));
                         }
                     })
                     ->requiresConfirmation(),

@@ -78,8 +78,7 @@ class _OtpScreenState extends State<OtpScreen> {
       if (widget.flow == OtpFlow.passwordReset) {
         await repo.forgotPassword(identifier: widget.identifier);
       } else {
-        // For registration flow, re-trigger the OTP send
-        await repo.forgotPassword(identifier: widget.identifier);
+        await repo.resendOtp(identifier: widget.identifier);
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
