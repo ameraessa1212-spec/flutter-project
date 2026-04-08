@@ -121,6 +121,9 @@ class StudentController extends Controller
         $skipped = 0;
 
         foreach ($rows as $row) {
+
+            $row['student_number'] = preg_replace('/\D/', '', $row['student_number']);
+
             $exists = User::whereHas('studentProfile', function ($q) use ($row) {
                 $q->where('student_number', $row['student_number']);
             })->exists();
@@ -130,30 +133,12 @@ class StudentController extends Controller
                 continue;
             }
 
-            // Ensure student is in eligible list
+
             EligibleStudent::firstOrCreate(
                 ['student_number' => $row['student_number']],
                 ['name' => $row['name']]
             );
 
-            $nameParts = explode(' ', $row['name'], 2);
-            $password = Str::random(8);
-
-            $user = User::create([
-                'first_name' => $nameParts[0],
-                'last_name' => $nameParts[1] ?? '',
-                'name' => $row['name'],
-                'username' => 'student_' . $row['student_number'],
-                'email' => $row['student_number'] . '@student.edu',
-                'password' => $password,
-                'role' => 'student',
-                'status' => 'active',
-            ]);
-
-            StudentProfile::create([
-                'user_id' => $user->id,
-                'student_number' => $row['student_number'],
-            ]);
 
             $created++;
         }
