@@ -2,7 +2,7 @@
   <div class="login-wrapper">
     <div class="login-card fade-up">
       <div class="login-header">
-        <div class="login-logo">WASLAT TADREIB<span>.</span></div>
+        <div class="login-logo">WASLAA<span>.</span></div>
         <h2>مرحباً بك مجدداً</h2>
         <p>الرجاء إدخال بياناتك للوصول إلى لوحة التحكم</p>
       </div>

@@ -1,18 +1,18 @@
 <template>
   <div class="landing-page">
     <nav class="navbar">
-      <div class="logo">WASLAT TADREIB<span>.</span></div>
+      <div class="logo">WASLAA<span></span></div>
       <div class="nav-auth">
         <router-link to="/login" class="btn-glass">تسجيل الدخول</router-link>
-        <router-link to="/signup" class="btn-purple">سجل شركتك الآن</router-link>
+        <router-link to="/signup" class="btn-purple"> سجل شركتك </router-link>
       </div>
     </nav>
 
     <main class="hero-grid">
       <div class="hero-card info-card fade-up">
-        <span class="status-tag"><span class="dot"></span> نظام مباشر الآن</span>
+        
         <h1>اربط شركتك <br> بـ <span>مستقبل التدريب</span></h1>
-        <p>منصة "وصلةتدريب" توفر لك لوحة تحكم ذكية لمتابعة نمو الكفاءات وتدريب الطلاب  بأحدث الوسائل التقنية.</p>
+        <p>منصة "وصلة" توفر لك لوحة تحكم ذكية لمتابعة نمو الكفاءات وتدريب الطلاب  بأحدث الوسائل التقنية.</p>
 
         <div class="stats-row">
           <div class="stat-item">

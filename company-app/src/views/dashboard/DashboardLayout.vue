@@ -2,7 +2,7 @@
   <div class="dashboard-wrapper">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <div class="logo">وصلة<span></span>تدريب.</div>
+        <div class="logo">وصلــة<span></span>.</div>
       </div>
 
       <nav class="menu">
