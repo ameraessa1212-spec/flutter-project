@@ -17,6 +17,12 @@ class EvaluationListController extends Controller
             'company',
         ])->where('status', 'active');
 
+        if ($search = $request->input('search')) {
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
         if ($specialization = $request->input('specialization')) {
             $query->whereHas('student.studentProfile.specialization', function ($q) use ($specialization) {
                 $q->where('name', 'like', "%{$specialization}%");

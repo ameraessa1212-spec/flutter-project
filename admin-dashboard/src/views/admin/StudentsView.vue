@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '../../composables/useApi'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const students = ref([])
 const loading = ref(true)
@@ -79,10 +80,7 @@ onMounted(load)
     </div>
 
     <div class="main-card">
-      <div v-if="loading" class="loading-state">
-        <div class="spinner"></div>
-        <p>جاري تحميل بيانات الطلاب...</p>
-      </div>
+      <SkeletonLoader v-if="loading" type="table" :columns="5" />
       
       <div v-else-if="filteredStudents.length === 0" class="empty-state">
         <i class="ri-user-search-line"></i>

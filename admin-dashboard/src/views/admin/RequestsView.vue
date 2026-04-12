@@ -2,25 +2,37 @@
 import { ref, onMounted } from 'vue'
 import api from '../../composables/useApi'
 import PageHeader from '../../components/PageHeader.vue'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const items = ref([])
 const loading = ref(true)
+const search = ref('')
+const specId = ref('')
+const status = ref('')
 
 async function load() {
   loading.value = true
-  const { data } = await api.get('/student-requests').catch(() => ({ data: { data: [] } }))
+  const params = {}
+  if (search.value) params.search = search.value
+  if (specId.value) params.specialization_id = specId.value
+  if (status.value) params.status = status.value
+  const { data } = await api.get('/student-requests', { params }).catch(() => ({ data: { data: [] } }))
   items.value = data.data || []
   loading.value = false
 }
+
+function onSearch(val) { search.value = val; load() }
+function onFilter(val) { specId.value = val; load() }
+function onStatus(val) { status.value = val; load() }
 
 onMounted(load)
 </script>
 
 <template>
   <div>
-    <PageHeader title="بيانات الطلاب" />
+    <PageHeader title="بيانات الطلاب" show-search show-spec-filter show-status-filter search-placeholder="ابحث باسم الطالب..." @search="onSearch" @filter="onFilter" @status-filter="onStatus" />
 
-    <div v-if="loading" class="loading">جاري التحميل...</div>
+    <SkeletonLoader v-if="loading" type="table" :columns="4" />
     <div v-else-if="!items.length" class="empty">لا يوجد طلاب</div>
     <div v-else class="card" style="overflow-x:auto;">
       <table class="table">

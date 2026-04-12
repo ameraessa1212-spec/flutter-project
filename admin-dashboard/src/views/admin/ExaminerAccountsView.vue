@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { api } from '../../composables/useApi'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const examiners = ref([])
 const loading = ref(true)
@@ -92,7 +93,7 @@ async function toggle(ex) {
       </div>
     </div>
 
-    <div v-if="loading" class="loading">جاري التحميل...</div>
+    <SkeletonLoader v-if="loading" type="table" :columns="5" />
     <table v-else class="table">
       <thead><tr><th>الممتحن</th><th>البريد</th><th>الهاتف</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
       <tbody>

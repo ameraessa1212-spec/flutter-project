@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { api } from '../../composables/useApi'
+import PageHeader from '../../components/PageHeader.vue'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const students = ref([])
 const examiners = ref([])
@@ -12,11 +14,19 @@ const assigning = ref(false)
 const assignMsg = ref('')
 
 const hasSelected = computed(() => selectedIds.value.size > 0)
+const search = ref('')
+const specFilter = ref('')
+
+function onSearch(val) { search.value = val; loadData() }
+function onFilter(val) { specFilter.value = val; loadData() }
 
 async function loadData() {
   loading.value = true
+  const params = {}
+  if (search.value) params.search = search.value
+  if (specFilter.value) params.specialization = specFilter.value
   const [studentsRes, examinersRes] = await Promise.all([
-    api.get('/evaluation-list').catch(() => ({ data: { data: [] } })),
+    api.get('/evaluation-list', { params }).catch(() => ({ data: { data: [] } })),
     api.get('/examiners').catch(() => ({ data: { data: [] } })),
   ])
   students.value = studentsRes.data.data || []
@@ -68,19 +78,17 @@ async function assignExaminer() {
 
 <template>
   <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-      <h1 class="page-title" style="margin:0;">تحويل التقارير للممتحنين</h1>
-      <div style="display:flex;gap:10px;">
-        <button v-if="students.length" class="btn btn-secondary btn-sm" @click="selectAll">
-          {{ selectedIds.size === students.length ? 'إلغاء الكل' : 'تحديد الكل' }}
-        </button>
-        <button v-if="hasSelected" class="btn btn-primary" @click="openAssign">
-          <i class="ri-user-add-line"></i> تعيين ممتحن ({{ selectedIds.size }})
-        </button>
-      </div>
+    <PageHeader title="تحويل التقارير للممتحنين" show-search show-spec-filter search-placeholder="ابحث باسم الطالب..." @search="onSearch" @filter="onFilter" />
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:16px;">
+      <button v-if="students.length" class="btn btn-secondary btn-sm" @click="selectAll">
+        {{ selectedIds.size === students.length ? 'إلغاء الكل' : 'تحديد الكل' }}
+      </button>
+      <button v-if="hasSelected" class="btn btn-primary" @click="openAssign">
+        <i class="ri-user-add-line"></i> تعيين ممتحن ({{ selectedIds.size }})
+      </button>
     </div>
 
-    <div v-if="loading" class="loading">جاري التحميل...</div>
+    <SkeletonLoader v-if="loading" type="cards" :card-count="6" />
     <div v-else-if="!students.length" class="empty">لا يوجد طلاب</div>
     <div v-else class="grid-3">
       <div

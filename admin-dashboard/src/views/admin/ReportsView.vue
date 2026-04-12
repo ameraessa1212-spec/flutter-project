@@ -1,27 +1,40 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../composables/useApi'
+import PageHeader from '../../components/PageHeader.vue'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const reports = ref([])
 const loading = ref(true)
+const search = ref('')
+const status = ref('')
 
-onMounted(async () => {
-  const { data } = await api.get('/student-reports').catch(() => ({ data: { data: [] } }))
+async function load() {
+  loading.value = true
+  const params = {}
+  if (search.value) params.search = search.value
+  if (status.value) params.status = status.value
+  const { data } = await api.get('/student-reports', { params }).catch(() => ({ data: { data: [] } }))
   reports.value = data.data || []
   loading.value = false
-})
+}
+
+function onSearch(val) { search.value = val; load() }
+function onStatus(val) { status.value = val; load() }
 
 async function notify(r) {
   r._notifying = true
   await api.post(`/student-reports/${r.id}/notify`).catch(() => null)
   r._notified = true; r._notifying = false
 }
+
+onMounted(load)
 </script>
 
 <template>
   <div>
-    <h1 class="page-title">تقارير الطلاب</h1>
-    <div v-if="loading" class="loading">جاري التحميل...</div>
+    <PageHeader title="تقارير الطلاب" show-search show-status-filter search-placeholder="ابحث باسم الطالب..." :status-options="[{value:'submitted',label:'مرسل'},{value:'reviewed',label:'مراجع'}]" @search="onSearch" @status-filter="onStatus" />
+    <SkeletonLoader v-if="loading" type="cards" :card-count="6" />
     <div v-else-if="!reports.length" class="empty">لا توجد تقارير</div>
     <div v-else class="grid-3">
       <div v-for="r in reports" :key="r.id" class="card">

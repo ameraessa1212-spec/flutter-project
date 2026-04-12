@@ -14,8 +14,13 @@ class AdminDiscussionScheduleController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $schedules = DiscussionSchedule::with('specialization')
-            ->latest()
+        $query = DiscussionSchedule::with('specialization');
+
+        if ($specId = $request->input('specialization_id')) {
+            $query->where('specialization_id', $specId);
+        }
+
+        $schedules = $query->latest()
             ->get()
             ->map(function ($schedule) {
                 return [

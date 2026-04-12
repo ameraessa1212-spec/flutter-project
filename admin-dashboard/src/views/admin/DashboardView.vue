@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import api from '../../composables/useApi'
 import { useAuth } from '../../composables/useApi'
+import NotificationCard from '../../components/NotificationCard.vue'
 
 const { user } = useAuth()
 const stats = ref({ total_students: 0, active_trainees: 0, total_companies: 0, pending_requests: 0 })
@@ -9,45 +10,13 @@ const alerts = ref([])
 const loading = ref(true)
 
 onMounted(async () => {
-  const [s, c, a] = await Promise.all([
+  const [s, a] = await Promise.all([
     api.get('/dashboard/stats').catch(() => null),
-    api.get('/dashboard/chart-data').catch(() => null),
     api.get('/dashboard/alerts').catch(() => null),
   ])
   if (s?.data?.data) stats.value = s.data.data
   if (a?.data?.data) alerts.value = a.data.data
   loading.value = false
-
-  const { Chart, registerables } = await import('chart.js')
-  Chart.register(...registerables)
-  const canvas = document.getElementById('mainChart')
-  if (canvas) {
-    const labels = c?.data?.data?.labels || []
-    const values = c?.data?.data?.values || []
-    new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'عدد الطلاب',
-          data: values,
-          backgroundColor: 'rgba(108, 92, 231, 0.8)',
-          hoverBackgroundColor: '#6C5CE7',
-          borderRadius: 8,
-          barThickness: 40,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, grid: { color: '#f4f6f9' }, ticks: { font: { family: 'Cairo' } } },
-          x: { grid: { display: false }, ticks: { font: { family: 'Cairo' } } }
-        }
-      }
-    })
-  }
 })
 
 const greeting = () => {
@@ -90,15 +59,8 @@ const greeting = () => {
       </div>
     </div>
 
-    <!-- Chart & Alerts -->
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title"><i class="ri-bar-chart-grouped-line" style="color:var(--primary);margin-left:6px;"></i> توزيع الطلاب على الشركات</span>
-        </div>
-        <div style="height:280px;"><canvas id="mainChart"></canvas></div>
-      </div>
-
+    <!-- Alerts & Notifications -->
+    <div class="grid-2 mb-lg">
       <div class="card">
         <div class="card-header">
           <span class="card-title"><i class="ri-alarm-warning-line" style="color:var(--danger);margin-left:6px;"></i> تنبيهات عاجلة</span>
@@ -116,6 +78,8 @@ const greeting = () => {
           </div>
         </template>
       </div>
+
+      <NotificationCard />
     </div>
   </div>
 </template>

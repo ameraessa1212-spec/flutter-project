@@ -1,10 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '../../composables/useApi'
+import PageHeader from '../../components/PageHeader.vue'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const results = ref([])
 const loading = ref(true)
 const search = ref('')
+const specId = ref('')
 
 const filtered = computed(() => {
   if (!search.value) return results.value
@@ -12,20 +15,25 @@ const filtered = computed(() => {
   return results.value.filter(r => (r.student_name||'').toLowerCase().includes(t))
 })
 
-onMounted(async () => {
-  const { data } = await api.get('/evaluation-results').catch(() => ({ data: { data: [] } }))
+async function load() {
+  loading.value = true
+  const params = {}
+  if (specId.value) params.specialization = specId.value
+  const { data } = await api.get('/evaluation-results', { params }).catch(() => ({ data: { data: [] } }))
   results.value = data.data || []
   loading.value = false
-})
+}
+
+function onSearch(val) { search.value = val }
+function onFilter(val) { specId.value = val; load() }
+
+onMounted(load)
 </script>
 
 <template>
   <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-      <h1 class="page-title" style="margin:0;">استلام تقييمات الطلاب</h1>
-      <input v-model="search" class="search-input" placeholder="ابحث بالاسم...">
-    </div>
-    <div v-if="loading" class="loading">جاري التحميل...</div>
+    <PageHeader title="استلام تقييمات الطلاب" show-search show-spec-filter search-placeholder="ابحث بالاسم..." @search="onSearch" @filter="onFilter" />
+    <SkeletonLoader v-if="loading" type="cards" :card-count="6" />
     <div v-else-if="!filtered.length" class="empty">لا توجد نتائج</div>
     <div v-else class="grid-3">
       <div v-for="ev in filtered" :key="ev.id" class="card" style="text-align:center;">

@@ -1,7 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { api } from '../../composables/useApi'
 import PageHeader from '../../components/PageHeader.vue'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
+
+const router = useRouter()
 
 const items = ref([])
 const loading = ref(true)
@@ -29,7 +33,10 @@ async function load() {
   loading.value = false
 }
 
+const selectedItemId = ref(null)
+
 async function openDetail(item) {
+  selectedItemId.value = item.id
   showDetail.value = true
   detailLoading.value = true
   detail.value = null
@@ -59,7 +66,7 @@ const rubricLabels = {
 <template>
   <div>
     <PageHeader title="لوحة النتائج النهائية" show-search show-spec-filter search-placeholder="ابحث باسم الطالب أو الشركة..." @search="onSearch" @filter="onFilter" />
-    <div v-if="loading" class="loading">جاري التحميل...</div>
+    <SkeletonLoader v-if="loading" type="cards" :card-count="6" />
     <div v-else-if="!filtered.length" class="empty">لا توجد نتائج</div>
     <div v-else class="grid-3">
       <div v-for="item in filtered" :key="item.id" class="card" style="cursor:pointer;" @click="openDetail(item)">
@@ -147,7 +154,10 @@ const rubricLabels = {
             </div>
           </div>
 
-          <div style="text-align:left;margin-top:16px;">
+          <div style="display:flex;justify-content:space-between;margin-top:16px;">
+            <button class="btn btn-primary btn-sm" @click="router.push(`/evaluation/${selectedItemId}/receipt`)">
+              <i class="ri-receipt-line"></i> إيصال التقييم
+            </button>
             <button class="btn btn-secondary" @click="showDetail = false">إغلاق</button>
           </div>
         </template>

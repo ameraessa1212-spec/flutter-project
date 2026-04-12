@@ -396,14 +396,6 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ...[
-                        Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                      ],
                       Row(
                         children: [
                           Icon(

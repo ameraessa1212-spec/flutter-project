@@ -1,16 +1,30 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../composables/useApi'
+import PageHeader from '../../components/PageHeader.vue'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const offers = ref([])
 const loading = ref(true)
 const detail = ref(null)
+const search = ref('')
+const specId = ref('')
+const status = ref('')
 
-onMounted(async () => {
-  const { data } = await api.get('/company-offers').catch(() => ({ data: { data: [] } }))
+async function load() {
+  loading.value = true
+  const params = {}
+  if (search.value) params.search = search.value
+  if (specId.value) params.specialization_id = specId.value
+  if (status.value) params.status = status.value
+  const { data } = await api.get('/company-offers', { params }).catch(() => ({ data: { data: [] } }))
   offers.value = data.data || []
   loading.value = false
-})
+}
+
+function onSearch(val) { search.value = val; load() }
+function onFilter(val) { specId.value = val; load() }
+function onStatus(val) { status.value = val; load() }
 
 async function approve(o) {
   if (!confirm('تأكيد قبول العرض؟')) return
@@ -22,13 +36,15 @@ async function reject(o) {
   await api.put(`/company-offers/${o.id}/reject`)
   o.status = 'rejected'
 }
+
+onMounted(load)
 </script>
 
 <template>
   <div>
-    <h1 class="page-title">عروض التدريب من الشركات</h1>
-    <div v-if="loading" class="loading">جاري التحميل...</div>
-    <div v-else-if="!offers.length" class="empty">لا توجد عروض معلقة</div>
+    <PageHeader title="عروض التدريب من الشركات" show-search show-spec-filter show-status-filter search-placeholder="ابحث باسم الشركة..." @search="onSearch" @filter="onFilter" @status-filter="onStatus" />
+    <SkeletonLoader v-if="loading" type="cards" :card-count="6" />
+    <div v-else-if="!offers.length" class="empty">لا توجد عروض</div>
     <div v-else class="grid-3">
       <div v-for="o in offers" :key="o.id" class="card" :style="{ opacity: o.status==='rejected' ? 0.5 : 1 }">
         <div style="display:flex;justify-content:space-between;margin-bottom:10px;">

@@ -13,6 +13,8 @@ import ReportsView from '../views/admin/ReportsView.vue'
 import EvaluationView from '../views/admin/EvaluationView.vue'
 import CompanyOffersView from '../views/admin/CompanyOffersView.vue'
 import RegisteredCompaniesView from '../views/admin/RegisteredCompaniesView.vue'
+import CompanyDetailView from '../views/admin/CompanyDetailView.vue'
+import CompanyEvaluationReceiptView from '../views/admin/CompanyEvaluationReceiptView.vue'
 import CompanyAccountsView from '../views/admin/CompanyAccountsView.vue'
 import ExaminerAccountsView from '../views/admin/ExaminerAccountsView.vue'
 import EvaluationListView from '../views/admin/EvaluationListView.vue'
@@ -43,6 +45,8 @@ const routes = [
       { path: 'evaluation', name: 'evaluation', component: EvaluationView },
       { path: 'company-offers', name: 'company-offers', component: CompanyOffersView },
       { path: 'registered-companies', name: 'registered-companies', component: RegisteredCompaniesView },
+      { path: 'registered-companies/:id', name: 'company-detail', component: CompanyDetailView },
+      { path: 'evaluation/:id/receipt', name: 'evaluation-receipt', component: CompanyEvaluationReceiptView },
       { path: 'company-accounts', name: 'company-accounts', component: CompanyAccountsView },
       { path: 'examiner-accounts', name: 'examiner-accounts', component: ExaminerAccountsView },
       { path: 'evaluation-list', name: 'evaluation-list', component: EvaluationListView },

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '../../composables/useApi'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const companies = ref([])
 const loading = ref(true)
@@ -101,10 +102,7 @@ onMounted(fetchCompanies)
     </div>
 
     <div class="main-card">
-      <div v-if="loading" class="loading-state">
-        <div class="spinner"></div>
-        <p>جاري تحميل البيانات...</p>
-      </div>
+      <SkeletonLoader v-if="loading" type="table" :columns="6" />
       
       <div v-else-if="filtered.length === 0" class="empty-state">
         <i class="ri-building-line"></i>

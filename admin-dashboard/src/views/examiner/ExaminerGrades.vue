@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import api from '../../composables/useApi'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const students = ref([])
 const loading = ref(true)
@@ -9,6 +10,13 @@ const current = ref(null)
 const scores = ref({})
 const decision = ref('pass')
 const total = computed(() => Object.values(scores.value).reduce((a, b) => a + (Number(b) || 0), 0))
+
+const searchText = ref('')
+const filteredStudents = computed(() => {
+  if (!searchText.value) return students.value
+  const t = searchText.value.toLowerCase()
+  return students.value.filter(s => (s.student_name||'').toLowerCase().includes(t))
+})
 
 const fields = [
   { group: 'المجال المعرفي (15)', items: ['knowledge_1','knowledge_2','knowledge_3','knowledge_4','knowledge_5'], max: 3 },
@@ -60,12 +68,14 @@ async function submitGrade() {
 <template>
   <div>
     <h1 class="page-title">نتائج التقييم</h1>
-    <div v-if="loading" class="loading">جاري التحميل...</div>
-    <div v-else-if="!students.length" class="empty">لا يوجد طلاب</div>
+    <SkeletonLoader v-if="loading" type="table" :columns="4" />
+    <template v-else>
+    <input v-model="searchText" class="search-input" placeholder="ابحث باسم الطالب..." style="margin-bottom:16px;">
+    <div v-if="!filteredStudents.length" class="empty">لا يوجد طلاب</div>
     <table v-else class="table">
       <thead><tr><th>الطالب</th><th>رقم القيد</th><th>الحالة</th><th>الإجراء</th></tr></thead>
       <tbody>
-        <tr v-for="s in students" :key="s.id">
+        <tr v-for="s in filteredStudents" :key="s.id">
           <td><strong>{{ s.student_name }}</strong></td>
           <td>{{ s.student_number || '--' }}</td>
           <td><span class="badge badge-purple">{{ s.status }}</span></td>
@@ -73,6 +83,7 @@ async function submitGrade() {
         </tr>
       </tbody>
     </table>
+    </template>
 
     <!-- Grade Modal -->
     <div v-if="modal" class="modal-backdrop" @click.self="modal = false">

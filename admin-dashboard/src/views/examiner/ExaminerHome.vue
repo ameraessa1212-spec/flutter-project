@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import api from '../../composables/useApi'
 import { useAuth } from '../../composables/useApi'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 
 const { user } = useAuth()
 const data = ref(null)
@@ -24,7 +25,7 @@ const today = new Date().toLocaleDateString('ar-LY', { weekday: 'long', year: 'n
       <small style="opacity:.7;">{{ today }}</small>
     </div>
 
-    <div v-if="loading" class="loading">جاري التحميل...</div>
+    <SkeletonLoader v-if="loading" type="cards" :card-count="3" />
     <template v-else-if="data">
       <div class="grid-3" style="margin-bottom:25px;">
         <div class="stat-card"><div class="icon purple"><i class="ri-group-line"></i></div><div><h3>{{ data.evaluated_count }}</h3><p>طلاب تم تقييمهم</p></div></div>

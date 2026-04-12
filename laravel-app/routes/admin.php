@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Admin\SystemReportController;
 use App\Http\Controllers\Api\Admin\ChatController;
 use App\Http\Controllers\Api\Admin\ExaminerDashboardController;
 use App\Http\Controllers\Api\Admin\NotificationController;
+use App\Http\Controllers\Api\Admin\SupervisorController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -62,6 +63,11 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
 
     // Registered Companies
     Route::get('/registered-companies', [RegisteredCompanyController::class, 'index']);
+    Route::get('/registered-companies/{company}', [RegisteredCompanyController::class, 'show']);
+
+    // Supervisors
+    Route::get('/supervisors', [SupervisorController::class, 'index']);
+    Route::put('/supervisors/{supervisor}/toggle-status', [SupervisorController::class, 'toggleStatus']);
 
     // Company Accounts
     Route::get('/company-accounts', [CompanyAccountController::class, 'index']);

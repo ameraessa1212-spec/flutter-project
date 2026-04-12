@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '../../composables/useApi'
+import SkeletonLoader from '../../components/SkeletonLoader.vue'
 import { useSpecializations } from '../../composables/useSpecializations'
 
 const { specializations, loadSpecializations } = useSpecializations()
@@ -10,6 +11,7 @@ const dept = ref('all')
 const columns = ref([])
 const rows = ref([])
 const loading = ref(false)
+const exporting = ref(false)
 
 onMounted(loadSpecializations)
 
@@ -19,6 +21,21 @@ async function generate() {
   columns.value = data.columns || []
   rows.value = data.data || []
   loading.value = false
+}
+
+async function exportPDF() {
+  exporting.value = true
+  const html2pdf = (await import('html2pdf.js')).default
+  const element = document.getElementById('report-table')
+  if (element) {
+    await html2pdf().set({
+      margin: 10,
+      filename: `تقرير-${reportType.value}.pdf`,
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    }).from(element).save()
+  }
+  exporting.value = false
 }
 </script>
 
@@ -46,11 +63,14 @@ async function generate() {
         <button class="btn btn-primary" @click="generate" :disabled="loading">
           <i class="ri-refresh-line"></i> عرض البيانات
         </button>
+        <button v-if="columns.length && rows.length" class="btn btn-success" @click="exportPDF" :disabled="exporting">
+          <i class="ri-file-pdf-2-line"></i> {{ exporting ? 'جاري التصدير...' : 'تصدير PDF' }}
+        </button>
       </div>
     </div>
 
-    <div v-if="loading" class="loading">جاري التحميل...</div>
-    <div v-else-if="columns.length" class="card" style="overflow-x:auto;">
+    <SkeletonLoader v-if="loading" type="table" :columns="4" />
+    <div v-else-if="columns.length" id="report-table" class="card" style="overflow-x:auto;">
       <table class="table">
         <thead><tr><th v-for="col in columns" :key="col">{{ col }}</th></tr></thead>
         <tbody>

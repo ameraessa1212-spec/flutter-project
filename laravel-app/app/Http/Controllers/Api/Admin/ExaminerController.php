@@ -138,12 +138,16 @@ class ExaminerController extends Controller
         return response()->json(['message' => 'تم تعطيل حساب الممتحن.']);
     }
 
-    public function reports(User $examiner): JsonResponse
+    public function reports(Request $request, User $examiner): JsonResponse
     {
-        $discussions = ExaminerDiscussion::where('examiner_id', $examiner->id)
-            ->whereHas('internship', fn($q) => $q->where('status', 'active'))
-            ->with(['internship.reports.student', 'student'])
-            ->get();
+        $query = ExaminerDiscussion::where('examiner_id', $examiner->id)
+            ->whereHas('internship', fn($q) => $q->where('status', 'active'));
+
+        if ($search = $request->input('search')) {
+            $query->whereHas('student', fn($q) => $q->where('name', 'like', "%{$search}%"));
+        }
+
+        $discussions = $query->with(['internship.reports.student', 'student'])->get();
 
         $reports = $discussions->flatMap(function ($discussion) {
             return $discussion->internship?->reports?->map(function ($report) use ($discussion) {
@@ -166,9 +170,13 @@ class ExaminerController extends Controller
     {
         $examinerId = $request->user()->id;
 
-        $discussions = ExaminerDiscussion::where('examiner_id', $examinerId)
-            ->with(['student.studentProfile', 'evaluation'])
-            ->get();
+        $query = ExaminerDiscussion::where('examiner_id', $examinerId);
+
+        if ($search = $request->input('search')) {
+            $query->whereHas('student', fn($q) => $q->where('name', 'like', "%{$search}%"));
+        }
+
+        $discussions = $query->with(['student.studentProfile', 'evaluation'])->get();
 
         $data = $discussions->map(function ($discussion) {
             $hasEvaluation = $discussion->evaluation !== null;

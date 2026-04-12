@@ -12,8 +12,15 @@ class CompanyOfferController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = InternshipOpportunity::with(['company', 'specialization'])
-            ->where('status', 'pending');
+        $query = InternshipOpportunity::with(['company', 'specialization']);
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($specId = $request->input('specialization_id')) {
+            $query->where('specialization_id', $specId);
+        }
 
         if ($search = $request->input('search')) {
             $query->whereHas('company', function ($q) use ($search) {
