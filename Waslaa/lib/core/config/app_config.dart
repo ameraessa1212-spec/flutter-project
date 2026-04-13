@@ -17,7 +17,7 @@ class AppConfig {
 
   static Future<void> setCustomApiBaseUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
-    
+     
     if (url.isEmpty) {
       await prefs.remove('custom_api_base_url');
       _customApiBaseUrl = null;

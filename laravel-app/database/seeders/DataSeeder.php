@@ -250,6 +250,7 @@ class DataSeeder extends Seeder
                     'website_url' => 'https://www.academy.ly',
                     'city' => 'طرابلس',
                     'address' => 'طريق المطار، طرابلس',
+                    'map_url' => 'https://maps.app.goo.gl/6rE3qRCiWwfx1ebJ8',
                     'phone' => '021-4780000',
                     'email' => 'info@academy.ly',
                 ],
