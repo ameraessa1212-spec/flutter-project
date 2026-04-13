@@ -76,8 +76,12 @@ async function deleteExaminer(ex) {
 
 async function toggle(ex) {
   if (ex.status === 'active' && !confirm(`تعطيل حساب ${ex.name}؟`)) return
-  await api.put(`/examiners/${ex.id}/toggle-status`)
-  ex.status = ex.status === 'active' ? 'inactive' : 'active'
+  try {
+    const { data } = await api.put(`/examiners/${ex.id}/toggle-status`)
+    ex.status = data.data.status
+  } catch (e) {
+    alert(e.response?.data?.message || 'حدث خطأ أثناء تغيير حالة الحساب')
+  }
 }
 </script>
 

@@ -10,10 +10,13 @@ class DiscussionScheduleRepository {
   Future<List<DiscussionSchedule>> getSchedules({
     int page = 1,
     int perPage = 15,
+    int? specializationId,
   }) async {
+    final params = <String, dynamic>{'page': page, 'per_page': perPage};
+    if (specializationId != null) params['specialization_id'] = specializationId;
     final response = await _apiClient.get(
       '/discussion-schedules',
-      queryParameters: {'page': page, 'per_page': perPage},
+      queryParameters: params,
     );
     final data =
         (response.data as Map<String, dynamic>)['data'] as List<dynamic>;

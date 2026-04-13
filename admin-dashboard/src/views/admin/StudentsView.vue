@@ -34,8 +34,13 @@ const filteredStudents = computed(() => {
 
 async function toggleStatus(id) {
   if (!confirm('هل أنت متأكد من تغيير حالة هذا الحساب؟')) return
-  await api.put(`/students/${id}/toggle-status`)
-  load()
+  try {
+    const { data } = await api.put(`/students/${id}/toggle-status`)
+    const student = students.value.find(s => s.id === id)
+    if (student) student.status = data.data.status
+  } catch (e) {
+    alert(e.response?.data?.message || 'حدث خطأ أثناء تغيير حالة الحساب')
+  }
 }
 
 async function changePassword(id) {
