@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             DashboardContentSeeder::class,
             SpecializationsSeeder::class,
+            DataSeeder::class,
         ]);
     }
 }
