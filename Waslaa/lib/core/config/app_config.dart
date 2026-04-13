@@ -6,7 +6,7 @@ class AppConfig {
   const AppConfig._();
 
   static const String _debugApiBaseUrl =
-      'http://localhost:8000/api/mobile/v1';
+      'http://localhost:9000/api/mobile/v1';
 
   static String? _customApiBaseUrl;
 
