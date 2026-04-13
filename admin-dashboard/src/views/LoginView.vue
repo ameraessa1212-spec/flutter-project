@@ -17,7 +17,7 @@ async function handleLogin() {
   loading.value = true
   try {
     const data = await login(loginField.value, password.value, role.value)
-    if (role.value === 'examiner' || data.user.role === 'examiner') {
+    if (data.user.role === 'examiner') {
       router.push('/examiner')
     } else {
       router.push('/')

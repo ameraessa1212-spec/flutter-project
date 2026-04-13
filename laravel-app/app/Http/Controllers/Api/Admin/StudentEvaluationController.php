@@ -101,6 +101,7 @@ class StudentEvaluationController extends Controller
                 'company_evaluation' => $companyEval ? [
                     'total_score' => $companyEval->total_score,
                     'detailed_scores' => $companyEval->detailed_scores,
+                    'comments' => $companyEval->comments,
                     'evaluator_name' => $companyEval->evaluator?->name,
                     'created_at' => $companyEval->created_at?->toISOString(),
                 ] : null,

@@ -20,6 +20,25 @@ onMounted(async () => {
 function printReceipt() {
   window.print()
 }
+
+const criteriaLabels = [
+  'المعرفة بالأنشطة التخصصية',
+  'المعرفة بالنظام المؤسسي وقوانين العمل',
+  'توظيف المعرفة النظرية والتقنية',
+  'التعرف على تقنيات تخصصية جديدة',
+  'المعرفة بسوق العمل',
+  'جودة الأداء المهني',
+  'الالتزام بالقوانين وأخلاقيات المهنة',
+  'الالتزام بمواعيد العمل',
+  'تقبل النقد والتوجيه',
+  'العلاقة مع الرؤساء والزملاء',
+  'إبراز الشخصية الهندسية',
+  'القدرة على التعلم الذاتي',
+  'القدرة على الاتصال الفعال',
+  'القدرة على تقديم العروض المرئية',
+  'جودة الأعمال الموثقة',
+  'جودة الأداء في العمل الجماعي',
+]
 </script>
 
 <template>
@@ -58,8 +77,8 @@ function printReceipt() {
             <thead><tr><th>المعيار</th><th>الدرجة</th></tr></thead>
             <tbody>
               <tr v-for="(score, idx) in (data.company_evaluation.detailed_scores || [])" :key="idx">
-                <td>{{ score.label || score.criterion || `معيار ${idx + 1}` }}</td>
-                <td class="score-cell">{{ score.score ?? score.value ?? '--' }}</td>
+                <td>{{ criteriaLabels[idx] || `معيار ${idx + 1}` }}</td>
+                <td class="score-cell">{{ score }}</td>
               </tr>
               <tr class="total-row">
                 <td><strong>المجموع</strong></td>

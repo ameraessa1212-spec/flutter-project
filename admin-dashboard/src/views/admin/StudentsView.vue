@@ -2,17 +2,23 @@
 import { ref, onMounted, computed } from 'vue'
 import api from '../../composables/useApi'
 import SkeletonLoader from '../../components/SkeletonLoader.vue'
+import { useSpecializations } from '../../composables/useSpecializations'
 
+const { specializations, loadSpecializations } = useSpecializations()
 const students = ref([])
 const loading = ref(true)
 const search = ref('')
 const specFilter = ref('')
+const statusFilter = ref('')
 
-// دالة التحميل من السيرفر
 async function load() {
   loading.value = true
   try {
-    const { data } = await api.get('/students')
+    const params = {}
+    if (search.value) params.search = search.value
+    if (specFilter.value) params.specialization_id = specFilter.value
+    if (statusFilter.value) params.status = statusFilter.value
+    const { data } = await api.get('/students', { params })
     students.value = data.data || []
   } catch (error) {
     console.error('Error fetching students:', error)
@@ -21,16 +27,14 @@ async function load() {
   }
 }
 
-// فلترة البيانات محلياً (أو يمكنك الاعتماد على البحث من السيرفر كما في كودك الأصلي)
-const filteredStudents = computed(() => {
-  return students.value.filter(s => {
-    const matchesSearch = !search.value || 
-                          s.name.toLowerCase().includes(search.value.toLowerCase()) || 
-                          (s.student_number && s.student_number.includes(search.value))
-    const matchesSpec = !specFilter.value || s.specialization === specFilter.value
-    return matchesSearch && matchesSpec
-  })
-})
+let searchTimeout = null
+function onSearchInput() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => load(), 300)
+}
+
+function onSpecChange() { load() }
+function onStatusChange() { load() }
 
 async function toggleStatus(id) {
   if (!confirm('هل أنت متأكد من تغيير حالة هذا الحساب؟')) return
@@ -54,7 +58,10 @@ async function changePassword(id) {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  loadSpecializations()
+  load()
+})
 </script>
 
 <template>
@@ -69,25 +76,31 @@ onMounted(load)
     <div class="actions-bar">
       <div class="search-wrapper">
         <i class="ri-search-line"></i>
-        <input 
-          type="text" 
-          v-model="search" 
-          placeholder="بحث بالاسم أو رقم القيد..." 
+        <input
+          type="text"
+          v-model="search"
+          placeholder="بحث بالاسم أو رقم القيد..."
+          @input="onSearchInput"
         >
       </div>
 
-      <select v-model="specFilter" class="filter-select">
+      <select v-model="specFilter" class="filter-select" @change="onSpecChange">
         <option value="">كل التخصصات</option>
-        <option value="حاسب آلي">حاسب آلي</option>
-        <option value="اتصالات">اتصالات</option>
-        <option value="تحكم">تحكم</option>
+        <option v-for="s in specializations" :key="s.id" :value="s.id">{{ s.name }}</option>
+      </select>
+
+      <select v-model="statusFilter" class="filter-select" @change="onStatusChange">
+        <option value="">كل الحالات</option>
+        <option value="active">نشط</option>
+        <option value="pending">معلق</option>
+        <option value="inactive">موقف</option>
       </select>
     </div>
 
     <div class="main-card">
       <SkeletonLoader v-if="loading" type="table" :columns="5" />
-      
-      <div v-else-if="filteredStudents.length === 0" class="empty-state">
+
+      <div v-else-if="students.length === 0" class="empty-state">
         <i class="ri-user-search-line"></i>
         <p>لا يوجد طلاب يطابقون معايير البحث</p>
       </div>
@@ -104,7 +117,7 @@ onMounted(load)
             </tr>
           </thead>
           <tbody>
-            <tr v-for="s in filteredStudents" :key="s.id">
+            <tr v-for="s in students" :key="s.id">
               <td>
                 <div class="student-cell">
                   <div class="user-avatar">
@@ -130,8 +143,8 @@ onMounted(load)
                   <button class="btn-icon" @click="changePassword(s.id)" title="تغيير كلمة المرور">
                     <i class="ri-lock-password-line"></i>
                   </button>
-                  <button 
-                    class="btn-status-toggle" 
+                  <button
+                    class="btn-status-toggle"
                     :class="s.status === 'active' ? 'btn-stop' : 'btn-start'"
                     @click="toggleStatus(s.id)"
                   >
@@ -153,7 +166,6 @@ onMounted(load)
   direction: rtl;
 }
 
-/* الهيدر العلوي */
 .top-header {
   display: flex;
   justify-content: flex-start;
@@ -174,7 +186,6 @@ onMounted(load)
   margin-top: 5px;
 }
 
-/* شريط البحث والفلترة */
 .actions-bar {
   display: flex;
   align-items: center;
@@ -216,7 +227,6 @@ onMounted(load)
   outline: none;
 }
 
-/* الكارد والجدول */
 .main-card {
   background: white;
   border-radius: 20px;
@@ -247,7 +257,6 @@ onMounted(load)
   font-size: 14px;
 }
 
-/* عناصر الجدول */
 .student-cell {
   display: flex;
   align-items: center;
@@ -279,7 +288,6 @@ onMounted(load)
   font-weight: 600;
 }
 
-/* شارات الحالة */
 .status-badge {
   padding: 4px 12px;
   border-radius: 20px;
@@ -290,7 +298,6 @@ onMounted(load)
 .status-badge.pending { background: #fff7ed; color: #c2410c; }
 .status-badge.inactive { background: #fef2f2; color: #b91c1c; }
 
-/* الأزرار */
 .actions-buttons {
   display: flex;
   gap: 8px;

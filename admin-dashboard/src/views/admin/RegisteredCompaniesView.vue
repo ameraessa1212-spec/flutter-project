@@ -34,12 +34,12 @@ onMounted(load)
 
 <template>
   <div>
-    <PageHeader title="الشركات المسجلة" show-search show-spec-filter search-placeholder="بحث عن شركة..." @search="onSearch" @filter="onFilter" />
+    <PageHeader show-spec-filter="false" title="الشركات المسجلة" show-search  search-placeholder="بحث عن شركة..." @search="onSearch" @filter="onFilter" />
 
     <div v-if="!loading" style="margin-bottom:16px;">
       <span class="badge badge-purple"><i class="ri-building-line"></i> {{ filtered.length }} شركة</span>
     </div>
-
+ب
     <SkeletonLoader v-if="loading" type="table" :columns="6" />
     <div v-else-if="!filtered.length" class="empty">لا توجد شركات</div>
     <div v-else class="card" style="overflow-x:auto;">

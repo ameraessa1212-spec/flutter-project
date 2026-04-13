@@ -42,6 +42,20 @@ class AuthController extends Controller
             ]);
         }
 
+        // Validate role matches user type
+        if (isset($validated['role'])) {
+            if ($validated['role'] === 'examiner' && $user->role !== 'examiner') {
+                throw ValidationException::withMessages([
+                    'login' => ['هذا الحساب ليس حساب ممتحن.'],
+                ]);
+            }
+            if ($validated['role'] === 'admin' && $user->role === 'examiner') {
+                throw ValidationException::withMessages([
+                    'login' => ['هذا الحساب خاص بالممتحن. يرجى اختيار "ممتحن" للدخول.'],
+                ]);
+            }
+        }
+
         $token = $user->createToken('admin-dashboard')->plainTextToken;
 
         $user->forceFill(['last_login_at' => now()])->save();

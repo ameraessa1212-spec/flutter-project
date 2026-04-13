@@ -15,6 +15,7 @@ const props = defineProps({
       { value: 'rejected', label: 'مرفوض' },
     ],
   },
+ 
   searchPlaceholder: { type: String, default: 'بحث...' },
 })
 
