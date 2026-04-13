@@ -61,6 +61,26 @@ const rubricLabels = {
   discussion: 'المناقشة',
   research: 'البحث',
 }
+
+// Company evaluation criteria labels matching the company form (16 scores)
+const companyCriteria = [
+  { label: 'المعرفة بالأنشطة التخصصية', max: 7 },
+  { label: 'المعرفة بالنظام المؤسسي وقوانين العمل', max: 7 },
+  { label: 'توظيف المعرفة النظرية والتقنية', max: 7 },
+  { label: 'التعرف على تقنيات تخصصية جديدة', max: 7 },
+  { label: 'المعرفة بسوق العمل', max: 7 },
+  { label: 'جودة الأداء المهني', max: 6 },
+  { label: 'الالتزام بالقوانين وأخلاقيات المهنة', max: 6 },
+  { label: 'الالتزام بمواعيد العمل', max: 6 },
+  { label: 'تقبل النقد والتوجيه', max: 6 },
+  { label: 'العلاقة مع الرؤساء والزملاء', max: 6 },
+  { label: 'إبراز الشخصية الهندسية', max: 5 },
+  { label: 'القدرة على التعلم الذاتي', max: 6 },
+  { label: 'القدرة على الاتصال الفعال', max: 6 },
+  { label: 'القدرة على تقديم العروض المرئية', max: 6 },
+  { label: 'جودة الأعمال الموثقة', max: 6 },
+  { label: 'جودة الأداء في العمل الجماعي', max: 6 },
+]
 </script>
 
 <template>
@@ -107,8 +127,8 @@ const rubricLabels = {
             <template v-if="detail.company_evaluation">
               <div v-if="detail.company_evaluation.detailed_scores && detail.company_evaluation.detailed_scores.length">
                 <div v-for="(score, idx) in detail.company_evaluation.detailed_scores" :key="idx" style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-light);">
-                  <span class="text-sm">{{ score.label || score.criterion || `معيار ${idx+1}` }}</span>
-                  <strong class="text-sm">{{ score.score ?? score.value ?? '--' }}</strong>
+                  <span class="text-sm">{{ companyCriteria[idx]?.label || `معيار ${idx+1}` }}</span>
+                  <strong class="text-sm">{{ score }}<small class="text-muted" v-if="companyCriteria[idx]">/{{ companyCriteria[idx].max }}</small></strong>
                 </div>
               </div>
               <div style="margin-top:8px;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);text-align:center;">

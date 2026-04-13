@@ -31,6 +31,12 @@ class StudentRequestController extends Controller
             });
         }
 
+        if ($specId = $request->input('specialization_id')) {
+            $query->whereHas('student.studentProfile', function ($q) use ($specId) {
+                $q->where('specialization_id', $specId);
+            });
+        }
+
         $applications = $query->latest('submitted_at')->paginate($request->input('per_page', 20));
 
         return response()->json([

@@ -17,7 +17,6 @@ const menu = [
     { label: 'بيانات الطلاب', icon: 'ri-id-card-line', to: '/student', name: 'student' },
     { label: 'تقارير الطلاب', icon: 'ri-file-text-line', to: '/reports', name: 'reports' },
     { label: 'النتائج النهائية', icon: 'ri-bar-chart-line', to: '/evaluation', name: 'evaluation' },
-    { label: 'الدردشة', icon: 'ri-chat-1-line', to: '/chat', name: 'chat' },
     { label: 'إدارة الحسابات', icon: 'ri-user-settings-line', to: '/students', name: 'students' },
   ]},
   { group: 'الممتحنين', items: [
@@ -28,6 +27,7 @@ const menu = [
   { group: 'الشركات', items: [
     { label: 'عروض التدريب', icon: 'ri-briefcase-line', to: '/company-offers', name: 'company-offers' },
     { label: 'الشركات المسجلة', icon: 'ri-community-line', to: '/registered-companies', name: 'registered-companies' },
+    { label: 'تقييمات الشركات', icon: 'ri-star-line', to: '/company-evaluations', name: 'company-evaluations' },
     { label: 'إدارة الحسابات', icon: 'ri-settings-5-line', to: '/company-accounts', name: 'company-accounts' },
   ]},
   { label: 'تقارير النظام', icon: 'ri-file-chart-line', to: '/system-reports', name: 'system-reports' },

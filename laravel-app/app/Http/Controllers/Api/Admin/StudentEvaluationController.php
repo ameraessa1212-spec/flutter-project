@@ -101,6 +101,7 @@ class StudentEvaluationController extends Controller
                 'company_evaluation' => $companyEval ? [
                     'total_score' => $companyEval->total_score,
                     'detailed_scores' => $companyEval->detailed_scores,
+                    'comments' => $companyEval->comments,
                     'evaluator_name' => $companyEval->evaluator?->name,
                     'created_at' => $companyEval->created_at?->toISOString(),
                 ] : null,
@@ -118,6 +119,7 @@ class StudentEvaluationController extends Controller
                 'examiner_score' => round($examinerScore, 1),
                 'examiner_weighted' => round($examinerScore * 0.7, 1),
                 'final_score' => round($companyScore * 0.3 + $examinerScore * 0.7, 1),
+                'final_percentage' => round($companyScore * 0.3 + $examinerScore * 0.7, 0),
             ],
         ]);
     }

@@ -20,6 +20,25 @@ onMounted(async () => {
 function printReceipt() {
   window.print()
 }
+
+const criteriaLabels = [
+  'المعرفة بالأنشطة التخصصية',
+  'المعرفة بالنظام المؤسسي وقوانين العمل',
+  'توظيف المعرفة النظرية والتقنية',
+  'التعرف على تقنيات تخصصية جديدة',
+  'المعرفة بسوق العمل',
+  'جودة الأداء المهني',
+  'الالتزام بالقوانين وأخلاقيات المهنة',
+  'الالتزام بمواعيد العمل',
+  'تقبل النقد والتوجيه',
+  'العلاقة مع الرؤساء والزملاء',
+  'إبراز الشخصية الهندسية',
+  'القدرة على التعلم الذاتي',
+  'القدرة على الاتصال الفعال',
+  'القدرة على تقديم العروض المرئية',
+  'جودة الأعمال الموثقة',
+  'جودة الأداء في العمل الجماعي',
+]
 </script>
 
 <template>
@@ -58,8 +77,8 @@ function printReceipt() {
             <thead><tr><th>المعيار</th><th>الدرجة</th></tr></thead>
             <tbody>
               <tr v-for="(score, idx) in (data.company_evaluation.detailed_scores || [])" :key="idx">
-                <td>{{ score.label || score.criterion || `معيار ${idx + 1}` }}</td>
-                <td class="score-cell">{{ score.score ?? score.value ?? '--' }}</td>
+                <td>{{ criteriaLabels[idx] || `معيار ${idx + 1}` }}</td>
+                <td class="score-cell">{{ score }}</td>
               </tr>
               <tr class="total-row">
                 <td><strong>المجموع</strong></td>
@@ -71,8 +90,12 @@ function printReceipt() {
           <p v-if="data.company_evaluation.created_at" class="text-sm text-muted">تاريخ التقييم: {{ new Date(data.company_evaluation.created_at).toLocaleDateString('ar-LY') }}</p>
         </div>
         <div v-else class="receipt-section">
-          <h3>تقييم الشركة</h3>
-          <p class="text-muted">لا يوجد تقييم من الشركة بعد</p>
+          <h3>تقييم الشركة (30%)</h3>
+          <div style="padding:24px;text-align:center;background:#fff7ed;border-radius:12px;border:1px dashed #c2410c;">
+            <i class="ri-error-warning-line" style="font-size:32px;color:#c2410c;display:block;margin-bottom:8px;"></i>
+            <p style="color:#c2410c;font-weight:600;margin:0;">لم يتم تقييم الطالب من قبل الشركة بعد</p>
+            <p class="text-sm text-muted" style="margin-top:4px;">يجب أن تقوم الشركة بتعبئة نموذج التقييم من خلال لوحة تحكم الشركة</p>
+          </div>
         </div>
 
         <!-- Examiner Evaluations -->

@@ -24,7 +24,7 @@ async function loadData() {
   loading.value = true
   const params = {}
   if (search.value) params.search = search.value
-  if (specFilter.value) params.specialization = specFilter.value
+  if (specFilter.value) params.specialization_id = specFilter.value
   const [studentsRes, examinersRes] = await Promise.all([
     api.get('/evaluation-list', { params }).catch(() => ({ data: { data: [] } })),
     api.get('/examiners').catch(() => ({ data: { data: [] } })),
