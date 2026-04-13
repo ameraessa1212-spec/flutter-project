@@ -71,8 +71,12 @@ function printReceipt() {
           <p v-if="data.company_evaluation.created_at" class="text-sm text-muted">تاريخ التقييم: {{ new Date(data.company_evaluation.created_at).toLocaleDateString('ar-LY') }}</p>
         </div>
         <div v-else class="receipt-section">
-          <h3>تقييم الشركة</h3>
-          <p class="text-muted">لا يوجد تقييم من الشركة بعد</p>
+          <h3>تقييم الشركة (30%)</h3>
+          <div style="padding:24px;text-align:center;background:#fff7ed;border-radius:12px;border:1px dashed #c2410c;">
+            <i class="ri-error-warning-line" style="font-size:32px;color:#c2410c;display:block;margin-bottom:8px;"></i>
+            <p style="color:#c2410c;font-weight:600;margin:0;">لم يتم تقييم الطالب من قبل الشركة بعد</p>
+            <p class="text-sm text-muted" style="margin-top:4px;">يجب أن تقوم الشركة بتعبئة نموذج التقييم من خلال لوحة تحكم الشركة</p>
+          </div>
         </div>
 
         <!-- Examiner Evaluations -->

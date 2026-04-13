@@ -118,6 +118,7 @@ class StudentEvaluationController extends Controller
                 'examiner_score' => round($examinerScore, 1),
                 'examiner_weighted' => round($examinerScore * 0.7, 1),
                 'final_score' => round($companyScore * 0.3 + $examinerScore * 0.7, 1),
+                'final_percentage' => round($companyScore * 0.3 + $examinerScore * 0.7, 0),
             ],
         ]);
     }

@@ -121,8 +121,8 @@ onMounted(load)
                 <span v-else>--</span>
               </td>
               <td>
-                <span :class="['status-badge', s.status === 'active' ? 'active' : 'inactive']">
-                  {{ s.status === 'active' ? 'نشط' : 'موقف' }}
+                <span :class="['status-badge', s.status === 'active' ? 'active' : s.status === 'pending' ? 'pending' : 'inactive']">
+                  {{ s.status === 'active' ? 'نشط' : s.status === 'pending' ? 'معلق' : 'موقف' }}
                 </span>
               </td>
               <td>
@@ -287,6 +287,7 @@ onMounted(load)
   font-weight: 600;
 }
 .status-badge.active { background: #f0fdf4; color: #15803d; }
+.status-badge.pending { background: #fff7ed; color: #c2410c; }
 .status-badge.inactive { background: #fef2f2; color: #b91c1c; }
 
 /* الأزرار */

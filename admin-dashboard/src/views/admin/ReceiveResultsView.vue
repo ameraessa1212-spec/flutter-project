@@ -18,7 +18,7 @@ const filtered = computed(() => {
 async function load() {
   loading.value = true
   const params = {}
-  if (specId.value) params.specialization = specId.value
+  if (specId.value) params.specialization_id = specId.value
   const { data } = await api.get('/evaluation-results', { params }).catch(() => ({ data: { data: [] } }))
   results.value = data.data || []
   loading.value = false

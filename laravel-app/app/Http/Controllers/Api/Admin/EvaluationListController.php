@@ -23,9 +23,9 @@ class EvaluationListController extends Controller
             });
         }
 
-        if ($specialization = $request->input('specialization')) {
-            $query->whereHas('student.studentProfile.specialization', function ($q) use ($specialization) {
-                $q->where('name', 'like', "%{$specialization}%");
+        if ($specId = $request->input('specialization_id')) {
+            $query->whereHas('student.studentProfile', function ($q) use ($specId) {
+                $q->where('specialization_id', $specId);
             });
         }
 
