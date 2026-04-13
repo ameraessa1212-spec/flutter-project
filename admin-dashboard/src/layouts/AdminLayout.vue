@@ -18,6 +18,7 @@ const menu = [
     { label: 'تقارير الطلاب', icon: 'ri-file-text-line', to: '/reports', name: 'reports' },
     { label: 'النتائج النهائية', icon: 'ri-bar-chart-line', to: '/evaluation', name: 'evaluation' },
     { label: 'إدارة الحسابات', icon: 'ri-user-settings-line', to: '/students', name: 'students' },
+    { label: 'تواصل مع الطلاب', icon: 'ri-mail-send-line', to: '/chat', name: 'contact-students' },
   ]},
   { group: 'الممتحنين', items: [
     { label: 'تحويل التقارير', icon: 'ri-file-transfer-line', to: '/evaluation-list', name: 'evaluation-list' },
