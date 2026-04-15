@@ -1,16 +1,22 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppConfig {
   const AppConfig._();
 
-  static const String _debugApiBaseUrl =
-      'http://localhost:9000/api/mobile/v1';
+  static const String _defaultApiBaseUrl = 'http://localhost:9000/';
 
   static String? _customApiBaseUrl;
 
   static Future<void> init() async {
+    try {
+      await dotenv.load(fileName: '.env');
+    } catch (_) {
+      // Ignore missing env files and fall back to defaults.
+    }
+
     final prefs = await SharedPreferences.getInstance();
     _customApiBaseUrl = prefs.getString('custom_api_base_url');
   }
@@ -29,7 +35,7 @@ class AppConfig {
 
   static String get apiBaseUrl {
     if (_customApiBaseUrl != null && _customApiBaseUrl!.isNotEmpty) {
-      return _customApiBaseUrl!;
+      return _normalizeApiBaseUrl(_customApiBaseUrl!);
     }
 
     final configuredValue = const String.fromEnvironment(
@@ -38,21 +44,30 @@ class AppConfig {
     );
 
     if (configuredValue.isNotEmpty) {
-      return configuredValue;
+      return _normalizeApiBaseUrl(configuredValue);
     }
 
-    if (kReleaseMode) {
-      throw StateError(
-        'API_BASE_URL is required for release builds. '
-        'Pass it with --dart-define=API_BASE_URL=https://api.example.com/api/mobile/v1.',
-      );
+    final envValue = dotenv.maybeGet('API_BASE_URL') ?? '';
+
+    if (envValue.isNotEmpty) {
+      return _normalizeApiBaseUrl(envValue);
     }
 
-    return _debugApiBaseUrl;
+    return _normalizeApiBaseUrl(_defaultApiBaseUrl);
   }
 
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);
+
+  static String _normalizeApiBaseUrl(String url) {
+    final trimmedUrl = url.trim().replaceAll(RegExp(r'/+$'), '');
+
+    if (trimmedUrl.endsWith('/api/mobile/v1')) {
+      return trimmedUrl;
+    }
+
+    return '$trimmedUrl/api/mobile/v1';
+  }
 }
 
 class FirebaseConfig {

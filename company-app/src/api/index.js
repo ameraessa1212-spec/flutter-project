@@ -1,4 +1,13 @@
-const API_BASE_URL = 'http://localhost:9000/api'
+const DEFAULT_API_BASE_URL = 'http://localhost:9000/'
+
+function joinUrl(baseUrl, path) {
+  return `${baseUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
+}
+
+const API_BASE_URL = joinUrl(
+  import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL,
+  'api'
+)
 
 export { API_BASE_URL }
 

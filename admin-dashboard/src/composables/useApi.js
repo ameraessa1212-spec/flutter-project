@@ -2,7 +2,16 @@ import axios from 'axios'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-const API_BASE = 'http://localhost:9000/api/admin'
+const DEFAULT_API_BASE_URL = 'http://localhost:9000/'
+
+function joinUrl(baseUrl, path) {
+  return `${baseUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
+}
+
+const API_BASE = joinUrl(
+  import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL,
+  'api/admin'
+)
 
 const api = axios.create({
   baseURL: API_BASE,

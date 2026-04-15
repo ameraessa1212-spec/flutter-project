@@ -17,7 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', CurrentUserController::class);
 });
 
-// Company API Routes
+
 Route::prefix('company')->name('company.')->group(function () {
     Route::post('/register', [CompanyAuthController::class, 'register']);
     Route::post('/login', [CompanyAuthController::class, 'login']);
@@ -27,6 +27,7 @@ Route::prefix('company')->name('company.')->group(function () {
         Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
         // Opportunities
+
         Route::apiResource('opportunities', OpportunityController::class)->only(['index', 'store', 'show']);
 
         // Applications (Student Requests)
