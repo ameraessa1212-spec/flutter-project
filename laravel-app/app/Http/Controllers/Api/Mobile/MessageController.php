@@ -19,7 +19,7 @@ class MessageController extends Controller
         $this->authorize('view', $thread);
 
         $messages = Message::query()
-            ->with('attachments')
+            ->with(['attachments', 'sender'])
             ->where('thread_id', $thread->id)
             ->orderByDesc('created_at')
             ->paginate((int) $request->integer('per_page', 30));
@@ -42,6 +42,8 @@ class MessageController extends Controller
         ]);
 
         $thread->update(['last_message_at' => now()]);
+
+        $message->load('sender');
 
         broadcast(new \App\Events\MessageSent($message))->toOthers();
 
@@ -78,11 +80,13 @@ class MessageController extends Controller
 
         $thread->update(['last_message_at' => now()]);
 
-        broadcast(new \App\Events\MessageSent($message->load('attachments')))->toOthers();
+        $message->load(['attachments', 'sender']);
+
+        broadcast(new \App\Events\MessageSent($message))->toOthers();
 
         return response()->json([
             'message' => 'Attachment message sent successfully.',
-            'data' => MessageResource::make($message->load('attachments')),
+            'data' => MessageResource::make($message),
         ], 201);
     }
 

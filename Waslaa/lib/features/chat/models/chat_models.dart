@@ -35,6 +35,8 @@ class ChatMessage {
     required this.id,
     this.threadId,
     required this.senderId,
+    this.senderName,
+    this.senderRole,
     this.fromId,
     this.toId,
     required this.messageType,
@@ -48,6 +50,8 @@ class ChatMessage {
   final dynamic id;
   final int? threadId;
   final int senderId;
+  final String? senderName;
+  final String? senderRole;
   final int? fromId;
   final int? toId;
   final String messageType;
@@ -63,6 +67,8 @@ class ChatMessage {
       id: json['id'],
       threadId: json['thread_id'] as int?,
       senderId: (json['sender_id'] ?? json['from_id'] ?? 0) as int,
+      senderName: json['sender_name'] as String?,
+      senderRole: json['sender_role'] as String?,
       fromId: json['from_id'] as int?,
       toId: json['to_id'] as int?,
       messageType: (json['message_type'] ?? 'text') as String,
@@ -82,9 +88,9 @@ class ChatMessage {
 class ChatThread {
   const ChatThread({
     required this.id,
-    required this.internshipId,
+    this.internshipId,
     required this.studentId,
-    required this.supervisorId,
+    this.supervisorId,
     required this.status,
     this.lastMessageAt,
     this.supervisorName,
@@ -95,9 +101,9 @@ class ChatThread {
   });
 
   final int id;
-  final int internshipId;
+  final int? internshipId;
   final int studentId;
-  final int supervisorId;
+  final int? supervisorId;
   final String status;
   final String? lastMessageAt;
   final String? supervisorName;
@@ -106,15 +112,19 @@ class ChatThread {
   final String? internshipTitle;
   final String? companyName;
 
+  /// A thread with no internship and no supervisor is the shared
+  /// support thread between the student and all admins.
+  bool get isSupportThread => internshipId == null && supervisorId == null;
+
   factory ChatThread.fromJson(Map<String, dynamic> json) {
     final supervisor = json['supervisor'] as Map<String, dynamic>?;
     final internship = json['internship'] as Map<String, dynamic>?;
     final company = internship?['company'] as Map<String, dynamic>?;
     return ChatThread(
       id: json['id'] as int,
-      internshipId: json['internship_id'] as int,
+      internshipId: json['internship_id'] as int?,
       studentId: json['student_id'] as int,
-      supervisorId: json['supervisor_id'] as int,
+      supervisorId: json['supervisor_id'] as int?,
       status: (json['status'] ?? '') as String,
       lastMessageAt: json['last_message_at'] as String?,
       supervisorName: supervisor?['name'] as String?,

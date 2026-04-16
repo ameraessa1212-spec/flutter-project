@@ -556,6 +556,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildMessageItem(ChatMessage msg) {
     final bool isMe = _isMyMessage(msg);
+    final String? incomingName = !isMe ? msg.senderName : null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -563,6 +564,20 @@ class _ChatPageState extends State<ChatPage> {
         crossAxisAlignment:
             isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
+          // Sender name shown above incoming messages so the student can tell
+          // which admin sent each message in the shared support thread.
+          if (incomingName != null && incomingName.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 42, bottom: 2),
+              child: Text(
+                incomingName,
+                style: TextStyle(
+                  color: primarycolor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           Row(
             mainAxisAlignment:
                 isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -687,12 +702,16 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildTopBar() {
     final thread = _activeThread;
+    final isSupport = thread?.isSupportThread ?? false;
     final supervisorName =
         widget.receiverId != null
             ? (widget.receiverName ?? 'الدعم الفني')
-            : (thread?.supervisorName ?? 'المشرف غير متاح');
-    final companyName =
-        thread?.companyName ?? (widget.receiverId != null ? 'نظام وصلة' : '');
+            : isSupport
+                ? 'إدارة الكلية'
+                : (thread?.supervisorName ?? 'المشرف غير متاح');
+    final companyName = isSupport
+        ? 'محادثة مشتركة'
+        : (thread?.companyName ?? (widget.receiverId != null ? 'نظام وصلة' : ''));
     final supervisorPhone = thread?.supervisorPhone;
 
     return Container(

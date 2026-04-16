@@ -83,6 +83,7 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
     Route::put('/examiners/{user}/toggle-status', [ExaminerController::class, 'toggleStatus']);
     Route::get('/examiners/{examiner}/reports', [ExaminerController::class, 'reports']);
     Route::get('/examiner/students', [ExaminerController::class, 'students']);
+    Route::get('/examiner/students/{examinerDiscussion}', [ExaminerController::class, 'studentDetail']);
     Route::post('/examiner/grades', [ExaminerController::class, 'storeGrade']);
 
     // Evaluation List

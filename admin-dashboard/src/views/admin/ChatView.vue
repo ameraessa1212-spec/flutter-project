@@ -9,7 +9,8 @@ const msgInput = ref('')
 const search = ref('')
 const loadingContacts = ref(true)
 const loadingMessages = ref(false)
-const roleFilter = ref('')
+
+const currentAdmin = JSON.parse(localStorage.getItem('admin_user') || '{}')
 
 onMounted(async () => {
   const { data } = await api.get('/chat/contacts').catch(() => ({ data: { data: [] } }))
@@ -18,15 +19,9 @@ onMounted(async () => {
 })
 
 const filteredContacts = computed(() => {
-  let list = contacts.value
-  if (roleFilter.value) {
-    list = list.filter(c => c.role === roleFilter.value)
-  }
-  if (search.value) {
-    const t = search.value.toLowerCase()
-    list = list.filter(c => c.name.toLowerCase().includes(t))
-  }
-  return list
+  if (!search.value) return contacts.value
+  const t = search.value.toLowerCase()
+  return contacts.value.filter(c => c.name.toLowerCase().includes(t))
 })
 
 async function openChat(user) {
@@ -44,7 +39,7 @@ async function sendMsg() {
   if (!msgInput.value.trim() || !activeUser.value) return
   const body = msgInput.value.trim()
   msgInput.value = ''
-  messages.value.push({ body, is_mine: true, time: 'الآن' })
+  messages.value.push({ body, is_mine: true, sender_name: currentAdmin.name || 'أنا', time: 'الآن' })
   await nextTick()
   scrollBottom()
   await api.post('/chat/messages', { user_id: activeUser.value.id, body, type: 'text' }).catch(() => null)
@@ -54,27 +49,22 @@ function scrollBottom() {
   const el = document.getElementById('chatMsgs')
   if (el) el.scrollTop = el.scrollHeight
 }
-
-function roleLabel(role) {
-  return { student: 'طالب', examiner: 'ممتحن', supervisor: 'مشرف' }[role] || role
-}
 </script>
 
 <template>
   <div class="chat-layout">
-    <!-- Contacts Sidebar -->
+    <!-- Students Sidebar -->
     <div class="chat-sidebar">
-      <div class="mb-sm">
-        <input v-model="search" class="search-input" style="max-width:100%;" placeholder="ابحث عن مستخدم...">
+      <div class="sidebar-title">
+        <i class="ri-user-line"></i>
+        <span>تواصل مع الطلاب</span>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="btn btn-sm" :class="roleFilter === '' ? 'btn-primary' : 'btn-outline'" @click="roleFilter = ''" style="flex:1;font-size:12px;">الكل</button>
-        <button class="btn btn-sm" :class="roleFilter === 'student' ? 'btn-primary' : 'btn-outline'" @click="roleFilter = 'student'" style="flex:1;font-size:12px;">طلاب</button>
-        <button class="btn btn-sm" :class="roleFilter === 'examiner' ? 'btn-primary' : 'btn-outline'" @click="roleFilter = 'examiner'" style="flex:1;font-size:12px;">ممتحنين</button>
+      <div class="mb-sm">
+        <input v-model="search" class="search-input" style="max-width:100%;" placeholder="ابحث عن طالب...">
       </div>
 
       <div v-if="loadingContacts" class="loading" style="padding:20px;font-size:13px;"></div>
-      <div v-else-if="!filteredContacts.length" class="empty" style="padding:20px;font-size:13px;">لا يوجد مستخدمين</div>
+      <div v-else-if="!filteredContacts.length" class="empty" style="padding:20px;font-size:13px;">لا يوجد طلاب</div>
       <template v-else>
         <div
           v-for="c in filteredContacts" :key="c.id"
@@ -84,13 +74,8 @@ function roleLabel(role) {
         >
           <div class="avatar-circle" style="width:42px;height:42px;">{{ c.initials }}</div>
           <div style="flex:1;min-width:0;">
-            <div class="flex-between">
-              <strong style="font-size:14px;">{{ c.name }}</strong>
-            </div>
-            <div class="flex-between" style="margin-top:2px;">
-              <span class="badge" :class="c.role === 'student' ? 'badge-info' : c.role === 'examiner' ? 'badge-purple' : 'badge-active'" style="font-size:10px;padding:2px 8px;">{{ roleLabel(c.role) }}</span>
-              <small v-if="c.specialization" class="text-muted" style="font-size:11px;">{{ c.specialization }}</small>
-            </div>
+            <strong style="font-size:14px;display:block;">{{ c.name }}</strong>
+            <small v-if="c.specialization" class="text-muted" style="font-size:11px;">{{ c.specialization }}</small>
           </div>
         </div>
       </template>
@@ -100,20 +85,25 @@ function roleLabel(role) {
     <div class="chat-main">
       <div class="chat-header" v-if="activeUser">
         <div class="avatar-circle">{{ activeUser.initials }}</div>
-        <div>
+        <div style="flex:1;">
           <strong>{{ activeUser.name }}</strong>
-          <div><span class="badge" :class="activeUser.role === 'student' ? 'badge-info' : 'badge-purple'" style="font-size:10px;padding:2px 8px;">{{ roleLabel(activeUser.role) }}</span></div>
+          <div>
+            <small v-if="activeUser.specialization" class="text-muted">{{ activeUser.specialization }}</small>
+          </div>
         </div>
+        <span class="shared-chat-note" title="تشارك هذه المحادثة جميع المسؤولين">
+          <i class="ri-team-line"></i> محادثة مشتركة
+        </span>
       </div>
       <div class="chat-header" v-else>
         <i class="ri-chat-3-line" style="font-size:22px;color:var(--text-muted);"></i>
-        <span class="text-muted">اختر جهة اتصال لبدء المحادثة</span>
+        <span class="text-muted">اختر طالباً لبدء المحادثة</span>
       </div>
 
       <div class="chat-messages" id="chatMsgs">
         <div v-if="!activeUser" class="empty" style="margin:auto;">
           <i class="ri-message-3-line" style="font-size:48px;color:var(--border);display:block;margin-bottom:12px;"></i>
-          اختر محادثة من القائمة
+          اختر طالباً من القائمة
         </div>
         <div v-else-if="loadingMessages" class="loading" style="margin:auto;"></div>
         <div v-else-if="!messages.length" class="empty" style="margin:auto;">
@@ -121,9 +111,18 @@ function roleLabel(role) {
           ابدأ المحادثة مع {{ activeUser.name }}
         </div>
         <template v-else>
-          <div v-for="(m, i) in messages" :key="i" class="msg" :class="m.is_mine ? 'out' : 'in'">
-            <div>{{ m.body }}</div>
-            <div style="font-size:10px;opacity:0.7;margin-top:4px;">{{ m.time || '' }}</div>
+          <div v-for="(m, i) in messages" :key="i" class="msg-wrapper" :class="m.is_mine ? 'out' : 'in'">
+            <!-- Show sender name if the message is from another admin (not me, not the student) -->
+            <small
+              v-if="!m.is_mine && m.sender_name && m.sender_name !== activeUser?.name"
+              class="msg-sender"
+            >
+              {{ m.sender_name }}
+            </small>
+            <div class="msg" :class="m.is_mine ? 'out' : 'in'">
+              <div>{{ m.body }}</div>
+              <div style="font-size:10px;opacity:0.7;margin-top:4px;">{{ m.time || '' }}</div>
+            </div>
           </div>
         </template>
       </div>
@@ -142,3 +141,59 @@ function roleLabel(role) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+  padding: 4px 4px 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+.sidebar-title i {
+  color: var(--primary);
+}
+
+.shared-chat-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--primary-bg);
+  color: var(--primary);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.msg-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+}
+.msg-wrapper.out {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+.msg-wrapper.in {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.msg-sender {
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 2px;
+  padding: 0 6px;
+}
+
+.msg-wrapper .msg {
+  max-width: 100%;
+}
+</style>

@@ -34,6 +34,7 @@ class EvaluationResultController extends Controller
         $data = $evaluations->map(function ($eval) {
             return [
                 'id' => $eval->id,
+                'internship_id' => $eval->internship_id,
                 'student_name' => $eval->student?->name,
                 'student_number' => $eval->student?->studentProfile?->student_number,
                 'specialization' => $eval->student?->studentProfile?->specialization?->name,

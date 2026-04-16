@@ -266,8 +266,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     _ProfileMenuTile(
-                      title: "التواصل مع المشرف",
-                      subtitle: "تواصل مع إدارة القسم للاستفسارات ",
+                      title: "التواصل مع إدارة الكلية",
+                      subtitle: "محادثة مشتركة مع المسؤولين للاستفسارات",
                       icon: Icons.support_agent_rounded,
                       onTap: () {
                         Navigator.push(
@@ -275,7 +275,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           MaterialPageRoute(
                             builder:
                                 (context) => const ChatPage(
-                                  receiverName: 'التواصل مع المشرف',
+                                  receiverName: 'إدارة الكلية',
                                 ),
                           ),
                         );

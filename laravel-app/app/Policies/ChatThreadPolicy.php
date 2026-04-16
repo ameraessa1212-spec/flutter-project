@@ -20,8 +20,8 @@ class ChatThreadPolicy
             return true;
         }
 
-        // Admin/support can view all threads
-        if ($user->hasRole('super_admin') || $user->hasRole('support')) {
+        // All admin roles except examiner share the chat with students
+        if (in_array($user->role, ['super_admin', 'operations', 'content_manager', 'support'], true)) {
             return true;
         }
 

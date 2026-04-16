@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { api } from '../../composables/useApi'
 import PageHeader from '../../components/PageHeader.vue'
 import SkeletonLoader from '../../components/SkeletonLoader.vue'
+import { companyDomains, examinerDomains, decisionLabels, getExaminerDomainScore } from '../../utils/rubricConfig'
 
 const router = useRouter()
 
@@ -54,33 +55,8 @@ function onFilter(val) { specId.value = val; load() }
 
 onMounted(load)
 
-const rubricLabels = {
-  knowledge: 'المعرفة',
-  skills: 'المهارات',
-  documentation: 'التوثيق',
-  discussion: 'المناقشة',
-  research: 'البحث',
-}
-
-// Company evaluation criteria labels matching the company form (16 scores)
-const companyCriteria = [
-  { label: 'المعرفة بالأنشطة التخصصية', max: 7 },
-  { label: 'المعرفة بالنظام المؤسسي وقوانين العمل', max: 7 },
-  { label: 'توظيف المعرفة النظرية والتقنية', max: 7 },
-  { label: 'التعرف على تقنيات تخصصية جديدة', max: 7 },
-  { label: 'المعرفة بسوق العمل', max: 7 },
-  { label: 'جودة الأداء المهني', max: 6 },
-  { label: 'الالتزام بالقوانين وأخلاقيات المهنة', max: 6 },
-  { label: 'الالتزام بمواعيد العمل', max: 6 },
-  { label: 'تقبل النقد والتوجيه', max: 6 },
-  { label: 'العلاقة مع الرؤساء والزملاء', max: 6 },
-  { label: 'إبراز الشخصية الهندسية', max: 5 },
-  { label: 'القدرة على التعلم الذاتي', max: 6 },
-  { label: 'القدرة على الاتصال الفعال', max: 6 },
-  { label: 'القدرة على تقديم العروض المرئية', max: 6 },
-  { label: 'جودة الأعمال الموثقة', max: 6 },
-  { label: 'جودة الأداء في العمل الجماعي', max: 6 },
-]
+// Build flat companyCriteria from shared companyDomains
+const companyCriteria = companyDomains.flatMap(d => d.criteria)
 </script>
 
 <template>
@@ -150,16 +126,20 @@ const companyCriteria = [
                   <span class="badge badge-active">{{ ev.total_score }}/70</span>
                 </div>
                 <div v-if="ev.rubric_scores">
-                  <div v-for="(scores, category) in ev.rubric_scores" :key="category" style="margin-bottom:6px;">
-                    <div class="text-sm" style="font-weight:600;margin-bottom:2px;">{{ rubricLabels[category] || category }}</div>
-                    <div v-if="Array.isArray(scores)" style="display:flex;gap:6px;flex-wrap:wrap;">
-                      <span v-for="(s, si) in scores" :key="si" class="text-sm" style="background:var(--primary-bg);padding:2px 8px;border-radius:12px;">{{ s }}</span>
+                  <div v-for="(domain, dIdx) in examinerDomains" :key="dIdx" style="margin-bottom:8px;">
+                    <div class="text-sm" style="font-weight:700;margin-bottom:4px;color:var(--text-secondary);">
+                      {{ domain.title }} ({{ domain.maxTitle }})
+                      <span style="margin-right:8px;color:var(--primary);">{{ getExaminerDomainScore(ev.rubric_scores, dIdx) }}/{{ domain.items.reduce((a, i) => a + i.max, 0) }}</span>
                     </div>
-                    <span v-else class="text-sm">{{ scores }}</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                      <span v-for="item in domain.items" :key="item.key" class="text-sm" style="background:var(--primary-bg);padding:2px 8px;border-radius:12px;">
+                        {{ ev.rubric_scores[item.key] ?? '--' }}/{{ item.max }}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <p v-if="ev.notes" class="text-sm text-muted" style="margin-top:8px;"><strong>ملاحظات:</strong> {{ ev.notes }}</p>
-                <p v-if="ev.decision" class="text-sm" style="margin-top:4px;"><strong>القرار:</strong> {{ ev.decision }}</p>
+                <p v-if="ev.decision" class="text-sm" style="margin-top:4px;"><strong>القرار:</strong> {{ decisionLabels[ev.decision] || ev.decision }}</p>
               </div>
             </template>
             <p v-else class="text-muted text-sm">لا يوجد تقييم من الممتحن بعد.</p>

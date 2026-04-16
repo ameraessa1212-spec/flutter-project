@@ -24,8 +24,8 @@ Broadcast::channel('chat.{threadId}', function ($user, $threadId) {
         return true;
     }
 
-    // Admins and support can view all channels (especially support threads)
-    if ($user->hasRole('super_admin') || $user->hasRole('support')) {
+    // All admin roles except examiner share the student chats
+    if (in_array($user->role, ['super_admin', 'operations', 'content_manager', 'support'], true)) {
         return true;
     }
 

@@ -13,6 +13,8 @@ class MessageResource extends JsonResource
             'id' => $this->id,
             'thread_id' => $this->thread_id,
             'sender_id' => $this->sender_id,
+            'sender_name' => $this->whenLoaded('sender', fn () => $this->sender?->name),
+            'sender_role' => $this->whenLoaded('sender', fn () => $this->sender?->role),
             'message_type' => $this->message_type,
             'body' => $this->body,
             'sent_at' => optional($this->sent_at)?->toIso8601String(),

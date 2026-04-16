@@ -15,9 +15,14 @@ class ChatController extends Controller
 {
     public function contacts(Request $request): JsonResponse
     {
+        if ($request->user()->role === 'examiner') {
+            return response()->json(['message' => 'غير مصرح بالوصول.'], 403);
+        }
+
         $search = $request->input('search');
 
-        $query = User::whereIn('role', ['student', 'supervisor', 'examiner'])
+        // Chat is between admins and students only — return students exclusively.
+        $query = User::where('role', 'student')
             ->where('status', 'active')
             ->with('studentProfile.specialization');
 
@@ -40,8 +45,12 @@ class ChatController extends Controller
 
     public function messages(Request $request): JsonResponse
     {
+        if ($request->user()->role === 'examiner') {
+            return response()->json(['message' => 'غير مصرح بالوصول.'], 403);
+        }
+
         $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['required', 'exists:users,id,role,student'],
         ]);
 
         $userId = (int) $request->input('user_id');
@@ -80,8 +89,12 @@ class ChatController extends Controller
 
     public function send(Request $request): JsonResponse
     {
+        if ($request->user()->role === 'examiner') {
+            return response()->json(['message' => 'غير مصرح بالوصول.'], 403);
+        }
+
         $validated = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['required', 'exists:users,id,role,student'],
             'body' => ['required', 'string', 'max:5000'],
             'type' => ['nullable', 'string', 'in:text,voice,file'],
         ]);

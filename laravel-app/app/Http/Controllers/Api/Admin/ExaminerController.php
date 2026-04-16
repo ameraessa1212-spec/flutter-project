@@ -176,16 +176,26 @@ class ExaminerController extends Controller
             $query->whereHas('student', fn($q) => $q->where('name', 'like', "%{$search}%"));
         }
 
-        $discussions = $query->with(['student.studentProfile', 'evaluation'])->get();
+        $discussions = $query->with([
+            'student.studentProfile.specialization',
+            'internship.company',
+            'internship.companyEvaluation',
+            'evaluation',
+        ])->get();
 
         $data = $discussions->map(function ($discussion) {
             $hasEvaluation = $discussion->evaluation !== null;
+            $companyEval = $discussion->internship?->companyEvaluation;
 
             return [
                 'id' => $discussion->id,
                 'student_id' => $discussion->student_id,
                 'student_name' => $discussion->student?->name,
                 'student_number' => $discussion->student?->studentProfile?->student_number,
+                'specialization' => $discussion->student?->studentProfile?->specialization?->name,
+                'company_name' => $discussion->internship?->company?->name,
+                'has_company_evaluation' => $companyEval !== null,
+                'company_score' => $companyEval?->total_score,
                 'status' => $hasEvaluation
                     ? "تم التقييم ({$discussion->evaluation->total_score}/70)"
                     : 'لم يتم التقييم',
@@ -195,6 +205,56 @@ class ExaminerController extends Controller
         });
 
         return response()->json(['data' => $data]);
+    }
+
+    public function studentDetail(Request $request, ExaminerDiscussion $examinerDiscussion): JsonResponse
+    {
+        if ($request->user()->role !== 'super_admin' && $request->user()->id !== $examinerDiscussion->examiner_id) {
+            return response()->json(['message' => 'غير مصرح بالوصول.'], 403);
+        }
+
+        $examinerDiscussion->load([
+            'student.studentProfile.specialization',
+            'internship.company',
+            'internship.companyEvaluation.evaluator',
+            'evaluation',
+        ]);
+
+        $internship = $examinerDiscussion->internship;
+        $companyEval = $internship?->companyEvaluation;
+        $examinerEval = $examinerDiscussion->evaluation;
+
+        return response()->json([
+            'data' => [
+                'id' => $examinerDiscussion->id,
+                'student' => [
+                    'name' => $examinerDiscussion->student?->name,
+                    'student_number' => $examinerDiscussion->student?->studentProfile?->student_number,
+                    'specialization' => $examinerDiscussion->student?->studentProfile?->specialization?->name,
+                ],
+                'internship' => [
+                    'id' => $internship?->id,
+                    'company_name' => $internship?->company?->name,
+                    'start_date' => $internship?->start_date?->toDateString(),
+                    'end_date' => $internship?->end_date?->toDateString(),
+                    'status' => $internship?->status,
+                ],
+                'scheduled_at' => $examinerDiscussion->scheduled_at?->toISOString(),
+                'location' => $examinerDiscussion->location,
+                'company_evaluation' => $companyEval ? [
+                    'detailed_scores' => $companyEval->detailed_scores,
+                    'total_score' => $companyEval->total_score,
+                    'comments' => $companyEval->comments,
+                    'evaluator_name' => $companyEval->evaluator?->name,
+                ] : null,
+                'examiner_evaluation' => $examinerEval ? [
+                    'rubric_scores' => $examinerEval->rubric_scores,
+                    'total_score' => $examinerEval->total_score,
+                    'decision' => $examinerEval->decision,
+                    'notes' => $examinerEval->notes,
+                ] : null,
+            ],
+        ]);
     }
 
     public function storeGrade(Request $request): JsonResponse

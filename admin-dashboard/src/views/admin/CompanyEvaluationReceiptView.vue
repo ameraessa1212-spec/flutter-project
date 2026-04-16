@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../../composables/useApi'
 import SkeletonLoader from '../../components/SkeletonLoader.vue'
+import { companyDomains } from '../../utils/rubricConfig'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,24 +22,7 @@ function printReceipt() {
   window.print()
 }
 
-const criteriaLabels = [
-  'المعرفة بالأنشطة التخصصية',
-  'المعرفة بالنظام المؤسسي وقوانين العمل',
-  'توظيف المعرفة النظرية والتقنية',
-  'التعرف على تقنيات تخصصية جديدة',
-  'المعرفة بسوق العمل',
-  'جودة الأداء المهني',
-  'الالتزام بالقوانين وأخلاقيات المهنة',
-  'الالتزام بمواعيد العمل',
-  'تقبل النقد والتوجيه',
-  'العلاقة مع الرؤساء والزملاء',
-  'إبراز الشخصية الهندسية',
-  'القدرة على التعلم الذاتي',
-  'القدرة على الاتصال الفعال',
-  'القدرة على تقديم العروض المرئية',
-  'جودة الأعمال الموثقة',
-  'جودة الأداء في العمل الجماعي',
-]
+const criteriaLabels = companyDomains.flatMap(d => d.criteria.map(c => c.label))
 </script>
 
 <template>
