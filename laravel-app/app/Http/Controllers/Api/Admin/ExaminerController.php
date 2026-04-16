@@ -140,30 +140,45 @@ class ExaminerController extends Controller
 
     public function reports(Request $request, User $examiner): JsonResponse
     {
-        $query = ExaminerDiscussion::where('examiner_id', $examiner->id)
-            ->whereHas('internship', fn($q) => $q->where('status', 'active'));
+        // All discussions assigned to this examiner — reports stay visible
+        // regardless of internship status (so examiners can still review
+        // reports after an internship is marked completed).
+        $query = ExaminerDiscussion::where('examiner_id', $examiner->id);
 
         if ($search = $request->input('search')) {
             $query->whereHas('student', fn($q) => $q->where('name', 'like', "%{$search}%"));
         }
 
-        $discussions = $query->with(['internship.reports.student', 'student'])->get();
+        $discussions = $query->with([
+            'internship.reports.student.studentProfile',
+            'student.studentProfile',
+        ])->get();
 
         $reports = $discussions->flatMap(function ($discussion) {
             return $discussion->internship?->reports?->map(function ($report) use ($discussion) {
                 return [
                     'id' => $report->id,
                     'student_name' => $discussion->student?->name ?? $report->student?->name,
-                    'student_number' => $report->student?->studentProfile?->student_number,
+                    'student_number' => $discussion->student?->studentProfile?->student_number
+                        ?? $report->student?->studentProfile?->student_number,
                     'report_type' => $report->report_type,
                     'title' => $report->title,
+                    'status' => $report->status,
+                    'file_name' => $report->file_name,
+                    'file_extension' => $report->file_extension,
+                    'file_size' => $report->file_size,
                     'submitted_at' => $report->submitted_at?->toDateString(),
                     'download_url' => $report->file_path ? Storage::disk('public')->url($report->file_path) : null,
                 ];
             }) ?? collect();
         });
 
-        return response()->json(['data' => $reports->values()]);
+        return response()->json(['data' => $reports->sortByDesc('submitted_at')->values()]);
+    }
+
+    public function myReports(Request $request): JsonResponse
+    {
+        return $this->reports($request, $request->user());
     }
 
     public function students(Request $request): JsonResponse

@@ -55,6 +55,12 @@ class CompanyAccountController extends Controller
 
         if ($company->user) {
             $company->user->update(['status' => $newStatus ? 'active' : 'inactive']);
+
+            // When deactivating, revoke all existing tokens so any live
+            // company session is logged out immediately.
+            if (! $newStatus) {
+                $company->user->tokens()->delete();
+            }
         }
 
         return response()->json([
@@ -110,9 +116,10 @@ class CompanyAccountController extends Controller
             'is_active' => false,
         ]);
 
-        // Also deactivate the linked user account
+        // Also deactivate the linked user account and revoke any live tokens
         if ($company->user) {
             $company->user->update(['status' => 'inactive']);
+            $company->user->tokens()->delete();
         }
 
         return response()->json([
