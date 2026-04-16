@@ -18,7 +18,6 @@ class CompanyAuthController extends Controller
     {
         $validated = $request->validated();
 
-        // 1. Create a User for the company admin
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -73,6 +72,7 @@ class CompanyAuthController extends Controller
             ], 401);
         }
 
+
         if ($user->role !== 'company') {
             return response()->json([
                 'success' => false,
@@ -93,6 +93,18 @@ class CompanyAuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Your company account has been rejected.',
+            ], 403);
+        }
+
+        // Deactivated company accounts cannot authenticate.
+        // Admin deactivation flips company.is_active → false and user.status → 'inactive'.
+        if (! $company->is_active || $user->status === 'inactive') {
+            // Revoke any previously issued tokens so existing sessions end too.
+            $user->tokens()->delete();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'تم تعطيل حساب الشركة. يرجى التواصل مع إدارة النظام.',
             ], 403);
         }
 
