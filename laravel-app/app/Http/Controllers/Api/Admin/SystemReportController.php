@@ -84,14 +84,13 @@ class SystemReportController extends Controller
 
             return [
                 'name' => $examiner->name,
-                'specialization' => '--',
                 'students_count' => $count . ' طالب',
             ];
         });
 
         return response()->json([
             'data' => $examiners,
-            'columns' => ['اسم الممتحن', 'التخصص المسؤول عنه', 'عدد الطلاب'],
+            'columns' => ['اسم الممتحن', 'عدد الطلاب'],
         ]);
     }
 }

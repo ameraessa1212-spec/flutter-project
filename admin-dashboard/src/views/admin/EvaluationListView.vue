@@ -36,17 +36,22 @@ async function loadData() {
 
 onMounted(loadData)
 
+const unassigned = computed(() => students.value.filter(s => !s.assigned_examiner))
+
 function toggleSelect(id) {
+  const student = students.value.find(s => s.student_id === id)
+  if (student?.assigned_examiner) return
   const s = new Set(selectedIds.value)
   s.has(id) ? s.delete(id) : s.add(id)
   selectedIds.value = s
 }
 
 function selectAll() {
-  if (selectedIds.value.size === students.value.length) {
+  const ids = unassigned.value.map(s => s.student_id)
+  if (selectedIds.value.size === ids.length) {
     selectedIds.value = new Set()
   } else {
-    selectedIds.value = new Set(students.value.map(s => s.student_id))
+    selectedIds.value = new Set(ids)
   }
 }
 
@@ -108,12 +113,15 @@ async function assignExaminer() {
         v-for="s in students"
         :key="s.id"
         class="transfer-card"
-        :class="{ 'is-selected': selectedIds.has(s.student_id) }"
+        :class="{ 'is-selected': selectedIds.has(s.student_id), 'is-assigned': !!s.assigned_examiner }"
         @click="toggleSelect(s.student_id)"
       >
         <div class="selection-overlay">
-          <div class="custom-checkbox" :class="{ 'checked': selectedIds.has(s.student_id) }">
+          <div v-if="!s.assigned_examiner" class="custom-checkbox" :class="{ 'checked': selectedIds.has(s.student_id) }">
             <i v-if="selectedIds.has(s.student_id)" class="ri-check-line"></i>
+          </div>
+          <div v-else class="assigned-check">
+            <i class="ri-checkbox-circle-fill"></i>
           </div>
         </div>
 
@@ -134,6 +142,9 @@ async function assignExaminer() {
           </div>
           <div class="spec-badge">
             {{ s.specialization || '--' }}
+          </div>
+          <div v-if="s.assigned_examiner" class="assigned-badge">
+            <i class="ri-user-star-line"></i> {{ s.assigned_examiner }}
           </div>
         </div>
       </div>
@@ -244,6 +255,15 @@ async function assignExaminer() {
 
 .btn-confirm { background: #6c5ce7; color: white; border: none; padding: 12px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; }
 .btn-cancel { background: #f5f5f5; border: none; padding: 12px 25px; border-radius: 12px; cursor: pointer; }
+
+.transfer-card.is-assigned { opacity: 0.65; cursor: default; border-color: #e2e8f0; }
+.transfer-card.is-assigned:hover { transform: none; }
+.assigned-check { color: #22c55e; font-size: 20px; }
+.assigned-badge {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+  padding: 4px 10px; background: #f0fdf4; color: #15803d;
+  border-radius: 8px; font-size: 11px; font-weight: 700;
+}
 
 .spin { animation: rotate 1s linear infinite; }
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:Waslaa/features/discussion_schedules/models/discussion_schedule.dart';
 import 'package:Waslaa/const/color.dart';
 import 'package:Waslaa/features/discussion_schedules/repositories/discussion_schedule_repository.dart';
-import 'package:Waslaa/features/auth/models/specialization.dart';
-import 'package:Waslaa/features/auth/repositories/auth_repository.dart';
+import 'package:Waslaa/features/profile/repositories/profile_repository.dart';
 
 class DiscussionSchedulePage extends StatefulWidget {
   const DiscussionSchedulePage({super.key});
@@ -16,25 +15,26 @@ class DiscussionSchedulePage extends StatefulWidget {
 
 class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
   List<DiscussionSchedule> _schedules = [];
-  List<Specialization> _specializations = [];
-  int? _selectedSpecId;
+  int? _studentSpecId;
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _loadSpecializations();
-    _loadSchedules();
+    _initData();
   }
 
-  Future<void> _loadSpecializations() async {
+  Future<void> _initData() async {
+    // Fetch student's specialization from profile
     try {
-      final authRepo = context.read<AuthRepository>();
-      final specs = await authRepo.getSpecializations();
+      final profileRepo = context.read<ProfileRepository>();
+      final profile = await profileRepo.getProfile();
       if (!mounted) return;
-      setState(() => _specializations = specs);
+      _studentSpecId = profile.studentProfile?.specializationId;
     } catch (_) {}
+
+    await _loadSchedules();
   }
 
   Future<void> _loadSchedules() async {
@@ -44,7 +44,7 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
     });
     try {
       final repo = context.read<DiscussionScheduleRepository>();
-      final list = await repo.getSchedules(specializationId: _selectedSpecId);
+      final list = await repo.getSchedules(specializationId: _studentSpecId);
       if (!mounted) return;
       setState(() {
         _schedules = list;
@@ -139,35 +139,6 @@ class _DiscussionSchedulePageState extends State<DiscussionSchedulePage> {
           bottom: 40.0,
         ),
         children: [
-          if (_specializations.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE0E0E0)),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<int?>(
-                  value: _selectedSpecId,
-                  isExpanded: true,
-                  hint: const Text('كل التخصصات', style: TextStyle(fontFamily: 'Cairo', fontSize: 13)),
-                  style: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: primarycolor),
-                  items: [
-                    const DropdownMenuItem<int?>(value: null, child: Text('كل التخصصات', style: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Colors.black87))),
-                    ..._specializations.map((s) => DropdownMenuItem<int?>(
-                      value: s.id,
-                      child: Text(s.name, style: const TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Colors.black87)),
-                    )),
-                  ],
-                  onChanged: (val) {
-                    setState(() => _selectedSpecId = val);
-                    _loadSchedules();
-                  },
-                ),
-              ),
-            ),
           ..._schedules.map((s) => _buildScheduleCard(s)),
         ],
       ),

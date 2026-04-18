@@ -71,6 +71,16 @@ async function reject(c) {
   }
 }
 
+async function deleteCompany(c) {
+  if (!confirm(`هل أنت متأكد من حذف شركة "${c.name}"؟ سيتم حذف الحساب نهائياً.`)) return
+  try {
+    await api.delete(`/company-accounts/${c.id}`)
+    await fetchCompanies()
+  } catch (error) {
+    alert(error.response?.data?.message || 'حدث خطأ أثناء حذف الشركة')
+  }
+}
+
 onMounted(fetchCompanies)
 </script>
 
@@ -165,9 +175,9 @@ onMounted(fetchCompanies)
                   </template>
 
                   <template v-else-if="c.status === 'approved'">
-                    <button 
-                      class="btn-action" 
-                      :class="c.is_active ? 'btn-disable' : 'btn-enable'" 
+                    <button
+                      class="btn-action"
+                      :class="c.is_active ? 'btn-disable' : 'btn-enable'"
                       @click="toggle(c)"
                     >
                       <i :class="c.is_active ? 'ri-lock-line' : 'ri-lock-unlock-line'"></i>
@@ -178,6 +188,10 @@ onMounted(fetchCompanies)
                   <template v-else-if="c.status === 'rejected'">
                     <button class="btn-text" @click="approve(c)">إعادة مراجعة</button>
                   </template>
+
+                  <button class="btn-icon btn-delete" @click="deleteCompany(c)" title="حذف">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -374,6 +388,7 @@ onMounted(fetchCompanies)
 
 .btn-approve { background: #f0fdf4; color: #15803d; }
 .btn-reject { background: #fef2f2; color: #b91c1c; }
+.btn-delete { background: #fef2f2; color: #b91c1c; }
 
 .btn-action {
   padding: 6px 12px;

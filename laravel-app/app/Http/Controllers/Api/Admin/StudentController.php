@@ -107,6 +107,16 @@ class StudentController extends Controller
         ]);
     }
 
+    public function destroy(User $user): JsonResponse
+    {
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json([
+            'message' => 'تم حذف حساب الطالب.',
+        ]);
+    }
+
     public function upload(Request $request): JsonResponse
     {
         $request->validate([

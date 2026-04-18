@@ -133,9 +133,10 @@ class ExaminerController extends Controller
             ], 422);
         }
 
-        $user->update(['status' => 'inactive']);
+        $user->tokens()->delete();
+        $user->delete();
 
-        return response()->json(['message' => 'تم تعطيل حساب الممتحن.']);
+        return response()->json(['message' => 'تم حذف حساب الممتحن.']);
     }
 
     public function reports(Request $request, User $examiner): JsonResponse

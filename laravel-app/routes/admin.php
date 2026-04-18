@@ -41,6 +41,7 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
     Route::put('/students/{user}', [StudentController::class, 'update']);
     Route::put('/students/{user}/password', [StudentController::class, 'updatePassword']);
     Route::put('/students/{user}/toggle-status', [StudentController::class, 'toggleStatus']);
+    Route::delete('/students/{user}', [StudentController::class, 'destroy']);
 
     // Student Requests (Applications)
     Route::get('/student-requests', [StudentRequestController::class, 'index']);
@@ -74,6 +75,7 @@ Route::middleware(['auth:sanctum', 'admin.role:super_admin,operations,supervisor
     Route::put('/company-accounts/{company}/toggle-status', [CompanyAccountController::class, 'toggleStatus']);
     Route::put('/company-accounts/{company}/approve', [CompanyAccountController::class, 'approve']);
     Route::put('/company-accounts/{company}/reject', [CompanyAccountController::class, 'reject']);
+    Route::delete('/company-accounts/{company}', [CompanyAccountController::class, 'destroy']);
 
     // Examiners
     Route::get('/examiners', [ExaminerController::class, 'index']);

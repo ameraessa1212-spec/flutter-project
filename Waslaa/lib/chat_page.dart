@@ -705,12 +705,12 @@ class _ChatPageState extends State<ChatPage> {
     final isSupport = thread?.isSupportThread ?? false;
     final supervisorName =
         widget.receiverId != null
-            ? (widget.receiverName ?? 'الدعم الفني')
+            ? (widget.receiverName ?? 'المشرف')
             : isSupport
-                ? 'إدارة الكلية'
+                ? 'المشرف'
                 : (thread?.supervisorName ?? 'المشرف غير متاح');
     final companyName = isSupport
-        ? 'محادثة مشتركة'
+        ? 'نظام الإشراف'
         : (thread?.companyName ?? (widget.receiverId != null ? 'نظام وصلة' : ''));
     final supervisorPhone = thread?.supervisorPhone;
 

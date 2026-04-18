@@ -1,13 +1,23 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import api from '../../composables/useApi'
 
 const file = ref(null)
 const preview = ref('')
 const targets = ref([])
 const message = ref('')
+const title = ref('')
+const specializationId = ref('')
+const specializations = ref([])
 const sending = ref(false)
 const result = ref('')
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/specializations')
+    specializations.value = data.data || []
+  } catch (_) {}
+})
 
 function onFileChange(e) {
   file.value = e.target.files[0]
@@ -27,21 +37,22 @@ function toggleTarget(t) {
 async function send() {
   if (!file.value) { alert('ارفع صورة الجدول أولاً'); return }
   if (!targets.value.length) { alert('حدد المستلمين'); return }
-  
+
   sending.value = true
   result.value = ''
-  
+
   const fd = new FormData()
   fd.append('image', file.value)
   targets.value.forEach(t => fd.append('targets[]', t))
+  if (title.value) fd.append('title', title.value)
   if (message.value) fd.append('message', message.value)
-  
+  if (specializationId.value) fd.append('specialization_id', specializationId.value)
+
   try {
     await api.post('/discussion-schedules', fd)
-    // تغيير القيمة هنا لتكون ثابتة كما طلبت
-    result.value = 'تم الإرسال بنجاح' 
-  } catch (e) { 
-    result.value = 'حدث خطأ أثناء الإرسال' 
+    result.value = 'تم الإرسال بنجاح'
+  } catch (e) {
+    result.value = 'حدث خطأ أثناء الإرسال'
   } finally {
     sending.value = false
   }
@@ -60,6 +71,13 @@ async function send() {
       </template>
       <input type="file" accept="image/*" style="display:none" @change="onFileChange">
     </label>
+
+    <input v-model="title" class="form-input" placeholder="عنوان الجدول (اختياري)" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px;">
+
+    <select v-model="specializationId" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px; font-family:inherit; color:#333; background:white;">
+      <option value="">كل التخصصات</option>
+      <option v-for="s in specializations" :key="s.id" :value="s.id">{{ s.name }}</option>
+    </select>
 
     <div style="display:flex;gap:10px;margin-bottom:15px;">
       <button class="btn" :class="targets.includes('examiners') ? 'btn-primary' : 'btn-outline'" @click="toggleTarget('examiners')" style="flex:1; padding: 12px; border-radius: 10px; font-weight: 600;">

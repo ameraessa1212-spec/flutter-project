@@ -45,7 +45,7 @@ class AdminDiscussionScheduleController extends Controller
             'image' => ['required', 'image', 'max:5120'],
             'targets' => ['required', 'array', 'min:1'],
             'targets.*' => ['in:examiners,students'],
-            'specialization_filter' => ['nullable', 'string'],
+            'specialization_id' => ['nullable', 'exists:specializations,id'],
             'message' => ['nullable', 'string'],
             'title' => ['nullable', 'string'],
         ]);
@@ -55,6 +55,7 @@ class AdminDiscussionScheduleController extends Controller
         $schedule = DiscussionSchedule::create([
             'title' => $validated['title'] ?? 'جدول المناقشة',
             'description' => $validated['message'] ?? null,
+            'specialization_id' => $validated['specialization_id'] ?? null,
             'schedule_image_path' => $imagePath,
             'is_active' => true,
             'published_at' => now(),
@@ -62,9 +63,18 @@ class AdminDiscussionScheduleController extends Controller
 
         // Send notifications to targets
         $notifiedCount = 0;
+        $specId = $validated['specialization_id'] ?? null;
+
         foreach ($validated['targets'] as $target) {
             $role = $target === 'examiners' ? 'examiner' : 'student';
-            $users = User::where('role', $role)->where('status', 'active')->get();
+            $query = User::where('role', $role)->where('status', 'active');
+
+            // Filter student notifications by specialization if set
+            if ($specId && $role === 'student') {
+                $query->whereHas('studentProfile', fn ($q) => $q->where('specialization_id', $specId));
+            }
+
+            $users = $query->get();
 
             foreach ($users as $user) {
                 UserNotification::create([

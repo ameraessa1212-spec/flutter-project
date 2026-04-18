@@ -60,6 +60,7 @@ class StudentProfile {
     this.profileImagePath,
     this.cvFilePath,
     this.expectedGraduationAt,
+    this.specializationId,
     this.specializationName,
   });
 
@@ -71,6 +72,7 @@ class StudentProfile {
   final String? profileImagePath;
   final String? cvFilePath;
   final String? expectedGraduationAt;
+  final int? specializationId;
   final String? specializationName;
 
   factory StudentProfile.fromJson(Map<String, dynamic> json) {
@@ -84,6 +86,7 @@ class StudentProfile {
       profileImagePath: json['profile_image_path'] as String?,
       cvFilePath: json['cv_file_path'] as String?,
       expectedGraduationAt: json['expected_graduation_at'] as String?,
+      specializationId: spec?['id'] as int?,
       specializationName: spec?['name'] as String?,
     );
   }

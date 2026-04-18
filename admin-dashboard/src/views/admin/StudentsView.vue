@@ -58,6 +58,16 @@ async function changePassword(id) {
   }
 }
 
+async function deleteStudent(s) {
+  if (!confirm(`هل أنت متأكد من حذف حساب الطالب "${s.name}"؟`)) return
+  try {
+    await api.delete(`/students/${s.id}`)
+    await load()
+  } catch (e) {
+    alert(e.response?.data?.message || 'حدث خطأ أثناء حذف الحساب')
+  }
+}
+
 onMounted(() => {
   loadSpecializations()
   load()
@@ -149,6 +159,9 @@ onMounted(() => {
                     @click="toggleStatus(s.id)"
                   >
                     {{ s.status === 'active' ? 'إيقاف' : 'تفعيل' }}
+                  </button>
+                  <button class="btn-icon btn-delete" @click="deleteStudent(s)" title="حذف">
+                    <i class="ri-delete-bin-line"></i>
                   </button>
                 </div>
               </td>
@@ -311,6 +324,15 @@ onMounted(() => {
   background: white;
   color: #64748b;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-delete {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
 }
 
 .btn-status-toggle {

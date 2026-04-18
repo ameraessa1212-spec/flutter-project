@@ -28,9 +28,6 @@ class DataSeeder extends Seeder
         $now = Carbon::now();
         $password = Hash::make('Password@123');
 
-        // ════════════════════════════════════════════════════════════════
-        //  1. ADMIN / OPERATIONS / CONTENT MANAGER USERS
-        // ════════════════════════════════════════════════════════════════
 
         $operationsAdmin = User::query()->firstOrCreate(
             ['email' => 'operations@waslaa.local'],
@@ -705,17 +702,6 @@ class DataSeeder extends Seeder
             );
             $opportunities[] = $opportunity;
         }
-
-        // ════════════════════════════════════════════════════════════════
-        //  7. APPLICATIONS
-        // ════════════════════════════════════════════════════════════════
-
-        // Student 0 (علي - حاسب) -> Opportunity 0 (الواحة - بيانات) => accepted
-        // Student 1 (مريم - اتصالات) -> Opportunity 3 (ليبيانا - شبكات) => accepted
-        // Student 2 (عبدالله - تحكم) -> Opportunity 8 (الكهرباء - تحكم) => accepted
-        // Student 3 (هدى - حاسب) -> Opportunity 4 (ليبيانا - موبايل) => accepted
-        // Student 4 (أنس - اتصالات) -> Opportunity 5 (المدار - شبكات) => pending
-        // Student 5 (أسماء - تحكم) -> Opportunity 1 (الواحة - SCADA) => pending
 
         $applicationsData = [
             [

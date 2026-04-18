@@ -131,4 +131,21 @@ class CompanyAccountController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Soft-delete a company account and its linked user.
+     */
+    public function destroy(Company $company): JsonResponse
+    {
+        if ($company->user) {
+            $company->user->tokens()->delete();
+            $company->user->delete();
+        }
+
+        $company->delete();
+
+        return response()->json([
+            'message' => 'تم حذف حساب الشركة.',
+        ]);
+    }
 }

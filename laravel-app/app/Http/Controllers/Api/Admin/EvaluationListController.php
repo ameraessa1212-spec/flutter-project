@@ -15,6 +15,7 @@ class EvaluationListController extends Controller
         $query = Internship::with([
             'student.studentProfile.specialization',
             'company',
+            'examinerDiscussions.examiner',
         ])->where('status', 'active');
 
         if ($search = $request->input('search')) {
@@ -32,6 +33,8 @@ class EvaluationListController extends Controller
         $internships = $query->latest()->get();
 
         $data = $internships->map(function ($internship) {
+            $assignment = $internship->examinerDiscussions->first();
+
             return [
                 'id' => $internship->id,
                 'student_id' => $internship->student_id,
@@ -39,6 +42,7 @@ class EvaluationListController extends Controller
                 'student_number' => $internship->student?->studentProfile?->student_number,
                 'specialization' => $internship->student?->studentProfile?->specialization?->name,
                 'company_name' => $internship->company?->name,
+                'assigned_examiner' => $assignment?->examiner?->name,
             ];
         });
 
@@ -54,8 +58,11 @@ class EvaluationListController extends Controller
         ]);
 
         $created = 0;
+        $skipped = [];
+
         foreach ($validated['student_ids'] as $studentId) {
-            $internship = Internship::where('student_id', $studentId)
+            $internship = Internship::with('student')
+                ->where('student_id', $studentId)
                 ->where('status', 'active')
                 ->first();
 
@@ -63,12 +70,15 @@ class EvaluationListController extends Controller
                 continue;
             }
 
-            $exists = ExaminerDiscussion::where('internship_id', $internship->id)
+            $existing = ExaminerDiscussion::where('internship_id', $internship->id)
                 ->where('student_id', $studentId)
-                ->where('examiner_id', $validated['examiner_id'])
-                ->exists();
+                ->with('examiner')
+                ->first();
 
-            if ($exists) {
+            if ($existing) {
+                $studentName = $internship->student?->name ?? $studentId;
+                $examinerName = $existing->examiner?->name ?? 'ممتحن آخر';
+                $skipped[] = "{$studentName} (معين للممتحن: {$examinerName})";
                 continue;
             }
 
@@ -82,9 +92,14 @@ class EvaluationListController extends Controller
             $created++;
         }
 
+        $message = "تم تحويل {$created} طالب إلى الممتحن بنجاح.";
+        if (! empty($skipped)) {
+            $message .= ' تم تخطي: ' . implode('، ', $skipped);
+        }
+
         return response()->json([
-            'message' => "تم تحويل {$created} طالب إلى الممتحن بنجاح.",
-            'data' => ['assigned' => $created],
+            'message' => $message,
+            'data' => ['assigned' => $created, 'skipped' => count($skipped)],
         ]);
     }
 }
