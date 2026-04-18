@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Mobile;
 
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ class ReportResource extends JsonResource
             'id' => $this->id,
             'report_type' => $this->report_type,
             'title' => $this->title,
-            'file_path' => $this->file_path,
+            'file_url' => PublicMediaUrl::forPath($this->file_path),
             'file_name' => $this->file_name,
             'file_extension' => $this->file_extension,
             'file_size' => $this->file_size,

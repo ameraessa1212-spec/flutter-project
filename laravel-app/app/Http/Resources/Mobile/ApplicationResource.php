@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Mobile;
 
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,7 +19,7 @@ class ApplicationResource extends JsonResource
             'university_snapshot' => $this->university_snapshot,
             'major_snapshot' => $this->major_snapshot,
             'level_snapshot' => $this->level_snapshot,
-            'cv_file_path' => $this->cv_file_path,
+            'cv_file_url' => PublicMediaUrl::forPath($this->cv_file_path),
             'notes' => $this->notes,
             'submitted_at' => optional($this->submitted_at)?->toIso8601String(),
             'reviewed_at' => optional($this->reviewed_at)?->toIso8601String(),

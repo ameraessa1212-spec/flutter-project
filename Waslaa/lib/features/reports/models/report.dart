@@ -3,7 +3,7 @@ class Report {
     required this.id,
     required this.reportType,
     required this.title,
-    this.filePath,
+    this.fileUrl,
     this.fileName,
     this.fileExtension,
     this.fileSize,
@@ -16,7 +16,7 @@ class Report {
   final int id;
   final String reportType;
   final String title;
-  final String? filePath;
+  final String? fileUrl;
   final String? fileName;
   final String? fileExtension;
   final int? fileSize;
@@ -30,7 +30,7 @@ class Report {
       id: json['id'] as int,
       reportType: (json['report_type'] ?? '') as String,
       title: (json['title'] ?? '') as String,
-      filePath: json['file_path'] as String?,
+      fileUrl: json['file_url'] as String?,
       fileName: json['file_name'] as String?,
       fileExtension: json['file_extension'] as String?,
       fileSize: json['file_size'] as int?,

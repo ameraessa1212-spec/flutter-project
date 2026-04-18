@@ -2,30 +2,27 @@ class ChatAttachment {
   const ChatAttachment({
     this.id,
     this.messageId,
-    this.filePath,
+    this.fileUrl,
     this.fileName,
     this.fileType,
     this.fileSize,
-    this.fileUrl,
   });
 
   final dynamic id;
   final dynamic messageId;
-  final String? filePath;
+  final String? fileUrl;
   final String? fileName;
   final String? fileType;
   final int? fileSize;
-  final String? fileUrl;
 
   factory ChatAttachment.fromJson(Map<String, dynamic> json) {
     return ChatAttachment(
       id: json['id'],
       messageId: json['message_id'],
-      filePath: json['file_path'] as String?,
+      fileUrl: json['file_url'] as String?,
       fileName: json['file_name'] as String?,
       fileType: json['file_type'] as String?,
       fileSize: json['file_size'] as int?,
-      fileUrl: json['file_url'] as String?,
     );
   }
 }

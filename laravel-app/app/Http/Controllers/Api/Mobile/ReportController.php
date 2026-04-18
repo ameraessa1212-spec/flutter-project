@@ -7,6 +7,7 @@ use App\Http\Requests\Api\Mobile\StoreReportRequest;
 use App\Http\Resources\Mobile\ReportResource;
 use App\Models\Internship;
 use App\Models\Report;
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -69,7 +70,7 @@ class ReportController extends Controller
 
         return response()->json([
             'data' => [
-                'file_path' => $report->file_path,
+                'file_url' => PublicMediaUrl::forPath($report->file_path),
             ],
         ]);
     }

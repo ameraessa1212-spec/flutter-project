@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,7 +32,7 @@ class CompanyAccountController extends Controller
                 'phone' => $company->phone,
                 'city' => $company->city,
                 'description' => $company->description,
-                'logo_path' => $company->logo_path,
+                'logo_url' => PublicMediaUrl::forPath($company->logo_path),
                 'created_at' => $company->created_at?->toDateString(),
                 'is_active' => $company->is_active,
                 'status' => $company->status ?? 'pending',

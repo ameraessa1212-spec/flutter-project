@@ -39,6 +39,11 @@ class ApiClient {
   final Dio _dio;
   final SessionStorage _sessionStorage;
 
+  /// Update the base URL at runtime (used by DevToolScreen).
+  void updateBaseUrl(String newBaseUrl) {
+    _dio.options.baseUrl = newBaseUrl;
+  }
+
   Future<Response<dynamic>> get(
     String path, {
     Map<String, dynamic>? queryParameters,

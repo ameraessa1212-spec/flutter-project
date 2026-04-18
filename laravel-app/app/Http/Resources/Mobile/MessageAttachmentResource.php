@@ -12,7 +12,6 @@ class MessageAttachmentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'file_path' => $this->file_path,
             'file_url' => PublicMediaUrl::forPath($this->file_path),
             'file_name' => $this->file_name,
             'mime_type' => $this->mime_type,

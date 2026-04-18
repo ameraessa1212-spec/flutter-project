@@ -10,7 +10,7 @@ class Application {
     this.universitySnapshot,
     this.majorSnapshot,
     this.levelSnapshot,
-    this.cvFilePath,
+    this.cvFileUrl,
     this.notes,
     this.submittedAt,
     this.reviewedAt,
@@ -27,7 +27,7 @@ class Application {
   final String? universitySnapshot;
   final String? majorSnapshot;
   final String? levelSnapshot;
-  final String? cvFilePath;
+  final String? cvFileUrl;
   final String? notes;
   final String? submittedAt;
   final String? reviewedAt;
@@ -45,7 +45,7 @@ class Application {
       universitySnapshot: json['university_snapshot'] as String?,
       majorSnapshot: json['major_snapshot'] as String?,
       levelSnapshot: json['level_snapshot'] as String?,
-      cvFilePath: json['cv_file_path'] as String?,
+      cvFileUrl: json['cv_file_url'] as String?,
       notes: json['notes'] as String?,
       submittedAt: json['submitted_at'] as String?,
       reviewedAt: json['reviewed_at'] as String?,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,7 @@ class RegisteredCompanyController extends Controller
                 'address' => $company->address,
                 'email' => $company->email,
                 'phone' => $company->phone,
-                'logo_path' => $company->logo_path,
+                'logo_url' => PublicMediaUrl::forPath($company->logo_path),
                 'website_url' => $company->website_url,
                 'description' => $company->description,
                 'internships_count' => $company->internships_count,
@@ -67,7 +68,7 @@ class RegisteredCompanyController extends Controller
                 'address' => $company->address,
                 'email' => $company->email,
                 'phone' => $company->phone,
-                'logo_path' => $company->logo_path,
+                'logo_url' => PublicMediaUrl::forPath($company->logo_path),
                 'website_url' => $company->website_url,
                 'description' => $company->description,
                 'is_active' => $company->is_active,

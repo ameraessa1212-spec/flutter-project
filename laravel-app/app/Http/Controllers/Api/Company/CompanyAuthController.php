@@ -7,6 +7,7 @@ use App\Http\Requests\Company\LoginCompanyRequest;
 use App\Http\Requests\Company\RegisterCompanyRequest;
 use App\Models\Company;
 use App\Models\User;
+use App\Services\PublicMediaUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -49,12 +50,16 @@ class CompanyAuthController extends Controller
             'status' => 'pending',
         ]);
 
+        $companyData = $company->toArray();
+        $companyData['logo_url'] = PublicMediaUrl::forPath($company->logo_path);
+        unset($companyData['logo_path']);
+
         return response()->json([
             'success' => true,
             'message' => 'Company registered successfully. Pending admin approval.',
             'data' => [
                 'user' => $user,
-                'company' => $company,
+                'company' => $companyData,
             ],
         ], 201);
     }
@@ -110,13 +115,17 @@ class CompanyAuthController extends Controller
 
         $token = $user->createToken('company_auth_token')->plainTextToken;
 
+        $companyData = $company->toArray();
+        $companyData['logo_url'] = PublicMediaUrl::forPath($company->logo_path);
+        unset($companyData['logo_path']);
+
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'data' => [
                 'token' => $token,
                 'user' => $user,
-                'company' => $company,
+                'company' => $companyData,
             ]
         ]);
     }

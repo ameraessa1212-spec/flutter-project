@@ -136,7 +136,7 @@ onMounted(fetchCompanies)
               <td>
                 <div class="company-cell">
                   <div class="company-avatar">
-                    <img v-if="c.logo_path" :src="c.logo_path" class="logo-img">
+                    <img v-if="c.logo_url" :src="c.logo_url" class="logo-img">
                     <span v-else>{{ c.name.charAt(0) }}</span>
                   </div>
                   <span class="company-name">{{ c.name }}</span>
