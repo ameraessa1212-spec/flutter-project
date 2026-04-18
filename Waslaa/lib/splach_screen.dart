@@ -26,6 +26,7 @@ class _SplashScreenState extends State<SplachScreen> {
   AppLaunchDestination? _pendingDestination;
   int _logoTaps = 0;
   Timer? _tapTimer;
+  bool _devToolOpen = false;
 
   @override
   void initState() {
@@ -61,9 +62,16 @@ class _SplashScreenState extends State<SplachScreen> {
 
     if (_logoTaps >= 5) {
       _logoTaps = 0;
+      _devToolOpen = true;
       Navigator.of(
         context,
-      ).push(MaterialPageRoute(builder: (_) => const DevToolScreen()));
+      ).push(MaterialPageRoute(builder: (_) => const DevToolScreen())).then((_) {
+        _devToolOpen = false;
+        // Resume navigation if bootstrap already finished while dev tool was open
+        if (_pendingDestination != null && _pendingDestination != AppLaunchDestination.error) {
+          _navigateToDestination(_pendingDestination!);
+        }
+      });
     }
   }
 
@@ -89,6 +97,18 @@ class _SplashScreenState extends State<SplachScreen> {
       return;
     }
 
+    // If dev tool is open, store destination and wait for it to close
+    if (_devToolOpen) {
+      setState(() {
+        _pendingDestination = destination;
+      });
+      return;
+    }
+
+    _navigateToDestination(destination);
+  }
+
+  Future<void> _navigateToDestination(AppLaunchDestination destination) async {
     final page = switch (destination) {
       AppLaunchDestination.home => const HomePage(),
       AppLaunchDestination.welcome => const WelcomeScreen(),
@@ -106,7 +126,7 @@ class _SplashScreenState extends State<SplachScreen> {
       }
     }
 
-    if (page == null) {
+    if (page == null || !mounted) {
       return;
     }
 
