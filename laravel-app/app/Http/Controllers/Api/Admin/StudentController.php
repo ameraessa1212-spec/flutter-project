@@ -131,30 +131,22 @@ class StudentController extends Controller
         $skipped = 0;
 
         foreach ($rows as $row) {
-
             $row['student_number'] = preg_replace('/\D/', '', $row['student_number']);
 
-            $exists = User::whereHas('studentProfile', function ($q) use ($row) {
-                $q->where('student_number', $row['student_number']);
-            })->exists();
-
-            if ($exists) {
-                $skipped++;
-                continue;
-            }
-
-
-            EligibleStudent::firstOrCreate(
+            $eligible = EligibleStudent::firstOrCreate(
                 ['student_number' => $row['student_number']],
                 ['name' => $row['name']]
             );
 
-
-            $created++;
+            if ($eligible->wasRecentlyCreated) {
+                $created++;
+            } else {
+                $skipped++;
+            }
         }
 
         return response()->json([
-            'message' => "تم رفع الملف بنجاح. تم إنشاء {$created} حساب، وتم تخطي {$skipped}.",
+            'message' => "تم رفع الملف بنجاح. تم إضافة {$created} طالب، وتم تخطي {$skipped}.",
             'data' => [
                 'created' => $created,
                 'skipped' => $skipped,
